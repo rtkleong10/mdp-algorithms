@@ -16,10 +16,16 @@ public class Map {
     }
 
     public Cell getCell(int r, int c) {
-        return grid[r][c];
+        if (r < 0 || r >= NUM_ROWS || c < 0 || c >= NUM_COLS)
+            return null;
+        else
+            return grid[r][c];
     }
 
     public void setCell(int r, int c, Cell cell) {
+        if (r < 0 || r >= NUM_ROWS || c < 0 || c >= NUM_COLS)
+            return;
+
         grid[r][c] = cell;
     }
 
