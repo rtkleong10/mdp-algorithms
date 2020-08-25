@@ -10,7 +10,7 @@ public class Map {
 
         for (int r = 0; r < NUM_ROWS; r++) {
             for (int c = 0; c < NUM_COLS; c++) {
-                grid[r][c] = new Cell();
+                grid[r][c] = Cell.Unexplored;
             }
         }
     }
@@ -19,38 +19,42 @@ public class Map {
         return grid[r][c];
     }
 
+    public void setCell(int r, int c, Cell cell) {
+        grid[r][c] = cell;
+    }
+
     public Map generateVirtualMap() {
         Map virtualMap = new Map();
 
         // Create base map
         for (int r = 0; r < NUM_ROWS; r++) {
             for (int c = 0; c < NUM_COLS; c++) {
-                CellType cellType = getCell(r, c).getCellType();
+                Cell cell = getCell(r, c);
 
-                if (cellType == CellType.Free)
-                    virtualMap.getCell(r, c).setCellType(CellType.Free);
+                if (cell == Cell.Free)
+                    virtualMap.setCell(r, c, Cell.Free);
                 else
-                    virtualMap.getCell(r, c).setCellType(CellType.Obstacle);
+                    virtualMap.setCell(r, c, Cell.Obstacle);
             }
         }
 
         // Add virtual boundary to walls
         for (int r = 0; r < NUM_ROWS; r++) {
-            virtualMap.getCell(r, 0).setCellType(CellType.Obstacle);
-            virtualMap.getCell(r, NUM_COLS - 1).setCellType(CellType.Obstacle);
+            virtualMap.setCell(r, 0, Cell.Obstacle);
+            virtualMap.setCell(r, NUM_COLS - 1, Cell.Obstacle);
         }
 
         for (int c = 0; c < NUM_COLS; c++) {
-            virtualMap.getCell(0, c).setCellType(CellType.Obstacle);
-            virtualMap.getCell(NUM_ROWS - 1, c).setCellType(CellType.Obstacle);
+            virtualMap.setCell(0, c, Cell.Obstacle);
+            virtualMap.setCell(NUM_ROWS - 1, c, Cell.Obstacle);
         }
 
         // Add virtual boundary around obstacles
         for (int r = 0; r < NUM_ROWS; r++) {
             for (int c = 0; c < NUM_COLS; c++) {
-                CellType cellType = getCell(r, c).getCellType();
+                Cell cell = getCell(r, c);
 
-                if (cellType == CellType.Obstacle) {
+                if (cell == Cell.Obstacle) {
                     int[][] posToMark = {
                             {r - 1, c - 1},
                             {r, c - 1},
@@ -63,7 +67,7 @@ public class Map {
                     };
 
                     for (int[] pos : posToMark)
-                        virtualMap.getCell(pos[0], pos[1]).setCellType(CellType.Obstacle);
+                        virtualMap.setCell(pos[0], pos[1], Cell.Obstacle);
                 }
             }
         }

@@ -2,13 +2,13 @@ package model;
 
 public class MapDescriptor {
     public static void main(String[] args) {
-        String[] strs = {"FFC07F80FF01FE03FFFFFFF3FFE7FFCFFF9C7F38FE71FCE3F87FF0FFE1FFC3EF87FF0E0E1C1F", "00000100001C80000000001C0000080000060001C00000080000"};
+        String[] strs = {"FFC07F80FF01FE03FFFFFFF3FFE7FFCFFF9C7F38FE71FCE3F87FF0FFE1FFC3FF87FF0E0E1C1F", "00000100001C80000000001C0000080000060001C00000080000"};
         Map map = generateMap(strs);
         String[] result = generateMapDescriptor(map);
 
         for (int r = Map.NUM_ROWS - 1; r >= 0; r--) {
             for (int c = 0; c < Map.NUM_COLS; c++) {
-                CellType cellType = map.getCell(r, c).getCellType();
+                Cell cellType = map.getCell(r, c);
                 switch (cellType) {
                     case Unexplored:
                         System.out.print("?");
@@ -48,7 +48,7 @@ public class MapDescriptor {
             hexStr.append(hexDigit);
         }
 
-        return hexStr.toString();
+        return hexStr.toString().toUpperCase();
     }
 
     private static String hexToBin(String hexStr) {
@@ -56,13 +56,11 @@ public class MapDescriptor {
 
         for (int i = 0; i < hexStr.length(); i++) {
             String hexDigit = Character.toString(hexStr.charAt(i));
-            System.out.println(hexDigit);
             int hexDigitValue = Integer.parseInt(hexDigit, 16);
             String hexDigitBin = Integer.toString(hexDigitValue, 2);
 
             int numPadBits = 4 - hexDigitBin.length();
             binStr.append("0".repeat(numPadBits) + hexDigitBin);
-            System.out.println("0".repeat(numPadBits) + hexDigitBin);
         }
 
         return binStr.toString();
@@ -70,6 +68,7 @@ public class MapDescriptor {
 
     public static Map generateMap(String[] strs) {
         String exploredBin = hexToBin(strs[0]);
+        System.out.println(exploredBin);
         String obstaclesBin = hexToBin(strs[1]);
 
         int exploredCount = 2;
@@ -79,15 +78,13 @@ public class MapDescriptor {
 
         for (int r = 0; r < Map.NUM_ROWS; r++) {
             for (int c = 0; c < Map.NUM_COLS; c++) {
-                Cell cell = map.getCell(r, c);
-
                 if (exploredBin.charAt(exploredCount) == '0') {
-                    cell.setCellType(CellType.Unexplored);
+                    map.setCell(r, c, Cell.Unexplored);
                 } else {
                     if (obstaclesBin.charAt(obstaclesCount) == '0')
-                        cell.setCellType(CellType.Free);
+                        map.setCell(r, c, Cell.Free);
                     else
-                        cell.setCellType(CellType.Obstacle);
+                        map.setCell(r, c, Cell.Obstacle);
 
                     obstaclesCount++;
                 }
@@ -109,8 +106,8 @@ public class MapDescriptor {
 
         for (int r = 0; r < Map.NUM_ROWS; r++) {
             for (int c = 0; c < Map.NUM_COLS; c++) {
-                CellType cellType = map.getCell(r, c).getCellType();
-                switch (cellType) {
+                Cell cell = map.getCell(r, c);
+                switch (cell) {
                     case Unexplored:
                         exploredBin.append("0");
                         break;
