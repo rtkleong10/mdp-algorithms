@@ -1,4 +1,4 @@
-package model;
+package entity;
 
 public class Map {
     public static final int NUM_ROWS = 20;

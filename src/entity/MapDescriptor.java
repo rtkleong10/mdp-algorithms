@@ -1,4 +1,4 @@
-package model;
+package entity;
 
 public class MapDescriptor {
     public static void main(String[] args) {
