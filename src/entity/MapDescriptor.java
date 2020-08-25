@@ -1,43 +1,10 @@
 package entity;
 
 public class MapDescriptor {
-    public static void main(String[] args) {
-        String[] strs = {"FFC07F80FF01FE03FFFFFFF3FFE7FFCFFF9C7F38FE71FCE3F87FF0FFE1FFC3FF87FF0E0E1C1F", "00000100001C80000000001C0000080000060001C00000080000"};
-        Map map = generateMap(strs);
-        String[] result = generateMapDescriptor(map);
-
-        for (int r = Map.NUM_ROWS - 1; r >= 0; r--) {
-            for (int c = 0; c < Map.NUM_COLS; c++) {
-                Cell cellType = map.getCell(r, c);
-                switch (cellType) {
-                    case Unexplored:
-                        System.out.print("?");
-                        break;
-
-                    case Free:
-                        System.out.print("0");
-                        break;
-
-                    case Obstacle:
-                        System.out.print("1");
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-
-            System.out.println();
-        }
-
-        System.out.println(result[0]);
-        System.out.println(result[1]);
-    }
-
     private static String binToHex(String binStr) {
         // Add padding to binary string
         int numPadBits = 8 - binStr.length() % 8;
-        String binStrPadded = numPadBits == 8 ? binStr : "0".repeat(numPadBits) + binStr;
+        String binStrPadded = numPadBits == 8 ? binStr : binStr + "0".repeat(numPadBits);
 
         StringBuilder hexStr = new StringBuilder();
 
@@ -60,7 +27,8 @@ public class MapDescriptor {
             String hexDigitBin = Integer.toString(hexDigitValue, 2);
 
             int numPadBits = 4 - hexDigitBin.length();
-            binStr.append("0".repeat(numPadBits) + hexDigitBin);
+            binStr.append("0".repeat(numPadBits));
+            binStr.append(hexDigitBin);
         }
 
         return binStr.toString();
@@ -68,7 +36,6 @@ public class MapDescriptor {
 
     public static Map generateMap(String[] strs) {
         String exploredBin = hexToBin(strs[0]);
-        System.out.println(exploredBin);
         String obstaclesBin = hexToBin(strs[1]);
 
         int exploredCount = 2;
