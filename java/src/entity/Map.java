@@ -73,7 +73,7 @@ public class Map {
             for (int c = 0; c < NUM_COLS; c++) {
                 Cell cell = getCell(r, c);
 
-                if (cell == Cell.Obstacle) {
+                if (cell != Cell.Free) {
                     int[][] posToMark = {
                             {r - 1, c - 1},
                             {r, c - 1},
