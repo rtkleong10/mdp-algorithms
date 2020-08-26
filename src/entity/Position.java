@@ -36,4 +36,9 @@ public class Position {
         Position position = (Position) o;
         return r == position.r && c == position.c;
     }
+
+    @Override
+    public String toString() {
+        return "(" + c + ", " + r + ")";
+    }
 }
