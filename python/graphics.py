@@ -1,5 +1,6 @@
 import pygame
-from fastest_path import euclidean_distance
+import fastest_path
+from constants import Cell
 
 LINE_WIDTH = 10
 BLOCK_SIZE = 40
@@ -15,7 +16,7 @@ GREEN = (180, 230, 230)
 WINDOW_HEIGHT = BLOCK_SIZE * 20
 WINDOW_WIDTH = BLOCK_SIZE * 15
 
-def display_maze(map_real, map_virtual, steps, nodes, edges):
+def display_maze(map_real, map_virtual, steps):
     global SCREEN, CLOCK
     pygame.init()
     win = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -51,9 +52,9 @@ def draw_map(win, map_real, map_virtual):
 
             if (x in range(0, 3) and y in range(0, 3)) or (x in range(12, 15) and y in range(17, 20)):
                 pygame.draw.rect(win, BLUE, rect, 0)
-            elif real == 1:
+            elif real == Cell.OBSTACLE:
                 pygame.draw.rect(win, BLACK, rect, 0)
-            elif virtual == 1:
+            elif virtual == Cell.OBSTACLE:
                 pygame.draw.rect(win, DARK_GREY, rect, 0)
             else:
                 pygame.draw.rect(win, WHITE, rect, 0)
@@ -86,7 +87,7 @@ def draw_robot(win, num_rows, steps, current_distance):
         start_pos = (steps[i][0] * BLOCK_SIZE + BLOCK_SIZE // 2, (num_rows - 1 - steps[i][1]) * BLOCK_SIZE + BLOCK_SIZE // 2)
         end_pos = (steps[i + 1][0] * BLOCK_SIZE + BLOCK_SIZE // 2, (num_rows - 1 - steps[i + 1][1]) * BLOCK_SIZE + BLOCK_SIZE // 2)
 
-        dist = euclidean_distance(start_pos, end_pos)
+        dist = fastest_path.euclidean_distance(start_pos, end_pos)
 
         if current_distance <= total_distance + dist:
             percent = (current_distance - total_distance) / dist
