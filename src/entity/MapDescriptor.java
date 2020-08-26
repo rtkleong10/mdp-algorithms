@@ -2,6 +2,7 @@ package entity;
 
 public class MapDescriptor {
     private static String binToHex(String binStr) {
+        // TODO: Find out where to pad
         // Add padding to binary string
         int numPadBits = 8 - binStr.length() % 8;
         String binStrPadded = numPadBits == 8 ? binStr : binStr + "0".repeat(numPadBits);
