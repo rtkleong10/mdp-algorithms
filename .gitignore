@@ -1,3 +1,14 @@
+### Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# virtualenv
+venv/
+ENV/
+Pipfile
+Pipfile.lock
+
 # IntelliJ IDEA
 .idea/
 out/
