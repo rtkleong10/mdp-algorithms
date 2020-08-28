@@ -71,7 +71,9 @@ def generate_map_descriptor(map):
 	return explored_str, obstacle_str
 
 def main():
-	strs = ["FFC07F80FF01FE03FFFFFFF3FFE7FFCFFF9C7F38FE71FCE3F87FF0FFE1FFC3FF87FF0E0E1C1F", "00000100001C80000000001C0000080000060001C00000080000"]
+	with open("maps/map1.txt", "r") as f:
+		strs = f.read().split("\n")
+
 	map = generate_map(*strs)
 	print(generate_map_descriptor(map))
 	print_map(map)
