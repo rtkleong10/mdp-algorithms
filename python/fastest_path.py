@@ -144,6 +144,7 @@ def compute_steps(nodes, edges, weights, source_node, dest_node):
 	return steps
 
 # TODO: Penalise rotation
+# TODO: Check for completion here
 def a_star(nodes, edges, weights, source_node, dest_node):
 	"""
 	Performs A* search on the graph to find the optimal path from the source node to the destination node.
