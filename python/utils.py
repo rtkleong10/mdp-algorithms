@@ -15,7 +15,10 @@ def timeit(method):
 		return result
 	return timed
 
-def print_map(map, marked_points=[]):
+def print_map(map, marked_points=None):
+	if marked_points == None:
+		marked_points = []
+
 	for r, row in enumerate(reversed(map)):
 		for c, cell in enumerate(row):
 			if (c, NUM_ROWS - 1 - r) in marked_points:

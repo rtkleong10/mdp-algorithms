@@ -144,6 +144,7 @@ def compute_steps(nodes, edges, weights, source_node, dest_node):
 	return steps
 
 # TODO: Penalise rotation
+# TODO: Check for completion here
 def a_star(nodes, edges, weights, source_node, dest_node):
 	"""
 	Performs A* search on the graph to find the optimal path from the source node to the destination node.
@@ -341,7 +342,8 @@ def euclidean_distance(p0, p1):
 	return math.sqrt((p1[0] - p0[0]) ** 2 + (p1[1] - p0[1]) ** 2)
 
 def main():
-	strs = ["FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", "001000200040070000000038001000000004000820107E300400000000610080200040008000"]
+	with open("maps/map2.txt", "r") as f:
+		strs = f.read().split("\n")
 
 	map = generate_map(*strs)
 	steps = fastest_path(map, START_POS, GOAL_POS)

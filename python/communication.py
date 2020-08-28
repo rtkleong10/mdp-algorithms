@@ -10,7 +10,7 @@ class SocketClient:
 
 	def open_connection(self):
 		try:
-			self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 			self.conn.connect((HOST, PORT))
 			self.is_connected = True
 
