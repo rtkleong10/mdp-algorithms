@@ -24,12 +24,19 @@ def display_maze(map_real, map_virtual, steps):
     win.fill(BLACK)
     current_distance = 0
 
+    run = True
+
     while True:
         clock.tick(30)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
+                run = False
+                break
+
+        if run == False:
+            break
 
         draw_map(win, map_real, map_virtual)
         # draw_edges(win, len(map_real), nodes, edges)
