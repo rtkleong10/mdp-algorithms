@@ -88,25 +88,21 @@ class FastestPathEuclidean(FastestPath):
 		if waypoint:
 			waypoint_node = nodes.index(waypoint)
 
-			pi0 = self.a_star(nodes, edges, weights, source_node, waypoint_node)
-			pi1 = self.a_star(nodes, edges, weights, waypoint_node, dest_node)
+			steps0 = self.a_star(nodes, edges, weights, source_node, waypoint_node)
+			steps1 = self.a_star(nodes, edges, weights, waypoint_node, dest_node)
 
-			if pi0 == None or pi1 == None:
+			if steps0 == None or steps1 == None:
 				return None
-
-			steps0 = self.compute_steps(pi0, nodes, waypoint_node)
-			steps1 = self.compute_steps(pi1, nodes, dest_node)
 
 			combined_steps = steps0 + steps1[1:]
 			return self.smooth_steps(combined_steps)
 
 		else:
-			pi = self.a_star(nodes, edges, weights, source_node, dest_node)
+			steps = self.a_star(nodes, edges, weights, source_node, dest_node)
 
-			if pi == None:
+			if steps == None:
 				return None
 
-			steps = self.compute_steps(pi, nodes, dest_node)
 			return self.smooth_steps(steps)
 
 	def find_obstacle_vertices(self):
@@ -241,7 +237,7 @@ class FastestPathEuclidean(FastestPath):
 			dest_node (int): Node index of destination.
 
 		Returns:
-			pi (list): List where the ith value corresponds to the parent of the ith node. Represents the search tree.
+			steps (list): List of positions to move directly between to execute the path.
 		"""
 		g = [None for i in nodes] # Actual cost
 		pi = [None for i in nodes]
@@ -270,7 +266,7 @@ class FastestPathEuclidean(FastestPath):
 				break
 
 			if u == dest_node:
-				return pi
+				return self.compute_steps(pi, nodes, dest_node)
 
 			S[u] = True
 
@@ -337,29 +333,22 @@ class FastestPathEuclidean(FastestPath):
 class FastestPathManhattan(FastestPath):
 	def compute_fastest_path(self, source, dest, waypoint=None):
 		if waypoint:
-			pi0, nodes0 = self.a_star(source, waypoint)
-			pi1, nodes1 = self.a_star(waypoint, dest)
+			steps0 = self.a_star(source, waypoint)
+			steps1 = self.a_star(waypoint, dest)
 
-			if pi0 == None or pi1 == None:
+			if steps0 == None or steps1 == None:
 				return None
 
-			waypoint_node = nodes0.index(waypoint)
-			dest_node = nodes1.index(dest)
-
-			steps0 = self.compute_steps(pi0, nodes0, waypoint_node)
-			steps1 = self.compute_steps(pi1, nodes1, dest_node)
 			combined_steps = steps0 + steps1[1:]
 
 			return self.smooth_steps(combined_steps)
 
 		else:
-			pi, nodes = self.a_star(source, dest)
+			steps = self.a_star(source, dest)
 
-			if pi == None:
+			if steps == None:
 				return None
 
-			dest_node = nodes.index(dest)
-			steps = self.compute_steps(pi, nodes, dest_node)
 			return self.smooth_steps(steps)
 
 	def a_star(self, source, dest):
@@ -370,14 +359,12 @@ class FastestPathManhattan(FastestPath):
 			dest (tuple): Position of destination.
 
 		Returns:
-			pi (list): List where the ith value corresponds to the parent of the ith node. Represents the search tree. Return `None` if `dest` not found.
-			nodes (list): List of nodes.
+			steps (list): List of positions to move directly between to execute the path.
 		"""
 		nodes = [source]
 		g = [0] # Cost
 		h = [manhattan_distance(source, dest)]
 		pi = [None] # Search tree in terms of parents
-		explored = [False]
 		p_queue = [0]
 
 		while len(p_queue) > 0:
@@ -385,7 +372,6 @@ class FastestPathManhattan(FastestPath):
 			min_f = g[p_queue[0]] + h[p_queue[0]]
 			u = p_queue[0]
 
-			# print(nodes)
 			for i in p_queue[1:]:
 				f = g[i] + h[i]
 
@@ -393,14 +379,11 @@ class FastestPathManhattan(FastestPath):
 					min_f = f
 					u = i
 
-			if u == None:
-				break
-
+			# Check if destination reached
 			if nodes[u] == dest:
-				return pi, nodes
+				return self.compute_steps(pi, nodes, u)
 
 			p_queue.remove(u)
-			explored[u] = True
 
 			# Check neighbours
 			node = nodes[u]
@@ -418,44 +401,39 @@ class FastestPathManhattan(FastestPath):
 			if node[1] < NUM_ROWS - 1:
 				neighbours.append((node[0], node[1] + 1))
 
-			print(neighbours)
-
 			for neighbour in neighbours:
 				if self.map[neighbour[1]][neighbour[0]] != Cell.FREE:
 					continue
 
-				i = None
+				# Path cost from source to neighbour via u
+				new_cost = g[u] + 1
+
+				# Rotation cost
+				if not (pi[u] == None or (neighbour[0] == nodes[pi[u]][0]) or (neighbour[1] == nodes[pi[u]][1])):
+					new_cost += 1
 
 				try:
 					# Existing node
 					i = nodes.index(neighbour)
+
+					# Skip if explored
+					if i not in p_queue:
+						continue
+
+					# Update cost
+					if new_cost < g[i]:
+						g[i] = new_cost
+						pi[i] = u
+
 				except ValueError:
 					# Add new node
 					nodes.append(neighbour)
-					i = len(nodes) - 1
-					g.append(None)
+					g.append(new_cost)
 					h.append(manhattan_distance(neighbour, dest))
-					pi.append(None)
-					explored.append(False)
+					pi.append(u)
+					p_queue.append(len(nodes) - 1)
 
-				if explored[i]:
-					continue
-
-				# Add to priority queue
-				if i not in p_queue:
-					p_queue.append(i)
-
-				edge_cost = 1
-
-				# Rotation cost
-				if not (pi[u] == None or (neighbour[0] == nodes[pi[u]][0]) or (neighbour[1] == nodes[pi[u]][1])):
-					edge_cost += 1
-
-				if g[i] == None or g[u] + edge_cost < g[i]:
-					g[i] = g[u] + edge_cost
-					pi[i] = u
-
-		return None, nodes
+		return None
 
 	def smooth_steps(self, steps):
 		"""Smooths the steps by removing intermediate steps with the same direction to prevent stops.
