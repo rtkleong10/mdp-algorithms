@@ -4,6 +4,7 @@ from utils import add_virtual_obstacles, print_map
 from map_descriptor import generate_map
 import graphics
 
+
 def euclidean_distance(p0, p1):
 	"""Computes the Euclidean distance between point 0 and point 1.
 
@@ -15,6 +16,7 @@ def euclidean_distance(p0, p1):
 		euclidean_distance (float): Euclidean distance between point 0 and point 1.
 	"""
 	return math.sqrt((p1[0] - p0[0]) ** 2 + (p1[1] - p0[1]) ** 2)
+
 
 def manhattan_distance(p0, p1):
 	"""Computes the manhattan distance between point 0 and point 1.
@@ -28,16 +30,17 @@ def manhattan_distance(p0, p1):
 	"""
 	return abs(p1[0] - p0[0]) + abs(p1[1] - p0[1])
 
+
 class FastestPath:
-	def __init__(self, map):
+	def __init__(self, map_real):
 		"""Inits FastestPath algorithm by adding virtual boundaries to the map
 
 		Args:
-			map (list): 2D list of `constants.Cell` objects representing the map layout.
+			map_real (list): 2D list of `constants.Cell` objects representing the map layout.
 		"""
-		self.map = add_virtual_obstacles(map)
+		self.map = add_virtual_obstacles(map_real)
 
-	def compute_fastest_path(self, source, dest, waypoint = None):
+	def compute_fastest_path(self, source, dest, waypoint=None):
 		"""Calculates the fastest path from the source to the destination, possibly with a waypoint.
 
 		Args:
@@ -50,7 +53,8 @@ class FastestPath:
 		"""
 		pass
 
-	def compute_steps(self, pi, nodes, dest_node):
+	@staticmethod
+	def compute_steps(pi, nodes, dest_node):
 		"""Computes the steps from the search tree generated.
 
 		Args:
@@ -64,16 +68,17 @@ class FastestPath:
 		steps = []
 		cur = dest_node
 
-		while cur != None:
+		while cur is not None:
 			steps.append(nodes[cur])
 			cur = pi[cur]
 
 		steps.reverse()
 		return steps
 
+
 class FastestPathEuclidean(FastestPath):
-	def __init__(self, map):
-		super().__init__(map)
+	def __init__(self, map_real):
+		super().__init__(map_real)
 		self.obstacle_vertices = self.find_obstacle_vertices()
 
 	def compute_fastest_path(self, source, dest, waypoint=None):
@@ -91,7 +96,7 @@ class FastestPathEuclidean(FastestPath):
 			steps0 = self.a_star(nodes, edges, weights, source_node, waypoint_node)
 			steps1 = self.a_star(nodes, edges, weights, waypoint_node, dest_node)
 
-			if steps0 == None or steps1 == None:
+			if steps0 is None or steps1 is None:
 				return None
 
 			combined_steps = steps0 + steps1[1:]
@@ -100,7 +105,7 @@ class FastestPathEuclidean(FastestPath):
 		else:
 			steps = self.a_star(nodes, edges, weights, source_node, dest_node)
 
-			if steps == None:
+			if steps is None:
 				return None
 
 			return self.smooth_steps(steps)
@@ -120,15 +125,16 @@ class FastestPathEuclidean(FastestPath):
 					bottom = self.map[r - 1][c] if r > 0 else None
 					left = self.map[r][c - 1] if c > 0 else None
 					right = self.map[r][c + 1] if c < NUM_COLS - 1 else None
-					top_left = self.map[r + 1][c - 1] if top != None and left != None else None
-					top_right = self.map[r + 1][c + 1] if top != None and right != None else None
-					bottom_left = self.map[r - 1][c - 1] if bottom != None and left != None else None
-					bottom_right = self.map[r - 1][c + 1] if bottom != None and right != None else None
+					top_left = self.map[r + 1][c - 1] if top is not None and left is not None else None
+					top_right = self.map[r + 1][c + 1] if top is not None and right is not None else None
+					bottom_left = self.map[r - 1][c - 1] if bottom is not None and left is not None else None
+					bottom_right = self.map[r - 1][c + 1] if bottom is not None and right is not None else None
 
 					# ? ? ?
 					# X _ ?
 					# ? X ?
-					if (right == Cell.OBSTACLE or left == Cell.OBSTACLE) and (bottom == Cell.OBSTACLE or top == Cell.OBSTACLE):
+					if (right == Cell.OBSTACLE or left == Cell.OBSTACLE) and (
+							bottom == Cell.OBSTACLE or top == Cell.OBSTACLE):
 						obstacle_vertices.append((c, r))
 						continue
 
@@ -136,9 +142,9 @@ class FastestPathEuclidean(FastestPath):
 					# _ _ ?
 					# X _ ?
 					elif (bottom_right == Cell.OBSTACLE and right == Cell.FREE and bottom == Cell.FREE) or \
-							(bottom_left == Cell.OBSTACLE and left == Cell.FREE and bottom == Cell.FREE) or \
-							(top_right == Cell.OBSTACLE and right == Cell.FREE and top == Cell.FREE) or \
-							(top_left == Cell.OBSTACLE and left == Cell.FREE and top == Cell.FREE):
+						(bottom_left == Cell.OBSTACLE and left == Cell.FREE and bottom == Cell.FREE) or \
+						(top_right == Cell.OBSTACLE and right == Cell.FREE and top == Cell.FREE) or \
+						(top_left == Cell.OBSTACLE and left == Cell.FREE and top == Cell.FREE):
 						obstacle_vertices.append((c, r))
 
 		return obstacle_vertices
@@ -157,7 +163,7 @@ class FastestPathEuclidean(FastestPath):
 		# Nodes
 		nodes = self.obstacle_vertices.copy()
 
-		if extra_nodes != None:
+		if extra_nodes is not None:
 			for node in extra_nodes:
 				if node not in nodes:
 					nodes.append(node)
@@ -239,9 +245,9 @@ class FastestPathEuclidean(FastestPath):
 		Returns:
 			steps (list): List of positions to move directly between to execute the path.
 		"""
-		g = [None for i in nodes] # Actual cost
-		pi = [None for i in nodes]
-		S = [False for i in nodes]
+		g = [None] * len(nodes)  # Actual cost
+		pi = [None] * len(nodes)
+		explored = [False] * len(nodes)
 
 		# Estimated cost from node to destination
 		h = []
@@ -250,31 +256,31 @@ class FastestPathEuclidean(FastestPath):
 
 		g[source_node] = 0
 
-		while False in S:
+		while False in explored:
 			min_f = None
 			u = None
 
 			for i in range(len(nodes)):
-				if not S[i] and g[i] != None:
+				if not explored[i] and g[i] is not None:
 					f = g[i] + h[i]
 
-					if min_f == None or f < min_f:
+					if min_f is None or f < min_f:
 						min_f = f
 						u = i
 
-			if u == None:
+			if u is None:
 				break
 
 			if u == dest_node:
 				return self.compute_steps(pi, nodes, dest_node)
 
-			S[u] = True
+			explored[u] = True
 
 			for i, edge in enumerate(edges):
 				if u in edge:
 					v = edge[1] if u == edge[0] else edge[0]
 
-					if not S[v] and (g[v] == None or g[v] > g[u] + weights[i]):
+					if not explored[v] and (g[v] is None or g[v] > g[u] + weights[i]):
 						g[v] = g[u] + weights[i]
 						pi[v] = u
 
@@ -289,7 +295,7 @@ class FastestPathEuclidean(FastestPath):
 		Returns
 			smooth_steps (list): List of positions after smoothing steps.
 		"""
-		if steps == None:
+		if steps is None:
 			return None
 
 		smooth_steps = [steps[0]]
@@ -302,7 +308,7 @@ class FastestPathEuclidean(FastestPath):
 			theta0 = self.compute_angle(prev_pos, cur_pos)
 			theta1 = self.compute_angle(cur_pos, next_pos)
 
-			if theta0 != None and theta1 != None and abs(theta0 - theta1) > 0.01:
+			if theta0 is not None and theta1 is not None and abs(theta0 - theta1) > 0.01:
 				smooth_steps.append(cur_pos)
 
 		if len(steps) > 1:
@@ -310,7 +316,8 @@ class FastestPathEuclidean(FastestPath):
 
 		return smooth_steps
 
-	def compute_angle(self, p0, p1):
+	@staticmethod
+	def compute_angle(p0, p1):
 		"""Calculates the angle between the line formed from p0 to p1 and the x-axis in the counter-clockwise direction.
 
 		Args:
@@ -330,13 +337,14 @@ class FastestPathEuclidean(FastestPath):
 
 		return math.atan((p1[1] - p0[1]) / (p1[0] - p0[0]))
 
+
 class FastestPathManhattan(FastestPath):
 	def compute_fastest_path(self, source, dest, waypoint=None):
 		if waypoint:
 			steps0 = self.a_star(source, waypoint)
 			steps1 = self.a_star(waypoint, dest)
 
-			if steps0 == None or steps1 == None:
+			if steps0 is None or steps1 is None:
 				return None
 
 			combined_steps = steps0 + steps1[1:]
@@ -346,7 +354,7 @@ class FastestPathManhattan(FastestPath):
 		else:
 			steps = self.a_star(source, dest)
 
-			if steps == None:
+			if steps is None:
 				return None
 
 			return self.smooth_steps(steps)
@@ -362,9 +370,9 @@ class FastestPathManhattan(FastestPath):
 			steps (list): List of positions to move directly between to execute the path.
 		"""
 		nodes = [source]
-		g = [0] # Cost
+		g = [0]  # Cost
 		h = [manhattan_distance(source, dest)]
-		pi = [None] # Search tree in terms of parents
+		pi = [None]  # Search tree in terms of parents
 		p_queue = [0]
 
 		while len(p_queue) > 0:
@@ -409,7 +417,7 @@ class FastestPathManhattan(FastestPath):
 				new_cost = g[u] + 1
 
 				# Rotation cost
-				if not (pi[u] == None or (neighbour[0] == nodes[pi[u]][0]) or (neighbour[1] == nodes[pi[u]][1])):
+				if not (pi[u] is None or (neighbour[0] == nodes[pi[u]][0]) or (neighbour[1] == nodes[pi[u]][1])):
 					new_cost += 1
 
 				try:
@@ -435,7 +443,8 @@ class FastestPathManhattan(FastestPath):
 
 		return None
 
-	def smooth_steps(self, steps):
+	@staticmethod
+	def smooth_steps(steps):
 		"""Smooths the steps by removing intermediate steps with the same direction to prevent stops.
 
 		Args:
@@ -444,7 +453,7 @@ class FastestPathManhattan(FastestPath):
 		Returns
 			smooth_steps (list): List of positions after smoothing steps.
 		"""
-		if steps == None:
+		if steps is None:
 			return None
 
 		smooth_steps = [steps[0]]
@@ -462,22 +471,24 @@ class FastestPathManhattan(FastestPath):
 
 		return smooth_steps
 
+
 def main():
 	with open("maps/map3.txt", "r") as f:
 		strs = f.read().split("\n")
 
-	map = generate_map(*strs)
-	steps = FastestPathManhattan(map).compute_fastest_path(START_POS, GOAL_POS)
+	map_test = generate_map(*strs)
+	steps = FastestPathManhattan(map_test).compute_fastest_path(START_POS, GOAL_POS)
 
-	print_map(add_virtual_obstacles(map), steps)
+	print_map(add_virtual_obstacles(map_test), steps)
 
-	if steps == None:
+	if steps is None:
 		print("No path found")
 	else:
 		for i, step in enumerate(steps):
 			print("{}.".format(i + 1), step)
 
-	graphics.display_maze(map, add_virtual_obstacles(map), steps)
+	graphics.display_maze(map_test, add_virtual_obstacles(map_test), steps)
+
 
 if __name__ == "__main__":
 	main()

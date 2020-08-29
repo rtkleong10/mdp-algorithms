@@ -3,6 +3,7 @@ import socket
 HOST = "192.168.4.4"
 PORT = 8000
 
+
 class SocketClient:
 	def __init__(self):
 		self.conn = None
@@ -32,7 +33,6 @@ class SocketClient:
 		except Exception as e:
 			print("Unable to send message\nError:", e)
 
-
 	def receive(self, bufsize=1024):
 		try:
 			msg = self.conn.recv(bufsize)
@@ -41,12 +41,14 @@ class SocketClient:
 		except Exception as e:
 			print("Unable to receive message\nError:", e)
 
+
 def main():
 	sc = SocketClient()
 	sc.open_connection()
 	sc.send("Hello")
 	msg = sc.receive()
 	print(msg)
+
 
 if __name__ == '__main__':
 	main()
