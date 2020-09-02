@@ -1,19 +1,23 @@
 import math
-from constants import NUM_ROWS, NUM_COLS, Cell
+from constants import NUM_ROWS, NUM_COLS
+from enums import Cell
 from utils import print_map
+
 
 def hex_to_bin(hex_str):
 	bin_str = "{:b}".format(int(hex_str, 16))
 	num_pad_bits = len(hex_str) * 4 - len(bin_str)
 	return "0" * num_pad_bits + bin_str
 
+
 def bin_to_hex(bin_str):
 	hex_str = f"{int(bin_str, 2):X}"
 	num_pad_bits = math.ceil(len(bin_str) / 4) - len(hex_str)
 	return "0" * num_pad_bits + hex_str
 
+
 def generate_map(explored_str, obstacle_str):
-	map = []
+	map_grid = []
 
 	explored_bin = hex_to_bin(explored_str)
 	obstacle_bin = hex_to_bin(obstacle_str)
@@ -36,17 +40,18 @@ def generate_map(explored_str, obstacle_str):
 			else:
 				row.append(Cell.UNEXPLORED)
 
-		map.append(row)
+		map_grid.append(row)
 
-	return map
+	return map_grid
 
-def generate_map_descriptor(map):
+
+def generate_map_descriptor(map_grid):
 	explored_bin = "11"
 	obstacle_bin = ""
 
 	for r in range(NUM_ROWS):
 		for c in range(NUM_COLS):
-			cell = map[r][c]
+			cell = map_grid[r][c]
 
 			if cell == Cell.UNEXPLORED:
 				explored_bin += "0"
@@ -70,13 +75,15 @@ def generate_map_descriptor(map):
 
 	return explored_str, obstacle_str
 
+
 def main():
 	with open("maps/map1.txt", "r") as f:
 		strs = f.read().split("\n")
 
-	map = generate_map(*strs)
-	print(generate_map_descriptor(map))
-	print_map(map)
+	map_grid = generate_map(*strs)
+	print(generate_map_descriptor(map_grid))
+	print_map(map_grid)
+
 
 if __name__ == "__main__":
 	main()

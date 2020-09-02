@@ -1,4 +1,5 @@
-from constants import NUM_ROWS, NUM_COLS, Cell
+from constants import NUM_ROWS, NUM_COLS
+from enums import Cell
 import time
 
 def timeit(method):
@@ -35,6 +36,7 @@ def print_map(map, marked_points=None):
 
 		print()
 
+# TODO: Move to fastest path
 def add_virtual_obstacles(map_real):
 	"""Adds virtual obstacles to the map.
 
