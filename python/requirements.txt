@@ -1,4 +1,0 @@
-packaging==20.4
-pygame==2.0.0.dev4
-pyparsing==2.4.7
-six==1.15.0

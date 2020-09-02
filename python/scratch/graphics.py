@@ -1,6 +1,6 @@
 import pygame
 import fastest_path
-from constants import Cell
+from enums import Cell
 
 LINE_WIDTH = 10
 BLOCK_SIZE = 40

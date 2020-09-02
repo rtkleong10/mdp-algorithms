@@ -1,5 +1,6 @@
 import math
-from constants import NUM_ROWS, NUM_COLS, Cell
+from constants import NUM_ROWS, NUM_COLS
+from enums import Cell
 from utils import print_map
 
 
