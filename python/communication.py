@@ -1,8 +1,9 @@
 import socket
 
+
 class SocketClient:
 	HOST = "192.168.4.4"
-	PORT = 8000
+	PORT = 5143
 
 	def __init__(self):
 		self.conn = None
