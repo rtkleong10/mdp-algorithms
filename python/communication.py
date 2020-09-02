@@ -1,9 +1,17 @@
 import socket
+from enums import Movement, Direction
+from map_descriptor import generate_map_descriptor
 
-
-class SocketClient:
+class RPi:
 	HOST = "192.168.4.4"
 	PORT = 5143
+
+	# Message Types
+	EXPLORE_MSG = "EXPLORE"
+	FASTEST_PATH_MSG = "FASTEST_PATH"
+	SENSOR_MSG = "SENSOR"
+	MOVEMENT_MSG = "MOVEMENT"
+	TYPE_DIVIDER = ": "
 
 	def __init__(self):
 		self.conn = None
@@ -12,7 +20,7 @@ class SocketClient:
 	def open_connection(self):
 		try:
 			self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-			self.conn.connect((SocketClient.HOST, SocketClient.PORT))
+			self.conn.connect((RPi.HOST, RPi.PORT))
 			self.is_connected = True
 			print("Successfully established connection...")
 
@@ -45,16 +53,36 @@ class SocketClient:
 		except Exception as e:
 			print("Unable to receive message\nError:", e)
 
-# class RPi:
-# 	def move_robot(self, movement):
-# 		print("Moving robot...")
+	def send_movement(self, movement, pos, direction, map=None):
+		msg = "{}{}{} {}".format(
+			RPi.MOVEMENT_MSG,
+			RPi.TYPE_DIVIDER,
+			Movement.convert_to_string(movement),
+			pos,
+			Direction.convert_to_string(direction),
+		)
+
+		if map is not None:
+			msg += " " + ",".join(generate_map_descriptor(map))
+
+		self.send(msg)
+
+	def send_map(self, map):
+		msg = ",".join(generate_map_descriptor(map))
+		self.send(msg)
+
+	def receive_msg_with_type(self):
+		msg = self.receive()
+		return msg.split(RPi.TYPE_DIVIDER)
+
 
 def main():
-	sc = SocketClient()
-	sc.open_connection()
-	sc.send("Hello")
-	msg = sc.receive()
-	print(msg)
+	rpi = RPi()
+	rpi.open_connection()
+	rpi.send_movement(Movement.FORWARD, (2, 1), Direction.EAST)
+	msg_type, msg = rpi.receive_msg_with_type()
+	print(msg_type, msg)
+	rpi.close_connection()
 
 
 if __name__ == '__main__':

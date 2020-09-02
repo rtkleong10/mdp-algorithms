@@ -5,7 +5,7 @@ from enums import Cell, Direction
 from robots import SimulatorBot
 from map_descriptor import generate_map, generate_map_descriptor
 from fastest_path import FastestPath
-from exploration import Exploration
+from scratch.exploration import Exploration
 import threading
 
 
@@ -267,14 +267,14 @@ class GUI:
         self.robot = SimulatorBot(START_POS, Direction.EAST)
         fp = FastestPath(self.map, Direction.EAST, START_POS, GOAL_POS, waypoint)
 
-        # TODO: Add error message to GUI
-        if fp.movements is None:
-            print("No path found")
-            return
+        if fp.path_found:
+            for movement in fp.movements:
+                self.robot.move(movement)
+                self.display_robot()
 
-        for movement in fp.movements:
-            self.robot.move(movement)
-            self.display_robot()
+        else:
+            # TODO: Add error message to GUI
+            print("No path found")
 
     def reset(self):
         self.waypoint = None

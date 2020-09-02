@@ -33,6 +33,9 @@ def print_map(map, marked_points=None):
 
 				elif cell == Cell.OBSTACLE:
 					print("X", end="")
+				# TODO: Remove
+				else:
+					print(cell, end="")
 
 		print()
 

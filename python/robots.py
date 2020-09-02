@@ -96,8 +96,8 @@ class SimulatorBot(Robot):
 class Sensor:
 	# TODO: Add real ranges
 	# Exclusive at upper
-	SR_RANGE = (1, 5)
-	LR_RANGE = (1, 8)
+	SR_RANGE = (1, 4)
+	LR_RANGE = (2, 5)
 
 	def __init__(self, is_short_range, pos, direction):
 		self.is_short_range = is_short_range
