@@ -11,10 +11,10 @@ class Robot:
 		self.on_move = on_move
 		self.sensors = [
 			Sensor(False, (0, 1), Direction.NORTH),
-			Sensor(True, (1, 1), Direction.NORTH),
 			Sensor(True, (1, 1), Direction.EAST),
 			Sensor(True, (1, 0), Direction.EAST),
 			Sensor(True, (1, -1), Direction.EAST),
+			Sensor(True, (-1, -1), Direction.SOUTH),
 			Sensor(True, (1, -1), Direction.SOUTH),
 		]
 
@@ -60,7 +60,7 @@ class RealBot(Robot):
 		return self.get_sensor_values()
 
 class SimulatorBot(Robot):
-	def __init__(self, pos, direction, on_move):
+	def __init__(self, pos, direction, on_move=None):
 		super().__init__(pos, direction, on_move)
 		self.map = []
 

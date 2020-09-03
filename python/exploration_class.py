@@ -7,7 +7,7 @@ from robots import SimulatorBot
 
 
 class Exploration:
-	def __init__(self, robot, on_move):
+	def __init__(self, robot, on_move=None):
 		"""
 		Args:
 			robot (robots.Robot): Robot object to explore the map.
@@ -250,7 +250,7 @@ class Exploration:
 	# 				heapq.heappush(heap, [new_cost, move + 1, new_path])
 
 
-	def start_exporation(self):
+	def run_exploration(self):
 		self.sense_and_repaint()
 
 		while True:
@@ -301,10 +301,12 @@ class Exploration:
 			print_map(self.explored_map, [self.robot.pos])
 			print(movement)
 			self.robot.move(movement)
+			self.on_move()
 
 		print_map(self.explored_map, [self.robot.pos])
 
 	def sense_and_repaint(self):
+		self.on_move()
 		sensor_values = self.robot.sense()
 
 		for i in range(len(sensor_values)):
@@ -339,7 +341,7 @@ def main():
 	bot.map = map_real
 
 	exp = Exploration(bot, lambda : None)
-	exp.start_exporation()
+	exp.run_exploration()
 	print()
 	print_map(map_real)
 
