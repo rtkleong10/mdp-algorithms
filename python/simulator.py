@@ -5,7 +5,7 @@ from enums import Cell, Direction
 from robots import SimulatorBot
 from map_descriptor import generate_map, generate_map_descriptor
 from fastest_path import FastestPath
-from scratch.exploration import Exploration
+from exploration_class import Exploration
 import threading
 
 

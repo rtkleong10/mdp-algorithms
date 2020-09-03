@@ -11,10 +11,10 @@ class Robot:
 		self.on_move = on_move
 		self.sensors = [
 			Sensor(False, (0, 1), Direction.NORTH),
-			Sensor(True, (1, 1), Direction.NORTH),
 			Sensor(True, (1, 1), Direction.EAST),
 			Sensor(True, (1, 0), Direction.EAST),
 			Sensor(True, (1, -1), Direction.EAST),
+			Sensor(True, (-1, -1), Direction.SOUTH),
 			Sensor(True, (1, -1), Direction.SOUTH),
 		]
 
@@ -60,7 +60,7 @@ class RealBot(Robot):
 		return self.get_sensor_values()
 
 class SimulatorBot(Robot):
-	def __init__(self, pos, direction, on_move):
+	def __init__(self, pos, direction, on_move=None):
 		super().__init__(pos, direction, on_move)
 		self.map = []
 
@@ -82,7 +82,6 @@ class SimulatorBot(Robot):
 			for i in range(sensor_range[1]):
 				pos_to_check = (sensor_pos[0] + i * direction_vector[0], sensor_pos[1] + i * direction_vector[1])
 				if pos_to_check[0] < 0 or pos_to_check[0] >= NUM_COLS or pos_to_check[1] < 0 or pos_to_check[1] >= NUM_ROWS or self.map[pos_to_check[1]][pos_to_check[0]] == Cell.OBSTACLE:
-
 					if i < sensor_range[0]:
 						sensor_values.append(-1)
 					else:
