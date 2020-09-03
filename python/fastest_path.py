@@ -6,17 +6,17 @@ from map_descriptor import generate_map
 
 
 class FastestPath:
-	def __init__(self, map_real, direction, source, dest, waypoint=None):
+	def __init__(self, explored_map, direction, source, dest, waypoint=None):
 		"""Inits FastestPath algorithm by adding virtual boundaries to the map
 
 		Args:
-			map_real (list): 2D list of `constants.Cell` objects representing the map layout.
+			explored_map (list): 2D list of `constants.Cell` objects representing the map layout.
 			direction (Direction): Starting direction at the source.
 			source (tuple): Position of source.
 			dest (tuple): Position of destination.
 			waypoint (tuple): Position of waypoint (optional).
 		"""
-		self.map = add_virtual_obstacles(map_real)
+		self.map = add_virtual_obstacles(explored_map)
 
 		self.direction = direction
 		self.source = source

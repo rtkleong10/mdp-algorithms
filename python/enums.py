@@ -32,8 +32,24 @@ class Direction(IntEnum):
 			return "E"
 		elif direction == Direction.SOUTH:
 			return "S"
-		else:  # Direction.WEST
+		elif direction == Direction.WEST:
 			return "W"
+		else:
+			raise ValueError
+
+	@staticmethod
+	def convert_from_string(str):
+		if str == "N":
+			return Direction.NORTH
+		elif str == "E":
+			return Direction.EAST
+		elif str == "S":
+			return Direction.SOUTH
+		elif str == "W":
+			return Direction.WEST
+		else:
+			raise ValueError
+
 
 class Movement(IntEnum):
 	FORWARD = 0

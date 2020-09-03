@@ -240,20 +240,17 @@ class GUI:
 
         return None
 
-    def exploration(self):
-        self.reset()
-        self.robot.map = self.map
-        exp = Exploration(self.robot)
-        self.map = exp.explored_map
-        exp.sense_and_repaint()
+    def update_map(self):
         self.display_map()
         self.display_robot()
 
-        while not exp.is_complete():
-            exp.next_move()
-            self.display_map()
-            self.display_robot()
-
+    def exploration(self):
+        self.reset()
+        self.robot.map = self.map
+        exp = Exploration(self.robot, self.update_map)
+        self.map = exp.explored_map
+        self.update_map()
+        exp.run_exploration()
         print(generate_map_descriptor(exp.explored_map))
 
     def fastest_path(self):

@@ -3,9 +3,14 @@ from enums import Cell, Direction, Movement
 
 
 class Exploration:
-	def __init__(self, robot):
+	def __init__(self, robot, on_move=None):
 		self.robot = robot
 		self.explored_map = [[Cell.UNEXPLORED for c in range(NUM_COLS)] for r in range(NUM_ROWS)]
+
+		if on_move is None:
+			self.on_move = lambda : None
+		else:
+			self.on_move = on_move
 
 		for r in range(START_POS[1] - 1, START_POS[1] + 2):
 			for c in range(START_POS[0] - 1, START_POS[0] + 2):
@@ -17,12 +22,11 @@ class Exploration:
 
 		self.touch_goal = False
 
-	# def run_exploration(self):
-	# 	self.sense_and_repaint()
-	#
-	# 	for i in range(10):
-	# 		self.next_move()
-	#
+	def run_exploration(self):
+		self.sense_and_repaint()
+
+		while not self.is_complete():
+			self.next_move()
 
 	def sense_and_repaint(self):
 		sensor_values = self.robot.sense()
@@ -57,23 +61,31 @@ class Exploration:
 		if self.look_right():
 			self.robot.move(Movement.RIGHT)
 			self.sense_and_repaint()
+			self.on_move()
 			self.robot.move(Movement.FORWARD)
 			self.sense_and_repaint()
+			self.on_move()
 		elif self.look_front():
 			self.robot.move(Movement.FORWARD)
 			self.sense_and_repaint()
+			self.on_move()
 		elif self.look_left():
 			self.robot.move(Movement.LEFT)
 			self.sense_and_repaint()
+			self.on_move()
 			self.robot.move(Movement.FORWARD)
 			self.sense_and_repaint()
+			self.on_move()
 		elif self.look_back():
 			self.robot.move(Movement.RIGHT)
 			self.sense_and_repaint()
+			self.on_move()
 			self.robot.move(Movement.RIGHT)
 			self.sense_and_repaint()
+			self.on_move()
 			self.robot.move(Movement.FORWARD)
 			self.sense_and_repaint()
+			self.on_move()
 
 		if self.robot.pos == GOAL_POS:
 			self.touch_goal = True
