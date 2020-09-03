@@ -1,18 +1,30 @@
 import socket
+from threading import Thread
 
-
-class SocketClient:
-	HOST = "192.168.4.4"
+class RPi:
+	HOST = "192.168.0.104"
 	PORT = 5143
 
+	# Message Types
+	EXPLORE_MSG = "EXPLORE"
+	FASTEST_PATH_MSG = "FASTEST_PATH"
+	WAYPOINT_MSG = "WAYPOINT"
+	REPOSITION_MSG = "REPOSITION"
+	SENSOR_MSG = "SENSOR"
+	MOVEMENT_MSG = "MOVEMENT"
+	TYPE_DIVIDER = ": "
+
 	def __init__(self):
+		self.server = None
 		self.conn = None
 		self.is_connected = False
 
 	def open_connection(self):
 		try:
-			self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-			self.conn.connect((SocketClient.HOST, SocketClient.PORT))
+			self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.server.bind((RPi.HOST, RPi.PORT))
+			self.server.listen(1)
+			self.conn, addr = self.server.accept()
 			self.is_connected = True
 			print("Successfully established connection...")
 
@@ -21,7 +33,7 @@ class SocketClient:
 
 	def close_connection(self):
 		try:
-			self.conn.close()
+			self.server.close()
 			self.is_connected = False
 			print("Successfully closed connection")
 
@@ -45,16 +57,27 @@ class SocketClient:
 		except Exception as e:
 			print("Unable to receive message\nError:", e)
 
-# class RPi:
-# 	def move_robot(self, movement):
-# 		print("Moving robot...")
+	def receive_endlessly(self):
+		while True:
+			if self.is_connected:
+				self.receive()
+
 
 def main():
-	sc = SocketClient()
-	sc.open_connection()
-	sc.send("Hello")
-	msg = sc.receive()
-	print(msg)
+	rpi = RPi()
+	rpi.open_connection()
+	receive_thread = Thread(target=rpi.receive_endlessly, daemon=True)
+	receive_thread.start()
+
+	while True:
+		msg = input("Message: ")
+
+		if msg in ["q", "Q"]:
+			break
+
+		rpi.send(msg)
+
+	rpi.close_connection()
 
 
 if __name__ == '__main__':

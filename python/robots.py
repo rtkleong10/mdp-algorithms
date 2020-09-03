@@ -5,9 +5,10 @@ from enums import Direction, Movement, Cell
 # from communication import RPi
 
 class Robot:
-	def __init__(self, pos, direction):
+	def __init__(self, pos, direction, on_move=None):
 		self.pos = pos
 		self.direction = direction
+		self.on_move = on_move
 		self.sensors = [
 			Sensor(False, (0, 1), Direction.NORTH),
 			Sensor(True, (1, 1), Direction.NORTH),
@@ -18,6 +19,9 @@ class Robot:
 		]
 
 	def move(self, movement):
+		if self.on_move is not None:
+			self.on_move(movement)
+
 		if movement == Movement.FORWARD:
 			if self.direction == Direction.NORTH:
 				self.pos = (self.pos[0], self.pos[1] + 1)
@@ -48,19 +52,16 @@ class Robot:
 		pass
 
 class RealBot(Robot):
-	def move(self, movement):
-		# Move virtual state
-		super().move(movement)
-
-		# Send message to move real robot
-		# RPi.move_robot(movement)
+	def __init__(self, pos, direction, on_move, get_sensor_values):
+		super().__init__(pos, direction, on_move)
+		self.get_sensor_values = get_sensor_values
 
 	def sense(self):
-		pass
+		return self.get_sensor_values()
 
 class SimulatorBot(Robot):
-	def __init__(self, pos, direction):
-		super().__init__(pos, direction)
+	def __init__(self, pos, direction, on_move):
+		super().__init__(pos, direction, on_move)
 		self.map = []
 
 	def move(self, movement):
@@ -96,8 +97,8 @@ class SimulatorBot(Robot):
 class Sensor:
 	# TODO: Add real ranges
 	# Exclusive at upper
-	SR_RANGE = (1, 5)
-	LR_RANGE = (1, 8)
+	SR_RANGE = (1, 4)
+	LR_RANGE = (2, 5)
 
 	def __init__(self, is_short_range, pos, direction):
 		self.is_short_range = is_short_range
