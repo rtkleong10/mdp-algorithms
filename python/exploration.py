@@ -53,8 +53,8 @@ print_map(map)
 def sense(bot, bot_dir):
 	global obstacles, map
 	front = 2  # how far it can sense
-	left = 5  # same as above
-	right = 1  # same as above
+	left = 2  # same as above
+	right = 2  # same as above
 	for i in range(front):
 		if bot_dir == Direction.EAST:
 			x, y = bot[0] + 2 + i, bot[1]
@@ -272,66 +272,106 @@ def turnLeft(bot_dir):
 		return Direction.SOUTH
 
 
-# def findUnexplored(bot, bot_dir):
-# 	global map
-# 	for row in range(20):
-# 		for col in range(15):
-# 			if map[row][col] == Cell.UNEXPLORED:
-# 				pos_to_check = list(possiblePos([col, row]).keys())
-#
-# 				if len(pos_to_check) == 0:
-# 					continue
-#
-# 				best_pos = pos_to_check[0]
-# 				best_pos_h = FastestPath.heuristic_function(bot, best_pos)
-#
-# 				for pos in pos_to_check[1:]:
-# 					h = FastestPath.heuristic_function(bot, pos)
-#
-# 					if h < best_pos_h:
-# 						best_pos = pos
-# 						best_pos_h = h
-#
-# 				for r in range(len(map)):
-# 					for c in range(15):
-# 						if map[c][r]
-#
-# 				fp = FastestPath(map, bot_dir, bot, best_pos)
-# 				movements = fp.movements
-#
-# 				if movements == None:
-# 					print(best_pos, [col, row])
-# 					continue
-#
-# 				for movement in movements:
-# 					if movement == Movement.RIGHT:
-# 						print('turn right')
-# 						bot_dir = turnRight(bot_dir)
-# 						# sense and update map
-# 						sense(bot, bot_dir)
-# 					elif movement == Movement.FORWARD:
-# 						print('move forward')
-# 						bot = moveForward(bot, bot_dir)
-# 						# sense and update map
-# 						sense(bot, bot_dir)
-# 						map[bot[1]][bot[0]] = 3  # track bot path
-# 					elif movement == Movement.LEFT:
-# 						print('turn left')
-# 						bot_dir = turnLeft(bot_dir)
-# 						# sense and update map
-# 						sense(bot, bot_dir)
-# 					else:
-# 						print('turn back')
-# 						bot_dir = turnLeft(bot_dir)
-# 						# sense update map
-# 						sense(bot, bot_dir)
-# 						bot_dir = turnLeft(bot_dir)
-# 						# sense update map
-# 						sense(bot, bot_dir)
-#
-# 				return True
-#
-# 	return False
+def findUnexplored(bot, bot_dir):
+	global map
+	for row in range(20):
+		for col in range(15):
+			if map[row][col] == Cell.UNEXPLORED:
+				pos_to_check = list(possiblePos([col, row]).keys())
+
+				if len(pos_to_check) == 0:
+					continue
+
+				best_pos = pos_to_check[0]
+				best_pos_h = FastestPath.heuristic_function(bot, best_pos)
+
+				for pos in pos_to_check[1:]:
+					h = FastestPath.heuristic_function(bot, pos)
+
+					if h < best_pos_h:
+						best_pos = pos
+						best_pos_h = h
+
+				fp = FastestPath(map, bot_dir, bot, best_pos)
+				movements = fp.movements
+
+				if movements == None:
+					print(best_pos, [col, row])
+					continue
+				print(best_pos, [col, row], movements)
+				for movement in movements:
+					print_map(map, [tuple(bot)])
+					print(movement)
+					if movement == Movement.RIGHT:
+						print('turn right')
+						bot_dir = turnRight(bot_dir)
+						# sense and update map
+						sense(bot, bot_dir)
+					elif movement == Movement.FORWARD:
+						print('move forward')
+						bot = moveForward(bot, bot_dir)
+						# sense and update map
+						sense(bot, bot_dir)
+					elif movement == Movement.LEFT:
+						print('turn left')
+						bot_dir = turnLeft(bot_dir)
+						# sense and update map
+						sense(bot, bot_dir)
+					else:
+						print('turn back')
+						bot_dir = turnLeft(bot_dir)
+						# sense update map
+						sense(bot, bot_dir)
+						bot_dir = turnLeft(bot_dir)
+						# sense update map
+						sense(bot, bot_dir)
+
+						print('move forward')
+						bot = moveForward(bot, bot_dir)
+						# sense and update map
+						sense(bot, bot_dir)
+
+						print('turn back')
+						bot_dir = turnLeft(bot_dir)
+						# sense update map
+						sense(bot, bot_dir)
+						bot_dir = turnLeft(bot_dir)
+						# sense update map
+						sense(bot, bot_dir)
+
+				if best_pos[0] - col == 2:
+					correct_direction = Direction.WEST
+				elif best_pos[0] - col == -2:
+					correct_direction = Direction.EAST
+				if best_pos[1] - row == 2:
+					correct_direction = Direction.SOUTH
+				elif best_pos[1] - row == -2:
+					correct_direction = Direction.NORTH
+
+				num_rotate_right = (correct_direction - bot_dir) % 4
+
+				if num_rotate_right == 2:
+					print('turn back')
+					bot_dir = turnLeft(bot_dir)
+					# sense update map
+					sense(bot, bot_dir)
+					bot_dir = turnLeft(bot_dir)
+					# sense update map
+					sense(bot, bot_dir)
+				elif num_rotate_right == 1:
+					print('turn right')
+					bot_dir = turnRight(bot_dir)
+					# sense and update map
+					sense(bot, bot_dir)
+				elif num_rotate_right == 3:
+					print('turn left')
+					bot_dir = turnLeft(bot_dir)
+					# sense and update map
+					sense(bot, bot_dir)
+
+				return bot, True
+
+	return bot, False
 
 def isPosSafe(x, y):
 	global map
@@ -407,13 +447,11 @@ bot_dir = Direction.EAST
 # sense
 sense(bot, bot_dir)
 
-map[bot[1]][bot[0]] = 3  # track bot path
+# map[bot[1]][bot[0]] = 3  # track bot path
 while True:
-	print_map(map)
+	print_map(map, [tuple(bot)])
 	if check_enter_goal and bot == start:
-		can_find = findUnexplored(bot, bot_dir)
-		if not can_find:
-			break
+		break
 
 	if bot == goal:
 		check_enter_goal = True
@@ -427,7 +465,7 @@ while True:
 		bot = moveForward(bot, bot_dir)
 		# sense and update map
 		sense(bot, bot_dir)
-		map[bot[1]][bot[0]] = 3  # track bot path
+		# map[bot[1]][bot[0]] = 3  # track bot path
 	elif checkLeft(bot, bot_dir):
 		print('turn left')
 		bot_dir = turnLeft(bot_dir)
@@ -442,7 +480,13 @@ while True:
 		# sense update map
 		sense(bot, bot_dir)
 
-print_map(map_real)
+while True:
+	print_map(map, [tuple(bot)])
+	bot, can_find = findUnexplored(bot, bot_dir)
+	if not can_find:
+		break
+
+print_map(map_real, [tuple(bot)])
 
 if __name__ == '__main__':
 	pass
