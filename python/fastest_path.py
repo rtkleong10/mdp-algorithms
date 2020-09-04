@@ -1,4 +1,3 @@
-import math
 from constants import NUM_ROWS, NUM_COLS, START_POS, GOAL_POS
 from enums import Cell, Direction, Movement
 from utils import add_virtual_obstacles, print_map

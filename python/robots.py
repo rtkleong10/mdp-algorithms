@@ -2,7 +2,7 @@ import time
 
 from constants import NUM_ROWS, NUM_COLS
 from enums import Direction, Movement, Cell
-# from communication import RPi
+
 
 class Robot:
 	def __init__(self, pos, direction, on_move=None):
@@ -51,6 +51,7 @@ class Robot:
 	def sense(self):
 		pass
 
+
 class RealBot(Robot):
 	def __init__(self, pos, direction, on_move, get_sensor_values):
 		super().__init__(pos, direction, on_move)
@@ -59,14 +60,24 @@ class RealBot(Robot):
 	def sense(self):
 		return self.get_sensor_values()
 
+
 class SimulatorBot(Robot):
-	def __init__(self, pos, direction, on_move=None):
+	def __init__(self, pos, direction, on_move=None, time_interval=0.2):
 		super().__init__(pos, direction, on_move)
 		self.map = []
+		self.time_interval = time_interval
+
+	@property
+	def speed(self):
+		return 1 / self.time_interval
+
+	@speed.setter
+	def speed(self, speed):
+		self.time_interval = 1 / speed
 
 	def move(self, movement):
 		# Wait to simulate robot
-		time.sleep(0.3)
+		time.sleep(self.time_interval)
 
 		# Move virtual state
 		super().move(movement)
@@ -81,7 +92,8 @@ class SimulatorBot(Robot):
 
 			for i in range(sensor_range[1]):
 				pos_to_check = (sensor_pos[0] + i * direction_vector[0], sensor_pos[1] + i * direction_vector[1])
-				if pos_to_check[0] < 0 or pos_to_check[0] >= NUM_COLS or pos_to_check[1] < 0 or pos_to_check[1] >= NUM_ROWS or self.map[pos_to_check[1]][pos_to_check[0]] == Cell.OBSTACLE:
+				if pos_to_check[0] < 0 or pos_to_check[0] >= NUM_COLS or pos_to_check[1] < 0 or pos_to_check[1] >= NUM_ROWS or\
+					self.map[pos_to_check[1]][pos_to_check[0]] == Cell.OBSTACLE:
 					if i < sensor_range[0]:
 						sensor_values.append(-1)
 					else:
@@ -92,6 +104,7 @@ class SimulatorBot(Robot):
 				sensor_values.append(None)
 
 		return sensor_values
+
 
 class Sensor:
 	# TODO: Add real ranges
@@ -115,10 +128,10 @@ class Sensor:
 
 	def get_current_pos(self, robot):
 		if robot.direction == Direction.NORTH:
-			return (robot.pos[0] - self.pos[1], robot.pos[1] + self.pos[0])
+			return robot.pos[0] - self.pos[1], robot.pos[1] + self.pos[0]
 		elif robot.direction == Direction.EAST:
-			return (robot.pos[0] + self.pos[0], robot.pos[1] + self.pos[1])
+			return robot.pos[0] + self.pos[0], robot.pos[1] + self.pos[1]
 		elif robot.direction == Direction.SOUTH:
-			return (robot.pos[0] + self.pos[1], robot.pos[1] - self.pos[0])
-		else: # Direction.WEST
-			return (robot.pos[0] - self.pos[0], robot.pos[1] - self.pos[1])
+			return robot.pos[0] + self.pos[1], robot.pos[1] - self.pos[0]
+		else:  # Direction.WEST
+			return robot.pos[0] - self.pos[0], robot.pos[1] - self.pos[1]

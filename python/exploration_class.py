@@ -35,7 +35,7 @@ class Exploration:
 	def find_right_pos(self):
 		direction_vector = Direction.get_direction_vector((self.robot.direction + 1) % 4)
 		current_pos = self.robot.pos
-		return (current_pos[0] + direction_vector[0], current_pos[1] + direction_vector[1])
+		return current_pos[0] + direction_vector[0], current_pos[1] + direction_vector[1]
 
 	# check for surroundings
 	def check_surroundings(self, movement):
@@ -74,11 +74,14 @@ class Exploration:
 		obstacle = False
 
 		for x, y in self.check_surroundings(Movement.RIGHT):
-			if current_pos[1] + y < 0 or current_pos[1] + y > 19 or current_pos[0] + x < 0 or current_pos[0] + x > 14: # check wall
+			# check wall
+			if current_pos[1] + y < 0 or current_pos[1] + y > 19 or current_pos[0] + x < 0 or current_pos[0] + x > 14:
 				return False
-			elif self.explored_map[current_pos[1] + y][current_pos[0] + x] == Cell.UNEXPLORED: # check if right is unexplored
+			# check if right is unexplored
+			elif self.explored_map[current_pos[1] + y][current_pos[0] + x] == Cell.UNEXPLORED:
 				return True
-			elif self.explored_map[current_pos[1] + y][current_pos[0] + x] == Cell.OBSTACLE: # check for obstacles
+			# check for obstacles
+			elif self.explored_map[current_pos[1] + y][current_pos[0] + x] == Cell.OBSTACLE:
 				obstacle = True
 
 		if obstacle:
@@ -89,38 +92,39 @@ class Exploration:
 			return False
 		return True
 
-
 	# check if should move forward
 	def check_forward(self):
 		current_pos = self.robot.pos
 
 		for x, y in self.check_surroundings(Movement.FORWARD):
-			if current_pos[1] + y < 0 or current_pos[1] + y > 19 or current_pos[0] + x < 0 or current_pos[0] + x > 14: # check wall
+			# check wall
+			if current_pos[1] + y < 0 or current_pos[1] + y > 19 or current_pos[0] + x < 0 or current_pos[0] + x > 14:
 				return False
-			elif self.explored_map[current_pos[1] + y][current_pos[0] + x] == Cell.OBSTACLE: # check for obstacles
+			# check for obstacles
+			elif self.explored_map[current_pos[1] + y][current_pos[0] + x] == Cell.OBSTACLE:
 				return False
 
 		return True
-
 
 	# check if should turn left
 	def check_left(self):
 		current_pos = self.robot.pos
 
 		for x, y in self.check_surroundings(Movement.LEFT):
-			if current_pos[1] + y < 0 or current_pos[1] + y > 19 or current_pos[0] + x < 0 or current_pos[0] + x > 14: # check wall
+			# check wall
+			if current_pos[1] + y < 0 or current_pos[1] + y > 19 or current_pos[0] + x < 0 or current_pos[0] + x > 14:
 				return False
-			elif self.explored_map[current_pos[1] + y][current_pos[0] + x] == Cell.OBSTACLE: # check for obstacles
+			# check for obstacles
+			elif self.explored_map[current_pos[1] + y][current_pos[0] + x] == Cell.OBSTACLE:
 				return False
 
 		return True
-
 
 	# TODO: Look for the nearest unexplored cell
 	def find_unexplored(self):
 		for row in range(20):
 			for col in range(15):
-				if  self.explored_map[row][col] == Cell.UNEXPLORED:
+				if self.explored_map[row][col] == Cell.UNEXPLORED:
 					pos_to_check = list(self.possible_pos((col, row)).keys())
 
 					if len(pos_to_check) == 0:
@@ -139,7 +143,7 @@ class Exploration:
 					fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, best_pos)
 					movements = fp.movements
 
-					if movements == None:
+					if movements is None:
 						print(best_pos, (col, row))
 						continue
 					print(best_pos, (col, row), movements)
@@ -154,10 +158,12 @@ class Exploration:
 						correct_direction = Direction.WEST
 					elif best_pos[0] - col == -2:
 						correct_direction = Direction.EAST
-					if best_pos[1] - row == 2:
+					elif best_pos[1] - row == 2:
 						correct_direction = Direction.SOUTH
 					elif best_pos[1] - row == -2:
 						correct_direction = Direction.NORTH
+					else:
+						raise ValueError
 
 					num_rotate_right = (correct_direction - self.robot.direction) % 4
 
@@ -193,62 +199,15 @@ class Exploration:
 
 		return True
 
-
 	def possible_pos(self, goal):
 		d = {}
 		x, y = goal
 		arr = [(0, -2), (-1, -2), (1, -2), (0, 2), (-1, 2), (1, 2), (2, 0), (2, -1), (2, 1), (-2, 0), (-2, 1), (-2, -1)]
 		for i in arr:
-			X, Y = x + i[0], y + i[1]
-			if self.is_pos_safe(X, Y):
-				d[(X, Y)] = 1
+			pos = (x + i[0], y + i[1])
+			if self.is_pos_safe(*pos):
+				d[pos] = 1
 		return d
-
-
-	# def fastestPath(self, bot, goal):
-	# 	import heapq
-	# 	global map
-	# 	x, y = bot
-	# 	cost = abs(goal[0] - x) + abs(goal[1] - y)
-	# 	heap = [[cost, 0, [(x, y)]]]
-	# 	visited = {}
-	# 	possiblePos = {}
-	# 	possiblePos = self.possible_pos(goal)
-	# 	while heap:
-	# 		cost, move, path = heapq.heappop(heap)
-	# 		x, y = path[len(path) - 1]
-	# 		if possiblePos.get(x, y) != None:
-	# 			return path
-	# 		if len(path) > 1:
-	# 			px, py = path[len(path) - 2]
-	# 		else:
-	# 			px, py = x, y
-	# 		visited[(x, y)] = 1
-	# 		if x > 1:
-	# 			if visited.get((x - 1, y)) == None and  self.explored_map[y][x - 1] != Cell.OBSTACLE and  self.explored_map[y][x - 1] != Cell.UNEXPLORED:
-	# 				new_path = path + [(x - 1, y)]
-	# 				turnCost = abs(x - 1 - px) % 2 + abs(y - py) % 2
-	# 				new_cost = abs(goal[0] - (x - 1)) + abs(goal[1] - y) + move + 1 + turnCost
-	# 				heapq.heappush(heap, [new_cost, move + 1, new_path])
-	# 		if x < 13:
-	# 			if visited.get((x + 1, y)) == None and  self.explored_map[y][x + 1] != Cell.OBSTACLE and  self.explored_map[y][x + 1] != Cell.UNEXPLORED:
-	# 				new_path = path + [(x + 1, y)]
-	# 				turnCost = abs(x - 1 - px) % 2 + abs(y - py) % 2
-	# 				new_cost = abs(goal[0] - (x + 1)) + abs(goal[1] - y) + move + 1 + turnCost
-	# 				heapq.heappush(heap, [new_cost, move + 1, new_path])
-	# 		if y > 1:
-	# 			if visited.get((x, y - 1)) == None and  self.explored_map[y - 1][x] != Cell.OBSTACLE and  self.explored_map[y - 1][x] != Cell.UNEXPLORED:
-	# 				new_path = path + [(x, y - 1)]
-	# 				turnCost = abs(x - 1 - px) % 2 + abs(y - py) % 2
-	# 				new_cost = abs(goal[0] - x) + abs(goal[1] - (y - 1)) + move + 1 + turnCost
-	# 				heapq.heappush(heap, [new_cost, move + 1, new_path])
-	# 		if y < 18:
-	# 			if visited.get((x, y + 1)) == None and  self.explored_map[y + 1][x] != Cell.OBSTACLE and  self.explored_map[y + 1][x] != Cell.UNEXPLORED:
-	# 				new_path = path + [(x, y + 1)]
-	# 				turnCost = abs(x - 1 - px) % 2 + abs(y - py) % 2
-	# 				new_cost = abs(goal[0] - x) + abs(goal[1] - (y + 1)) + move + 1 + turnCost
-	# 				heapq.heappush(heap, [new_cost, move + 1, new_path])
-
 
 	def run_exploration(self):
 		self.sense_and_repaint()
@@ -294,7 +253,7 @@ class Exploration:
 		fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, START_POS)
 		movements = fp.movements
 
-		if movements == None:
+		if movements is None:
 			print("Can't go back to start?")
 
 		for movement in movements:
@@ -332,18 +291,20 @@ class Exploration:
 					if 0 <= pos_to_mark[0] <= NUM_COLS - 1 and 0 <= pos_to_mark[1] <= NUM_ROWS - 1:
 						self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.FREE if j != sensor_value else Cell.OBSTACLE
 
+
 def main():
 	with open("maps/sample_arena5.txt", "r") as f:
 		strs = f.read().split("\n")
 
 	map_real = generate_map(*strs)
-	bot = SimulatorBot(START_POS, Direction.EAST, lambda m : None)
+	bot = SimulatorBot(START_POS, Direction.EAST, lambda m: None)
 	bot.map = map_real
 
-	exp = Exploration(bot, lambda : None)
+	exp = Exploration(bot, lambda: None)
 	exp.run_exploration()
 	print()
 	print_map(map_real)
+
 
 if __name__ == '__main__':
 	main()
