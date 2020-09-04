@@ -37,6 +37,10 @@ class GUI:
         "Custom": None,
     }
 
+    # SPEED
+    MIN_SPEED = 1
+    MAX_SPEED = 10
+
     def __init__(self):
         with open("maps/sample_arena1.txt", "r") as f:
             strs = f.read().split("\n")
@@ -53,6 +57,8 @@ class GUI:
         self.waypoint = None
         self.robot = SimulatorBot(START_POS, Direction.EAST)
         self.current_thread = None
+        self.error_frame = None
+        self.robot_speed = None
 
     def start(self):
         self.root = tk.Tk()
@@ -67,9 +73,13 @@ class GUI:
         side_panel = tk.Frame(self.root)
         side_panel.pack(side=tk.LEFT, padx=20, pady=20)
 
+        # Error Frame
+        self.error_frame = tk.Frame(side_panel)
+        self.error_frame.pack(fill=tk.X, pady=10)
+
         # Algorithms Frame
         algorithms_frame = tk.Frame(side_panel)
-        algorithms_frame.pack(fill=tk.X, pady=5)
+        algorithms_frame.pack(fill=tk.X, pady=10)
 
         self.create_heading(algorithms_frame, "Algorithms").pack()
         self.create_button(algorithms_frame, "Exploration", lambda: self.execute_thread(self.exploration)) \
@@ -81,7 +91,7 @@ class GUI:
 
         # Map Select Frame
         map_select_frame = tk.Frame(side_panel)
-        map_select_frame.pack(pady=20)
+        map_select_frame.pack(fill=tk.X, pady=10)
 
         self.create_heading(map_select_frame, "Select Map").pack()
 
@@ -94,25 +104,44 @@ class GUI:
         self.mdf_input = tk.Entry(map_select_frame)
         self.mdf_input.pack(fill=tk.X)
 
-        tk.Button(map_select_frame, text="Load Map", font=Font(family="Helvetica", size=16),
-                  command=lambda: self.execute_thread(self.load_map), padx=10, pady=5).pack(fill=tk.X, pady=5)
+        self.create_button(map_select_frame, "Load Map", lambda: self.execute_thread(self.load_map), True)\
+            .pack(fill=tk.X)
 
         # Waypoint Frame
         waypoint_frame = tk.Frame(side_panel)
-        waypoint_frame.pack(fill=tk.X, pady=20)
+        waypoint_frame.pack(fill=tk.X, pady=10)
 
         self.create_heading(waypoint_frame, "Waypoint").pack()
 
         self.has_waypoint = tk.IntVar()
         tk.Checkbutton(waypoint_frame, text="Use waypoint", variable=self.has_waypoint).pack()
 
-        tk.Label(waypoint_frame, text="X").pack()
+        tk.Label(waypoint_frame, text="X").pack(side=tk.LEFT)
         self.waypoint_x = tk.Entry(waypoint_frame)
-        self.waypoint_x.pack(fill=tk.X)
+        self.waypoint_x.pack(fill=tk.X, side=tk.LEFT)
 
-        tk.Label(waypoint_frame, text="Y").pack()
+        tk.Label(waypoint_frame, text="Y").pack(side=tk.LEFT)
         self.waypoint_y = tk.Entry(waypoint_frame)
-        self.waypoint_y.pack(fill=tk.X)
+        self.waypoint_y.pack(fill=tk.X, side=tk.LEFT)
+
+        # Speed Setting
+        speed_frame = tk.Frame(side_panel)
+        speed_frame.pack(fill=tk.X, pady=10)
+
+        self.create_heading(speed_frame, "Robot Speed (Moves Per Second)").pack(fill=tk.X)
+
+        self.robot_speed = tk.IntVar()
+        self.robot_speed.set(5)
+        tk.Spinbox(speed_frame, from_=GUI.MIN_SPEED, to=GUI.MAX_SPEED, textvariable=self.robot_speed).pack(fill=tk.X)
+        self.create_button(speed_frame, "Update Speed", self.update_speed, True).pack(fill=tk.X)
+
+    def update_speed(self):
+        self.robot.speed = self.robot_speed.get()
+
+    def display_error_msg(self, text):
+        label = tk.Label(self.error_frame, text=text, fg=GUI.RED)
+        label.pack()
+        label.after(3000, lambda: label.destroy())
 
     @staticmethod
     def create_heading(master, text, is_small=False):
@@ -123,13 +152,13 @@ class GUI:
         )
 
     @staticmethod
-    def create_button(master, text, command):
+    def create_button(master, text, command, is_small=False):
         return tk.Button(
             master,
             text=text,
-            font=Font(family="Helvetica", size=18),
+            font=Font(family="Helvetica", size=16 if is_small else 18),
             command=command,
-            pady=10,
+            pady=5 if is_small else 10,
         )
 
     def display_canvas(self):
@@ -230,13 +259,14 @@ class GUI:
             x = int(self.waypoint_x.get())
             y = int(self.waypoint_y.get())
 
-            if x < 0 or x >= NUM_COLS or y < 0 or y >= NUM_ROWS:
+            if x < 0 or x >= NUM_COLS or y < 0 or y >= NUM_ROWS or self.map[y][x] != Cell.FREE:
+                self.display_error_msg("Invalid Waypoint")
                 return None
 
             return x, y
 
         except ValueError:
-            pass
+            self.display_error_msg("Invalid Waypoint")
 
         return None
 
@@ -254,6 +284,8 @@ class GUI:
         print(generate_map_descriptor(exp.explored_map))
 
     def fastest_path(self):
+        self.reset(False)
+
         waypoint = self.get_waypoint()
 
         if waypoint is not None:
@@ -261,7 +293,6 @@ class GUI:
             self.display_map()
             self.display_robot()
 
-        self.robot = SimulatorBot(START_POS, Direction.EAST)
         fp = FastestPath(self.map, Direction.EAST, START_POS, GOAL_POS, waypoint)
 
         if fp.path_found:
@@ -270,14 +301,17 @@ class GUI:
                 self.display_robot()
 
         else:
-            # TODO: Add error message to GUI
-            print("No path found")
+            self.display_error_msg("No path found")
 
-    def reset(self):
+    def reset(self, reset_map=True):
         self.waypoint = None
-        self.map = self.selected_map.copy()
-        self.display_map()
+
+        if reset_map:
+            self.map = self.selected_map.copy()
+            self.display_map()
+
         self.robot = SimulatorBot(START_POS, Direction.EAST)
+        self.update_speed()
         self.display_robot()
 
     def load_map(self):
@@ -294,10 +328,9 @@ class GUI:
             try:
                 self.selected_map = generate_map("F" * 75, self.mdf_input.get())
                 self.reset()
+
             except (IndexError, ValueError):
-                # TODO: Add error message to GUI
-                print("Invalid map descriptor")
-                pass
+                self.display_error_msg("Invalid Map Descriptor")
 
     def execute_thread(self, method):
         if self.current_thread is not None and self.current_thread.is_alive():
