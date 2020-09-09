@@ -4,10 +4,11 @@ from map_descriptor import generate_map
 from fastest_path import FastestPath
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
+import time
 
 
 class Exploration:
-	def __init__(self, robot, on_move=None):
+	def __init__(self, robot, on_move=None, coverage_limit=None, time_limit=None):
 		"""
 		Args:
 			robot (robots.Robot): Robot object to explore the map.
@@ -16,11 +17,26 @@ class Exploration:
 		self.entered_goal = False
 		self.prev_pos = None
 		self.explored_map = generate_unexplored_map()
+		self.start_time = time.time()
+		self.coverage_limit = coverage_limit
+		self.time_limit = time_limit
 
 		if on_move is None:
 			self.on_move = lambda: None
 		else:
 			self.on_move = on_move
+
+	@property
+	def coverage(self):
+		return 1 - (sum([row.count(Cell.UNEXPLORED) for row in self.explored_map]) / (NUM_ROWS * NUM_COLS))
+
+	@property
+	def time_elapsed(self):
+		return time.time() - self.start_time
+
+	@property
+	def is_limit_exceeded(self):
+		return (self.coverage_limit is not None and self.coverage_limit < self.coverage) or (self.time_limit is not None and self.time_limit < self.time_elapsed + (FastestPath.heuristic_function(self.robot.pos, START_POS) * 2) / self.robot.speed)
 
 	# find cord wrt the bot based on where it's facing
 	def find_right_pos(self):
@@ -130,6 +146,9 @@ class Exploration:
 		movements = fp.movements
 
 		for movement in movements:
+			if self.is_limit_exceeded:
+				return
+
 			print_map(self.explored_map, [self.robot.pos])
 			print(movement)
 			self.robot.move(movement)
@@ -190,9 +209,13 @@ class Exploration:
 		return d
 
 	def run_exploration(self):
+		self.start_time = time.time()
 		self.sense_and_repaint()
 
 		while True:
+			if self.is_limit_exceeded:
+				break
+
 			print_map(self.explored_map, [self.robot.pos])
 			if self.entered_goal and self.robot.pos == START_POS:
 				break
@@ -224,6 +247,9 @@ class Exploration:
 				self.sense_and_repaint()
 
 		while True:
+			if self.is_limit_exceeded:
+				break
+
 			print_map(self.explored_map, [self.robot.pos])
 			can_find = self.find_unexplored()
 			if not can_find:

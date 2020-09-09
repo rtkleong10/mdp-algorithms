@@ -18,6 +18,9 @@ class Robot:
 			Sensor(True, (1, -1), Direction.SOUTH),
 		]
 
+	@property
+	def speed(self):
+		return None
 
 	def move(self, movement):
 		if movement == Movement.FORWARD:
@@ -55,8 +58,13 @@ class Robot:
 
 class RealBot(Robot):
 	def __init__(self, pos, direction, on_move, get_sensor_values):
-		super().__init__(pos, direction, on_move)
+		super(RealBot, self).__init__(pos, direction, on_move)
 		self.get_sensor_values = get_sensor_values
+
+	# TODO: Add estimated speed
+	@property
+	def speed(self):
+		return 0.1
 
 	def sense(self):
 		return self.get_sensor_values()
@@ -64,7 +72,7 @@ class RealBot(Robot):
 
 class SimulatorBot(Robot):
 	def __init__(self, pos, direction, on_move=None, time_interval=0.2):
-		super().__init__(pos, direction, on_move)
+		super(SimulatorBot, self).__init__(pos, direction, on_move)
 		self.map = []
 		self.time_interval = time_interval
 

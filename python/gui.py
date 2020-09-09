@@ -1,12 +1,13 @@
 import tkinter as tk
 from tkinter.font import Font
+from threading import Thread
+
 from constants import NUM_ROWS, NUM_COLS, START_POS, GOAL_POS
 from enums import Cell, Direction
 from robots import SimulatorBot
 from map_descriptor import generate_map, generate_map_descriptor
 from fastest_path import FastestPath
 from exploration_class import Exploration
-import threading
 
 
 class GUI:
@@ -140,7 +141,6 @@ class GUI:
         self.update_robot()
 
 
-# TODO: Add timer & coverage % display
 class SimulatorGUI(GUI):
     # MAP OPTIONS
     MAP_OPTIONS = {
@@ -166,10 +166,17 @@ class SimulatorGUI(GUI):
 
         self.current_thread = None
         self.error_frame = None
+        self.exp = None
+
+        # Variables
+        self.exploration_coverage = None
+        self.exploration_time = None
 
         # Inputs
         self.selected_map_str = None
         self.mdf_input = None
+        self.coverage_limit_input = None
+        self.time_limit_input = None
         self.has_waypoint_input = None
         self.waypoint_x_input = None
         self.waypoint_y_input = None
@@ -212,6 +219,30 @@ class SimulatorGUI(GUI):
 
         self.create_button(map_select_frame, "Load Map", lambda: self.execute_thread(self.load_map), True)\
             .pack(fill=tk.X)
+
+        # Exploration Frame
+        exploration_frame = tk.Frame(side_panel)
+        exploration_frame.pack(fill=tk.X, pady=10)
+
+        self.create_heading(exploration_frame, "Exploration").pack(fill=tk.X)
+
+        self.exploration_coverage = tk.StringVar()
+        self.exploration_coverage.set("Coverage: 0%")
+        tk.Label(exploration_frame, textvariable=self.exploration_coverage).pack()
+
+        self.exploration_time = tk.StringVar()
+        self.exploration_time.set("Time: 00:00")
+        tk.Label(exploration_frame, textvariable=self.exploration_time).pack()
+
+        tk.Label(exploration_frame, text="Coverage Limit").pack()
+        self.coverage_limit_input = tk.IntVar()
+        self.coverage_limit_input.set(360)
+        tk.Spinbox(exploration_frame, from_=0, to=100, text=self.coverage_limit_input).pack(fill=tk.X)
+
+        tk.Label(exploration_frame, textvariable="Time Limit").pack()
+        self.time_limit_input = tk.IntVar()
+        self.time_limit_input.set(360)
+        tk.Spinbox(exploration_frame, from_=0, to=360, textvariable=self.time_limit_input).pack(fill=tk.X)
 
         # Waypoint Frame
         waypoint_frame = tk.Frame(side_panel)
@@ -275,11 +306,18 @@ class SimulatorGUI(GUI):
     def exploration(self):
         self.reset()
         self.robot.map = self.map
-        exp = Exploration(self.robot, self.update_canvas)
-        self.map = exp.explored_map
+        self.exp = Exploration(self.robot, self.update_canvas, coverage_limit=self.coverage_limit_input.get() / 100, time_limit=self.time_limit_input.get())
+        self.map = self.exp.explored_map
         self.update_canvas()
-        exp.run_exploration()
-        print(generate_map_descriptor(exp.explored_map))
+        self.exp.run_exploration()
+        print(generate_map_descriptor(self.exp.explored_map))
+
+    def update_canvas(self):
+        super(SimulatorGUI, self).update_canvas()
+        self.exploration_coverage.set("Coverage: {:.2f}%".format(self.exp.coverage * 100))
+        time_elapsed = round(self.exp.time_elapsed)
+
+        self.exploration_time.set("Time: {:02}:{:02}".format(time_elapsed // 60, time_elapsed % 60))
 
     def fastest_path(self):
         self.reset(False)
@@ -353,7 +391,7 @@ class SimulatorGUI(GUI):
         if self.current_thread is not None and self.current_thread.is_alive():
             return
 
-        self.current_thread = threading.Thread(target=method, daemon=True)
+        self.current_thread = Thread(target=method, daemon=True)
         self.current_thread.start()
 
 
