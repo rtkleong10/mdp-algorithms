@@ -125,7 +125,7 @@ class Exploration:
 		for row in range(20):
 			for col in range(15):
 				if self.explored_map[row][col] == Cell.UNEXPLORED:
-					pos_to_check = list(self.possible_pos((col, row)).keys())
+					pos_to_check = list(self.possible_pos((col, row)))
 
 					if len(pos_to_check) == 0:
 						continue
@@ -200,13 +200,14 @@ class Exploration:
 		return True
 
 	def possible_pos(self, goal):
-		d = {}
+		d = set()
 		x, y = goal
 		arr = [(0, -2), (-1, -2), (1, -2), (0, 2), (-1, 2), (1, 2), (2, 0), (2, -1), (2, 1), (-2, 0), (-2, 1), (-2, -1)]
 		for i in arr:
 			pos = (x + i[0], y + i[1])
 			if self.is_pos_safe(*pos):
-				d[pos] = 1
+				d.add(pos)
+
 		return d
 
 	def run_exploration(self):
