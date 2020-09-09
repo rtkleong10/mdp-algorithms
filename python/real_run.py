@@ -6,6 +6,7 @@ from robots import RealBot
 from enums import Direction
 from scratch.exploration import Exploration
 from map_descriptor import generate_map
+from utils import generate_unexplored_map
 import re
 
 
@@ -20,6 +21,7 @@ class RealRun:
 		# self.explored_map = None
 		self.waypoint = None
 		self.rpi = RPi()
+		self.explored_map = generate_unexplored_map()
 
 	def receive_sensor(self):
 		while True:

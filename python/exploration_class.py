@@ -1,5 +1,5 @@
 from enums import Cell, Direction, Movement
-from utils import print_map
+from utils import print_map, generate_unexplored_map
 from map_descriptor import generate_map
 from fastest_path import FastestPath
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
@@ -15,16 +15,7 @@ class Exploration:
 		self.robot = robot
 		self.entered_goal = False
 		self.prev_pos = None
-
-		self.explored_map = [[Cell.UNEXPLORED for c in range(NUM_COLS)] for r in range(NUM_ROWS)]
-
-		for r in range(START_POS[1] - 1, START_POS[1] + 2):
-			for c in range(START_POS[0] - 1, START_POS[0] + 2):
-				self.explored_map[r][c] = Cell.FREE
-
-		for r in range(GOAL_POS[1] - 1, GOAL_POS[1] + 2):
-			for c in range(GOAL_POS[0] - 1, GOAL_POS[0] + 2):
-				self.explored_map[r][c] = Cell.FREE
+		self.explored_map = generate_unexplored_map()
 
 		if on_move is None:
 			self.on_move = lambda: None
