@@ -120,73 +120,61 @@ class Exploration:
 
 		return True
 
-	# TODO: Look for the nearest unexplored cell
 	def find_unexplored(self):
-		for row in range(20):
-			for col in range(15):
-				if self.explored_map[row][col] == Cell.UNEXPLORED:
-					pos_to_check = list(self.possible_pos((col, row)))
+		pos_to_check = {}
 
-					if len(pos_to_check) == 0:
-						continue
+		for r in range(20):
+			for c in range(15):
+				if self.explored_map[r][c] == Cell.UNEXPLORED:
+					for pos in self.possible_pos((c, r)):
+						pos_to_check[pos] = (c, r)
 
-					best_pos = pos_to_check[0]
-					best_pos_h = FastestPath.heuristic_function(self.robot.pos, best_pos)
+		if len(pos_to_check) == 0:
+			return False
 
-					for pos in pos_to_check[1:]:
-						h = FastestPath.heuristic_function(self.robot.pos, pos)
+		best_pos = min(pos_to_check.keys(), key=lambda pos: FastestPath.heuristic_function(self.robot.pos, pos))
+		unexplored_pos = pos_to_check[best_pos]
 
-						if h < best_pos_h:
-							best_pos = pos
-							best_pos_h = h
+		fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, best_pos)
+		movements = fp.movements
 
-					fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, best_pos)
-					movements = fp.movements
+		for movement in movements:
+			print_map(self.explored_map, [self.robot.pos])
+			print(movement)
+			self.robot.move(movement)
+			self.sense_and_repaint()
 
-					if movements is None:
-						print(best_pos, (col, row))
-						continue
-					print(best_pos, (col, row), movements)
+		if best_pos[0] - unexplored_pos[0] == 2:
+			correct_direction = Direction.WEST
+		elif best_pos[0] - unexplored_pos[0] == -2:
+			correct_direction = Direction.EAST
+		elif best_pos[1] - unexplored_pos[1] == 2:
+			correct_direction = Direction.SOUTH
+		elif best_pos[1] - unexplored_pos[1] == -2:
+			correct_direction = Direction.NORTH
+		else:
+			raise ValueError
 
-					for movement in movements:
-						print_map(self.explored_map, [self.robot.pos])
-						print(movement)
-						self.robot.move(movement)
-						self.sense_and_repaint()
+		num_rotate_right = (correct_direction - self.robot.direction) % 4
 
-					if best_pos[0] - col == 2:
-						correct_direction = Direction.WEST
-					elif best_pos[0] - col == -2:
-						correct_direction = Direction.EAST
-					elif best_pos[1] - row == 2:
-						correct_direction = Direction.SOUTH
-					elif best_pos[1] - row == -2:
-						correct_direction = Direction.NORTH
-					else:
-						raise ValueError
+		if num_rotate_right == 2:
+			print('turn back')
+			self.robot.move(Movement.RIGHT)
+			self.sense_and_repaint()
+			self.robot.move(Movement.RIGHT)
+			self.sense_and_repaint()
 
-					num_rotate_right = (correct_direction - self.robot.direction) % 4
+		elif num_rotate_right == 1:
+			print('turn right')
+			self.robot.move(Movement.RIGHT)
+			self.sense_and_repaint()
 
-					if num_rotate_right == 2:
-						print('turn back')
-						self.robot.move(Movement.RIGHT)
-						self.sense_and_repaint()
-						self.robot.move(Movement.RIGHT)
-						self.sense_and_repaint()
+		elif num_rotate_right == 3:
+			print('turn left')
+			self.robot.move(Movement.LEFT)
+			self.sense_and_repaint()
 
-					elif num_rotate_right == 1:
-						print('turn right')
-						self.robot.move(Movement.RIGHT)
-						self.sense_and_repaint()
-
-					elif num_rotate_right == 3:
-						print('turn left')
-						self.robot.move(Movement.LEFT)
-						self.sense_and_repaint()
-
-					return True
-
-		return False
+		return True
 
 	def is_pos_safe(self, x, y):
 		if x < 1 or x > 13 or y < 1 or y > 18:
