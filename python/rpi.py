@@ -13,7 +13,7 @@ class RPi:
 	FASTEST_PATH_MSG = "FASTEST_PATH"
 	WAYPOINT_MSG = "WAYPOINT"
 	REPOSITION_MSG = "REPOSITION"
-	SENSOR_MSG = "SENSOR"
+	SENSE_MSG = "SENSE"
 	MOVEMENT_MSG = "MOVEMENT"
 	TYPE_DIVIDER = ": "
 
@@ -76,6 +76,19 @@ class RPi:
 		msg = ",".join(generate_map_descriptor(map))
 		self.send(msg)
 
+	def receive_sensor_values(self):
+		self.send(RPi.SENSE_MSG)
+
+		msg = self.receive()
+		m = re.match(r"(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)", msg)
+
+		if m is None:
+			print("Unable to receive sensor input")
+			return []
+
+		sensor_values = [int(m.group(i)) for i in range(1, 7)]
+		return sensor_values
+
 	def receive_msg_with_type(self):
 		msg = self.receive()
 		m = re.match(rf"(.+){RPi.TYPE_DIVIDER}(.+)", msg)
@@ -89,11 +102,10 @@ class RPi:
 def main():
 	rpi = RPi()
 	rpi.open_connection()
-	rpi.send_movement(Movement.FORWARD, (2, 1), Direction.EAST)
-	msg_type, msg = rpi.receive_msg_with_type()
-	print(msg_type, msg)
+	rpi.send("Hello there")
+	msg = rpi.receive()
+	print(msg)
 	rpi.close_connection()
-
 
 if __name__ == '__main__':
 	main()

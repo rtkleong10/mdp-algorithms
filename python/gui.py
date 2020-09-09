@@ -357,6 +357,11 @@ class SimulatorGUI(GUI):
         self.current_thread.start()
 
 
+class RealGUI(GUI):
+    def __init__(self, robot):
+        super(RealGUI, self).__init__(None, robot)
+
+
 if __name__ == '__main__':
     gui = SimulatorGUI()
     gui.start()

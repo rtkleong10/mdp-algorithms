@@ -18,10 +18,8 @@ class Robot:
 			Sensor(True, (1, -1), Direction.SOUTH),
 		]
 
-	def move(self, movement):
-		if self.on_move is not None:
-			self.on_move(movement)
 
+	def move(self, movement):
 		if movement == Movement.FORWARD:
 			if self.direction == Direction.NORTH:
 				self.pos = (self.pos[0], self.pos[1] + 1)
@@ -47,6 +45,9 @@ class Robot:
 
 		elif movement == Movement.LEFT:
 			self.direction = Direction((self.direction - 1) % 4)
+
+		if self.on_move is not None:
+			self.on_move(movement)
 
 	def sense(self):
 		pass
