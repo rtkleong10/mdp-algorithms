@@ -71,7 +71,7 @@ class FastestPath:
 		"""
 		nodes = [source]
 		g = [0]  # Cost
-		h = [self.heuristic_function(source, dest)]
+		h = [FastestPath.heuristic_function(source, dest)]
 		pi = [None]  # Search tree in terms of parents
 		p_queue = [0]
 
@@ -122,7 +122,7 @@ class FastestPath:
 					# Add new node
 					nodes.append(neighbour)
 					g.append(new_cost)
-					h.append(self.heuristic_function(neighbour, dest))
+					h.append(FastestPath.heuristic_function(neighbour, dest))
 					pi.append(u)
 					p_queue.append(len(nodes) - 1)
 
