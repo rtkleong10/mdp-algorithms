@@ -77,15 +77,7 @@ class FastestPath:
 
 		while len(p_queue) > 0:
 			# Remove top of priority queue
-			min_f = g[p_queue[0]] + h[p_queue[0]]
-			u = p_queue[0]
-
-			for i in p_queue[1:]:
-				f = g[i] + h[i]
-
-				if f < min_f:
-					min_f = f
-					u = i
+			u = min(p_queue, key=lambda node: g[node] + h[node])
 
 			# Check if destination reached
 			if nodes[u] == dest:
