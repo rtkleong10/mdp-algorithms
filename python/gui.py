@@ -239,7 +239,7 @@ class SimulatorGUI(GUI):
         self.coverage_limit_input.set(360)
         tk.Spinbox(exploration_frame, from_=0, to=100, text=self.coverage_limit_input).pack(fill=tk.X)
 
-        tk.Label(exploration_frame, textvariable="Time Limit").pack()
+        tk.Label(exploration_frame, text="Time Limit").pack()
         self.time_limit_input = tk.IntVar()
         self.time_limit_input.set(360)
         tk.Spinbox(exploration_frame, from_=0, to=360, textvariable=self.time_limit_input).pack(fill=tk.X)
