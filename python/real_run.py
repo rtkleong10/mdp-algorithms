@@ -5,8 +5,8 @@ from threading import Thread
 from constants import START_POS, GOAL_POS
 from robots import RealBot
 from enums import Direction
-from map_descriptor import generate_map
-from gui import RealGUI
+# from map_descriptor import generate_map
+from gui import GUI
 from utils import generate_unexplored_map
 import re
 
@@ -20,8 +20,8 @@ class RealRun:
 			on_move=self.on_move,
 			get_sensor_values=self.rpi.receive_sensor_values,
 		)
-		self.gui = RealGUI(self.robot)
 		self.explored_map = generate_unexplored_map()
+		self.gui = GUI(self.explored_map, self.robot)
 		self.waypoint = None
 
 		# with open("maps/map3.txt", "r") as f:
@@ -54,6 +54,7 @@ class RealRun:
 				print("Waypoint:", self.waypoint)
 
 				self.gui.waypoint = self.waypoint
+				self.gui.map = self.explored_map
 				self.update_gui()
 
 			# Reposition
@@ -77,7 +78,6 @@ class RealRun:
 					self.robot.move(movement)
 
 	def display_gui(self):
-		self.gui.map = self.explored_map
 		self.gui.start()
 
 	def update_gui(self):

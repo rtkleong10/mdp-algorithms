@@ -213,11 +213,11 @@ class SimulatorGUI(GUI):
         self.selected_map_str.set(map_option_strs[0])
         tk.OptionMenu(map_select_frame, self.selected_map_str, *map_option_strs).pack()
 
-        self.create_heading(map_select_frame, "If custom, please specify second MDF string", is_small=True).pack()
+        tk.Label(map_select_frame, text="If custom, please specify second MDF string").pack()
         self.mdf_input = tk.Entry(map_select_frame)
         self.mdf_input.pack(fill=tk.X)
 
-        self.create_button(map_select_frame, "Load Map", lambda: self.execute_thread(self.load_map), True)\
+        self.create_button(map_select_frame, "Load Map", lambda: self.execute_thread(self.load_map))\
             .pack(fill=tk.X)
 
         # Exploration Frame
@@ -275,7 +275,7 @@ class SimulatorGUI(GUI):
         self.robot_speed.set(5)
         tk.Spinbox(speed_frame, from_=SimulatorGUI.MIN_SPEED, to=SimulatorGUI.MAX_SPEED, textvariable=self.robot_speed)\
             .pack(fill=tk.X)
-        self.create_button(speed_frame, "Update Speed", self.update_speed, True).pack(fill=tk.X)
+        self.create_button(speed_frame, "Update Speed", self.update_speed).pack(fill=tk.X)
 
     @staticmethod
     def create_heading(master, text, is_small=False):
@@ -286,13 +286,13 @@ class SimulatorGUI(GUI):
         )
 
     @staticmethod
-    def create_button(master, text, command, is_small=False):
+    def create_button(master, text, command):
         return tk.Button(
             master,
             text=text,
-            font=Font(family="Helvetica", size=16 if is_small else 18),
+            font=Font(family="Helvetica", size=16),
             command=command,
-            pady=5 if is_small else 10,
+            pady=5,
         )
 
     def display_error_msg(self, text):
@@ -301,7 +301,16 @@ class SimulatorGUI(GUI):
         label.after(3000, lambda: label.destroy())
 
     def update_speed(self):
-        self.robot.speed = self.robot_speed.get()
+        try:
+            robot_speed = self.robot_speed.get()
+
+            if SimulatorGUI.MIN_SPEED <= robot_speed <= SimulatorGUI.MAX_SPEED:
+                self.robot.speed = robot_speed
+            else:
+                self.display_error_msg("Invalid speed")
+
+        except Exception:
+            self.display_error_msg("Invalid speed")
 
     def exploration(self):
         self.reset()
@@ -347,7 +356,6 @@ class SimulatorGUI(GUI):
             self.update_map()
 
         self.robot = SimulatorBot(START_POS, Direction.EAST)
-        self.update_speed()
         self.update_robot()
 
     def load_map(self):
@@ -393,11 +401,6 @@ class SimulatorGUI(GUI):
 
         self.current_thread = Thread(target=method, daemon=True)
         self.current_thread.start()
-
-
-class RealGUI(GUI):
-    def __init__(self, robot):
-        super(RealGUI, self).__init__(None, robot)
 
 
 if __name__ == '__main__':
