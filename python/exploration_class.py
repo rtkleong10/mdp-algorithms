@@ -149,10 +149,7 @@ class Exploration:
 			if self.is_limit_exceeded:
 				return
 
-			print_map(self.explored_map, [self.robot.pos])
-			print(movement)
-			self.robot.move(movement)
-			self.sense_and_repaint()
+			self.move(movement)
 
 		if best_pos[0] - unexplored_pos[0] == 2:
 			correct_direction = Direction.WEST
@@ -168,21 +165,14 @@ class Exploration:
 		num_rotate_right = (correct_direction - self.robot.direction) % 4
 
 		if num_rotate_right == 2:
-			print('turn back')
-			self.robot.move(Movement.RIGHT)
-			self.sense_and_repaint()
-			self.robot.move(Movement.RIGHT)
-			self.sense_and_repaint()
+			self.move(Movement.RIGHT)
+			self.move(Movement.RIGHT)
 
 		elif num_rotate_right == 1:
-			print('turn right')
-			self.robot.move(Movement.RIGHT)
-			self.sense_and_repaint()
+			self.move(Movement.RIGHT)
 
 		elif num_rotate_right == 3:
-			print('turn left')
-			self.robot.move(Movement.LEFT)
-			self.sense_and_repaint()
+			self.move(Movement.LEFT)
 
 		return True
 
@@ -224,33 +214,22 @@ class Exploration:
 				self.entered_goal = True
 
 			if self.check_right():
-				print('turn right')
-				self.robot.move(Movement.RIGHT)
-				self.sense_and_repaint()
+				self.move(Movement.RIGHT)
 
 			elif self.check_forward():
-				print('move forward')
-				self.prev_pos = self.robot.pos
-				self.robot.move(Movement.FORWARD)
-				self.sense_and_repaint()
+				self.move(Movement.FORWARD)
 
 			elif self.check_left():
-				print('turn left')
-				self.robot.move(Movement.LEFT)
-				self.sense_and_repaint()
+				self.move(Movement.LEFT)
 
 			else:
-				print('turn back')
-				self.robot.move(Movement.RIGHT)
-				self.sense_and_repaint()
-				self.robot.move(Movement.RIGHT)
-				self.sense_and_repaint()
+				self.move(Movement.RIGHT)
+				self.move(Movement.RIGHT)
 
 		while True:
 			if self.is_limit_exceeded:
 				break
 
-			print_map(self.explored_map, [self.robot.pos])
 			can_find = self.find_unexplored()
 			if not can_find:
 				break
@@ -263,15 +242,20 @@ class Exploration:
 			print("Can't go back to start?")
 
 		for movement in movements:
-			print_map(self.explored_map, [self.robot.pos])
-			print(movement)
-			self.robot.move(movement)
-			self.on_move()
+			self.move(movement)
 
-		print_map(self.explored_map, [self.robot.pos])
+	def move(self, movement, sense=True):
+		if movement == Movement.FORWARD or movement == Movement.BACKWARD:
+			self.prev_pos = self.robot.pos
+
+		self.robot.move(movement)
+
+		if sense:
+			self.sense_and_repaint()
+
+		self.on_move()
 
 	def sense_and_repaint(self):
-		self.on_move()
 		sensor_values = self.robot.sense()
 
 		for i in range(len(sensor_values)):
@@ -308,7 +292,7 @@ def main():
 
 	exp = Exploration(bot, lambda: None)
 	exp.run_exploration()
-	print()
+	print_map(exp.explored_map)
 	print_map(map_real)
 
 

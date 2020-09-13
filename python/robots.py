@@ -99,7 +99,7 @@ class SimulatorBot(Robot):
 			sensor_pos = sensor.get_current_pos(self)
 			sensor_range = sensor.get_range()
 
-			for i in range(sensor_range[1]):
+			for i in range(1, sensor_range[1]):
 				pos_to_check = (sensor_pos[0] + i * direction_vector[0], sensor_pos[1] + i * direction_vector[1])
 				if pos_to_check[0] < 0 or pos_to_check[0] >= NUM_COLS or pos_to_check[1] < 0 or pos_to_check[1] >= NUM_ROWS or\
 					self.map[pos_to_check[1]][pos_to_check[0]] == Cell.OBSTACLE:
@@ -118,7 +118,7 @@ class SimulatorBot(Robot):
 class Sensor:
 	# TODO: Add real ranges
 	# Exclusive at upper
-	SR_RANGE = (1, 4)
+	SR_RANGE = (1, 3)
 	LR_RANGE = (2, 5)
 
 	def __init__(self, is_short_range, pos, direction):
