@@ -1,4 +1,4 @@
-from constants import NUM_ROWS, NUM_COLS
+from constants import NUM_ROWS, NUM_COLS, START_POS, GOAL_POS
 from enums import Cell
 import time
 
@@ -81,3 +81,17 @@ def add_virtual_obstacles(map_real):
 						map_virtual[y][x] = Cell.OBSTACLE
 
 	return map_virtual
+
+
+def generate_unexplored_map():
+	unexplored_map = [[Cell.UNEXPLORED for c in range(NUM_COLS)] for r in range(NUM_ROWS)]
+
+	for r in range(START_POS[1] - 1, START_POS[1] + 2):
+		for c in range(START_POS[0] - 1, START_POS[0] + 2):
+			unexplored_map[r][c] = Cell.FREE
+
+	for r in range(GOAL_POS[1] - 1, GOAL_POS[1] + 2):
+		for c in range(GOAL_POS[0] - 1, GOAL_POS[0] + 2):
+			unexplored_map[r][c] = Cell.FREE
+
+	return unexplored_map

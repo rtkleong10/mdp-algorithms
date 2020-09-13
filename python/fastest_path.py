@@ -1,4 +1,3 @@
-import math
 from constants import NUM_ROWS, NUM_COLS, START_POS, GOAL_POS
 from enums import Cell, Direction, Movement
 from utils import add_virtual_obstacles, print_map
@@ -72,21 +71,13 @@ class FastestPath:
 		"""
 		nodes = [source]
 		g = [0]  # Cost
-		h = [self.heuristic_function(source, dest)]
+		h = [FastestPath.heuristic_function(source, dest)]
 		pi = [None]  # Search tree in terms of parents
 		p_queue = [0]
 
 		while len(p_queue) > 0:
 			# Remove top of priority queue
-			min_f = g[p_queue[0]] + h[p_queue[0]]
-			u = p_queue[0]
-
-			for i in p_queue[1:]:
-				f = g[i] + h[i]
-
-				if f < min_f:
-					min_f = f
-					u = i
+			u = min(p_queue, key=lambda node: g[node] + h[node])
 
 			# Check if destination reached
 			if nodes[u] == dest:
@@ -123,7 +114,7 @@ class FastestPath:
 					# Add new node
 					nodes.append(neighbour)
 					g.append(new_cost)
-					h.append(self.heuristic_function(neighbour, dest))
+					h.append(FastestPath.heuristic_function(neighbour, dest))
 					pi.append(u)
 					p_queue.append(len(nodes) - 1)
 

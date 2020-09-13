@@ -2,7 +2,7 @@ import time
 
 from constants import NUM_ROWS, NUM_COLS
 from enums import Direction, Movement, Cell
-# from communication import RPi
+
 
 class Robot:
 	def __init__(self, pos, direction, on_move=None):
@@ -18,10 +18,11 @@ class Robot:
 			Sensor(True, (1, -1), Direction.SOUTH),
 		]
 
-	def move(self, movement):
-		if self.on_move is not None:
-			self.on_move(movement)
+	@property
+	def speed(self):
+		return None
 
+	def move(self, movement):
 		if movement == Movement.FORWARD:
 			if self.direction == Direction.NORTH:
 				self.pos = (self.pos[0], self.pos[1] + 1)
@@ -48,25 +49,44 @@ class Robot:
 		elif movement == Movement.LEFT:
 			self.direction = Direction((self.direction - 1) % 4)
 
+		if self.on_move is not None:
+			self.on_move(movement)
+
 	def sense(self):
 		pass
 
+
 class RealBot(Robot):
 	def __init__(self, pos, direction, on_move, get_sensor_values):
-		super().__init__(pos, direction, on_move)
+		super(RealBot, self).__init__(pos, direction, on_move)
 		self.get_sensor_values = get_sensor_values
+
+	# TODO: Add estimated speed
+	@property
+	def speed(self):
+		return 0.1
 
 	def sense(self):
 		return self.get_sensor_values()
 
+
 class SimulatorBot(Robot):
-	def __init__(self, pos, direction, on_move=None):
-		super().__init__(pos, direction, on_move)
+	def __init__(self, pos, direction, on_move=None, time_interval=0.2):
+		super(SimulatorBot, self).__init__(pos, direction, on_move)
 		self.map = []
+		self.time_interval = time_interval
+
+	@property
+	def speed(self):
+		return 1 / self.time_interval
+
+	@speed.setter
+	def speed(self, speed):
+		self.time_interval = 1 / speed
 
 	def move(self, movement):
 		# Wait to simulate robot
-		time.sleep(0.3)
+		time.sleep(self.time_interval)
 
 		# Move virtual state
 		super().move(movement)
@@ -79,9 +99,10 @@ class SimulatorBot(Robot):
 			sensor_pos = sensor.get_current_pos(self)
 			sensor_range = sensor.get_range()
 
-			for i in range(sensor_range[1]):
+			for i in range(1, sensor_range[1]):
 				pos_to_check = (sensor_pos[0] + i * direction_vector[0], sensor_pos[1] + i * direction_vector[1])
-				if pos_to_check[0] < 0 or pos_to_check[0] >= NUM_COLS or pos_to_check[1] < 0 or pos_to_check[1] >= NUM_ROWS or self.map[pos_to_check[1]][pos_to_check[0]] == Cell.OBSTACLE:
+				if pos_to_check[0] < 0 or pos_to_check[0] >= NUM_COLS or pos_to_check[1] < 0 or pos_to_check[1] >= NUM_ROWS or\
+					self.map[pos_to_check[1]][pos_to_check[0]] == Cell.OBSTACLE:
 					if i < sensor_range[0]:
 						sensor_values.append(-1)
 					else:
@@ -93,10 +114,11 @@ class SimulatorBot(Robot):
 
 		return sensor_values
 
+
 class Sensor:
 	# TODO: Add real ranges
 	# Exclusive at upper
-	SR_RANGE = (1, 4)
+	SR_RANGE = (1, 3)
 	LR_RANGE = (2, 5)
 
 	def __init__(self, is_short_range, pos, direction):
@@ -115,10 +137,10 @@ class Sensor:
 
 	def get_current_pos(self, robot):
 		if robot.direction == Direction.NORTH:
-			return (robot.pos[0] - self.pos[1], robot.pos[1] + self.pos[0])
+			return robot.pos[0] - self.pos[1], robot.pos[1] + self.pos[0]
 		elif robot.direction == Direction.EAST:
-			return (robot.pos[0] + self.pos[0], robot.pos[1] + self.pos[1])
+			return robot.pos[0] + self.pos[0], robot.pos[1] + self.pos[1]
 		elif robot.direction == Direction.SOUTH:
-			return (robot.pos[0] + self.pos[1], robot.pos[1] - self.pos[0])
-		else: # Direction.WEST
-			return (robot.pos[0] - self.pos[0], robot.pos[1] - self.pos[1])
+			return robot.pos[0] + self.pos[1], robot.pos[1] - self.pos[0]
+		else:  # Direction.WEST
+			return robot.pos[0] - self.pos[0], robot.pos[1] - self.pos[1]
