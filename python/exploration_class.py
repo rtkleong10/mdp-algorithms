@@ -40,7 +40,10 @@ class Exploration:
 
 	@property
 	def is_limit_exceeded(self):
-		return (self.coverage_limit is not None and self.coverage_limit < self.coverage) or (self.time_limit is not None and self.time_limit < self.time_elapsed + (FastestPath.heuristic_function(self.robot.pos, START_POS) * 2) / self.robot.speed)
+		is_coverage_limit_exceeded = self.coverage_limit is not None and self.coverage_limit < self.coverage
+		is_time_limit_exceeded = self.time_limit is not None and self.time_limit < self.time_elapsed + (FastestPath.heuristic_function(self.robot.pos, START_POS) * 2) / self.robot.speed
+
+		return is_coverage_limit_exceeded or is_time_limit_exceeded
 
 	# find cord wrt the bot based on where it's facing
 	def find_right_pos(self):
