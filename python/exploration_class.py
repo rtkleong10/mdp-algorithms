@@ -8,23 +8,27 @@ import time
 
 
 class Exploration:
-	def __init__(self, robot, on_move=None, coverage_limit=None, time_limit=None):
+	def __init__(self, robot, on_update_map=None, explored_map=None, coverage_limit=None, time_limit=None):
 		"""
 		Args:
 			robot (robots.Robot): Robot object to explore the map.
+			on_update_map (function): Function called whenever the map is updated.
+			explored_map (list): 2D list of Cell objects representing the map.
+			coverage_limit (int): Coverage limit as a % (e.g. 100 means 100%).
+			time_limit (int): Time limit in seconds.
 		"""
 		self.robot = robot
 		self.entered_goal = False
 		self.prev_pos = None
-		self.explored_map = generate_unexplored_map()
+		self.explored_map = explored_map if explored_map is not None else generate_unexplored_map()
 		self.start_time = time.time()
 		self.coverage_limit = coverage_limit
 		self.time_limit = time_limit
 
-		if on_move is None:
-			self.on_move = lambda: None
+		if on_update_map is None:
+			self.on_update_map = lambda: None
 		else:
-			self.on_move = on_move
+			self.on_update_map = on_update_map
 
 	@property
 	def coverage(self):
@@ -36,7 +40,10 @@ class Exploration:
 
 	@property
 	def is_limit_exceeded(self):
-		return (self.coverage_limit is not None and self.coverage_limit < self.coverage) or (self.time_limit is not None and self.time_limit < self.time_elapsed + (FastestPath.heuristic_function(self.robot.pos, START_POS) * 2) / self.robot.speed)
+		is_coverage_limit_exceeded = self.coverage_limit is not None and self.coverage_limit < self.coverage
+		is_time_limit_exceeded = self.time_limit is not None and self.time_limit < self.time_elapsed + (FastestPath.heuristic_function(self.robot.pos, START_POS) * 2) / self.robot.speed
+
+		return is_coverage_limit_exceeded or is_time_limit_exceeded
 
 	# find cord wrt the bot based on where it's facing
 	def find_right_pos(self):
@@ -46,34 +53,23 @@ class Exploration:
 
 	# check for surroundings
 	def check_surroundings(self, movement):
-		if self.robot.direction == Direction.EAST:
-			if movement == Movement.RIGHT:
-				return (0, -2), (-1, -2), (1, -2)
-			elif movement == Movement.LEFT:
-				return (0, 2), (-1, 2), (1, 2)
-			elif movement == Movement.FORWARD:
-				return (2, 0), (2, -1), (2, 1)
-		elif self.robot.direction == Direction.NORTH:
-			if movement == Movement.RIGHT:
-				return (2, 0), (2, -1), (2, 1)
-			elif movement == Movement.LEFT:
-				return (-2, 0), (-2, 1), (-2, -1)
-			elif movement == Movement.FORWARD:
-				return (0, 2), (-1, 2), (1, 2)
-		elif self.robot.direction == Direction.SOUTH:
-			if movement == Movement.RIGHT:
-				return (-2, 0), (-2, 1), (-2, -1)
-			elif movement == Movement.LEFT:
-				return (2, 0), (2, -1), (2, 1)
-			elif movement == Movement.FORWARD:
-				return (0, -2), (-1, -2), (1, -2)
-		elif self.robot.direction == Direction.WEST:
-			if movement == Movement.RIGHT:
-				return (0, 2), (-1, 2), (1, 2)
-			elif movement == Movement.LEFT:
-				return (0, -2), (-1, -2), (1, -2)
-			elif movement == Movement.FORWARD:
-				return (-2, 0), (-2, 1), (-2, -1)
+		check_direction = self.robot.direction
+
+		if movement == Movement.RIGHT:
+			check_direction = (check_direction + 1) % 4
+		elif movement == Movement.LEFT:
+			check_direction = (check_direction - 1) % 4
+		elif movement == Movement.BACKWARD:
+			check_direction = (check_direction + 2) % 4
+
+		if check_direction == Direction.NORTH:
+			return (0, 2), (-1, 2), (1, 2)
+		elif check_direction == Direction.EAST:
+			return (2, 0), (2, -1), (2, 1)
+		elif check_direction == Direction.SOUTH:
+			return (0, -2), (-1, -2), (1, -2)
+		elif check_direction == Direction.WEST:
+			return (-2, 0), (-2, 1), (-2, -1)
 
 	# check if should turn right
 	def check_right(self):
@@ -253,11 +249,11 @@ class Exploration:
 		if sense:
 			self.sense_and_repaint()
 
-		self.on_move()
-
 	def sense_and_repaint(self):
+		self.on_update_map()
 		sensor_values = self.robot.sense()
 
+		# TODO: Handle empty sensor_values (sensor_values = [])
 		for i in range(len(sensor_values)):
 			sensor_value = sensor_values[i]
 			sensor = self.robot.sensors[i]
@@ -275,7 +271,7 @@ class Exploration:
 						self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.FREE
 
 			else:
-				for j in range(sensor.get_range()[0], sensor_value + 1):
+				for j in range(sensor.get_range()[0], min(sensor.get_range()[1], sensor_value + 1)):
 					pos_to_mark = (current_sensor_pos[0] + j * direction_vector[0], current_sensor_pos[1] + j * direction_vector[1])
 
 					if 0 <= pos_to_mark[0] <= NUM_COLS - 1 and 0 <= pos_to_mark[1] <= NUM_ROWS - 1:

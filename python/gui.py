@@ -162,7 +162,10 @@ class SimulatorGUI(GUI):
 
         self.selected_map = generate_map(*strs)
 
-        super(SimulatorGUI, self).__init__(self.selected_map.copy(), SimulatorBot(START_POS, Direction.EAST))
+        super(SimulatorGUI, self).__init__(
+            self.selected_map.copy(),
+            SimulatorBot(START_POS, Direction.EAST, on_move=lambda movement=None: self.update_robot())
+        )
 
         self.current_thread = None
         self.error_frame = None
@@ -335,15 +338,13 @@ class SimulatorGUI(GUI):
 
         if waypoint is not None:
             self.waypoint = waypoint
-            self.update_map()
-            self.update_robot()
+            self.update_canvas()
 
         fp = FastestPath(self.map, Direction.EAST, START_POS, GOAL_POS, waypoint)
 
         if fp.path_found:
             for movement in fp.movements:
                 self.robot.move(movement)
-                self.update_robot()
 
         else:
             self.display_error_msg("No path found")
@@ -355,7 +356,8 @@ class SimulatorGUI(GUI):
             self.map = self.selected_map.copy()
             self.update_map()
 
-        self.robot = SimulatorBot(START_POS, Direction.EAST)
+        self.robot.pos = START_POS
+        self.robot.direction = Direction.EAST
         self.update_robot()
 
     def load_map(self):
@@ -370,7 +372,7 @@ class SimulatorGUI(GUI):
 
         else:
             try:
-                self.selected_map = generate_map("F" * 75, self.mdf_input.get())
+                self.selected_map = generate_map("F" * 76, self.mdf_input.get())
                 self.reset()
 
             except (IndexError, ValueError):

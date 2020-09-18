@@ -2,9 +2,9 @@ from rpi import RPi
 from fastest_path import FastestPath
 from exploration_class import Exploration
 from threading import Thread
-from constants import START_POS, GOAL_POS
+from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import RealBot
-from enums import Direction
+from enums import Direction, Cell
 # from map_descriptor import generate_map
 from gui import GUI
 from utils import generate_unexplored_map
@@ -37,8 +37,7 @@ class RealRun:
 
 			# Exploration
 			if msg_type == RPi.EXPLORE_MSG:
-				exp = Exploration(self.robot, self.on_update)
-				self.explored_map = exp.explored_map
+				exp = Exploration(self.robot, self.on_update, explored_map=self.explored_map, time_limit=360)
 				exp.run_exploration()
 
 			# Waypoint
@@ -54,7 +53,6 @@ class RealRun:
 				print("Waypoint:", self.waypoint)
 
 				self.gui.waypoint = self.waypoint
-				self.gui.map = self.explored_map
 				self.update_gui()
 
 			# Reposition
@@ -66,8 +64,15 @@ class RealRun:
 					print("Unable to reposition")
 					continue
 
-				self.robot.pos = (int(m.group(1)), int(m.group(2)))
+				c = int(m.group(1))
+				r = int(m.group(2))
+				self.robot.pos = (c, r)
 				self.robot.direction = Direction.convert_from_string(m.group(3))
+
+				for i in range(max(0, r - 1), min(NUM_ROWS, r + 2)):
+					for j in range(max(0, c - 1), min(NUM_COLS, c + 2)):
+						self.explored_map[i][j] = Cell.FREE
+
 				self.update_gui()
 
 			# Fastest Path
@@ -81,7 +86,6 @@ class RealRun:
 		self.gui.start()
 
 	def update_gui(self):
-		self.gui.map = self.explored_map
 		self.gui.update_canvas()
 
 	def on_move(self, movement):

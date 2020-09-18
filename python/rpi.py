@@ -5,7 +5,7 @@ import re
 
 class RPi:
 	HOST = "192.168.4.4"
-	# HOST = "192.168.0.104"
+	# HOST = "127.0.0.1"
 	PORT = 5143
 
 	# Message Types
@@ -77,6 +77,7 @@ class RPi:
 		self.send(msg)
 
 	def receive_sensor_values(self):
+		# Sample message: 1, 1, 1, 1, 1, 1
 		self.send(RPi.SENSE_MSG)
 
 		msg = self.receive()
@@ -86,7 +87,12 @@ class RPi:
 			print("Unable to receive sensor input")
 			return []
 
-		sensor_values = [int(m.group(i)) for i in range(1, 7)]
+		sensor_values = []
+
+		for i in range(1, 7):
+			num = int(m.group(i))
+			sensor_values.append(None if num == 0 else num)
+
 		return sensor_values
 
 	def receive_msg_with_type(self):

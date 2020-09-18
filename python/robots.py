@@ -6,9 +6,15 @@ from enums import Direction, Movement, Cell
 
 class Robot:
 	def __init__(self, pos, direction, on_move=None):
+		"""
+		Args:
+			pos (tuple): Position of robot.
+			direction (enums.Direction): Direction of robot.
+			on_move (function): Callback function for when the robot moves.
+		"""
 		self.pos = pos
 		self.direction = direction
-		self.on_move = on_move
+		self.on_move = on_move if on_move is not None else lambda movement: None
 		self.sensors = [
 			Sensor(False, (0, 1), Direction.NORTH),
 			Sensor(True, (1, 1), Direction.EAST),
@@ -49,8 +55,7 @@ class Robot:
 		elif movement == Movement.LEFT:
 			self.direction = Direction((self.direction - 1) % 4)
 
-		if self.on_move is not None:
-			self.on_move(movement)
+		self.on_move(movement)
 
 	def sense(self):
 		pass
@@ -117,9 +122,9 @@ class SimulatorBot(Robot):
 
 class Sensor:
 	# TODO: Add real ranges
-	# Exclusive at upper
+	# Inclusive at lower, exclusive at upper
 	SR_RANGE = (1, 3)
-	LR_RANGE = (2, 5)
+	LR_RANGE = (1, 5)
 
 	def __init__(self, is_short_range, pos, direction):
 		self.is_short_range = is_short_range
