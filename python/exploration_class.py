@@ -278,7 +278,7 @@ class Exploration:
 						self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.FREE
 
 			else:
-				for j in range(sensor.get_range()[0], sensor_value + 1):
+				for j in range(sensor.get_range()[0], min(sensor.get_range()[1], sensor_value + 1)):
 					pos_to_mark = (current_sensor_pos[0] + j * direction_vector[0], current_sensor_pos[1] + j * direction_vector[1])
 
 					if 0 <= pos_to_mark[0] <= NUM_COLS - 1 and 0 <= pos_to_mark[1] <= NUM_ROWS - 1:
