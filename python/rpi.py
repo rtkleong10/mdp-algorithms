@@ -5,7 +5,7 @@ import re
 
 class RPi:
 	HOST = "192.168.4.4"
-	# HOST = "192.168.0.104"
+	# HOST = "127.0.0.1"
 	PORT = 5143
 
 	# Message Types

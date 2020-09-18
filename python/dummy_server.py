@@ -1,8 +1,8 @@
 import socket
 from threading import Thread
 
-class RPi:
-	HOST = "192.168.0.104"
+class Server:
+	HOST = "127.0.0.1"
 	PORT = 5143
 
 	# Message Types
@@ -22,7 +22,7 @@ class RPi:
 	def open_connection(self):
 		try:
 			self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			self.server.bind((RPi.HOST, RPi.PORT))
+			self.server.bind((Server.HOST, Server.PORT))
 			self.server.listen(1)
 			self.conn, addr = self.server.accept()
 			self.is_connected = True
@@ -64,9 +64,10 @@ class RPi:
 
 
 def main():
-	rpi = RPi()
-	rpi.open_connection()
-	receive_thread = Thread(target=rpi.receive_endlessly, daemon=True)
+	print("Turning on server...")
+	s = Server()
+	s.open_connection()
+	receive_thread = Thread(target=s.receive_endlessly, daemon=True)
 	receive_thread.start()
 
 	while True:
@@ -75,9 +76,9 @@ def main():
 		if msg in ["q", "Q"]:
 			break
 
-		rpi.send(msg)
+		s.send(msg)
 
-	rpi.close_connection()
+	s.close_connection()
 
 
 if __name__ == '__main__':
