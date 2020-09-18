@@ -370,7 +370,7 @@ class SimulatorGUI(GUI):
 
         else:
             try:
-                self.selected_map = generate_map("F" * 75, self.mdf_input.get())
+                self.selected_map = generate_map("F" * 76, self.mdf_input.get())
                 self.reset()
 
             except (IndexError, ValueError):
