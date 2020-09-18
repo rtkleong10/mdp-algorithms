@@ -53,34 +53,23 @@ class Exploration:
 
 	# check for surroundings
 	def check_surroundings(self, movement):
-		if self.robot.direction == Direction.EAST:
-			if movement == Movement.RIGHT:
-				return (0, -2), (-1, -2), (1, -2)
-			elif movement == Movement.LEFT:
-				return (0, 2), (-1, 2), (1, 2)
-			elif movement == Movement.FORWARD:
-				return (2, 0), (2, -1), (2, 1)
-		elif self.robot.direction == Direction.NORTH:
-			if movement == Movement.RIGHT:
-				return (2, 0), (2, -1), (2, 1)
-			elif movement == Movement.LEFT:
-				return (-2, 0), (-2, 1), (-2, -1)
-			elif movement == Movement.FORWARD:
-				return (0, 2), (-1, 2), (1, 2)
-		elif self.robot.direction == Direction.SOUTH:
-			if movement == Movement.RIGHT:
-				return (-2, 0), (-2, 1), (-2, -1)
-			elif movement == Movement.LEFT:
-				return (2, 0), (2, -1), (2, 1)
-			elif movement == Movement.FORWARD:
-				return (0, -2), (-1, -2), (1, -2)
-		elif self.robot.direction == Direction.WEST:
-			if movement == Movement.RIGHT:
-				return (0, 2), (-1, 2), (1, 2)
-			elif movement == Movement.LEFT:
-				return (0, -2), (-1, -2), (1, -2)
-			elif movement == Movement.FORWARD:
-				return (-2, 0), (-2, 1), (-2, -1)
+		check_direction = self.robot.direction
+
+		if movement == Movement.RIGHT:
+			check_direction = (check_direction + 1) % 4
+		elif movement == Movement.LEFT:
+			check_direction = (check_direction - 1) % 4
+		elif movement == Movement.BACKWARD:
+			check_direction = (check_direction + 2) % 4
+
+		if check_direction == Direction.NORTH:
+			return (0, 2), (-1, 2), (1, 2)
+		elif check_direction == Direction.EAST:
+			return (2, 0), (2, -1), (2, 1)
+		elif check_direction == Direction.SOUTH:
+			return (0, -2), (-1, -2), (1, -2)
+		elif check_direction == Direction.WEST:
+			return (-2, 0), (-2, 1), (-2, -1)
 
 	# check if should turn right
 	def check_right(self):
