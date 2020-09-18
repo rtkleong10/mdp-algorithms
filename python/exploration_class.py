@@ -8,23 +8,27 @@ import time
 
 
 class Exploration:
-	def __init__(self, robot, on_move=None, coverage_limit=None, time_limit=None):
+	def __init__(self, robot, on_update_map=None, explored_map=None, coverage_limit=None, time_limit=None):
 		"""
 		Args:
 			robot (robots.Robot): Robot object to explore the map.
+			on_update_map (function): Function called whenever the map is updated.
+			explored_map (list): 2D list of Cell objects representing the map.
+			coverage_limit (int): Coverage limit as a % (e.g. 100 means 100%).
+			time_limit (int): Time limit in seconds.
 		"""
 		self.robot = robot
 		self.entered_goal = False
 		self.prev_pos = None
-		self.explored_map = generate_unexplored_map()
+		self.explored_map = explored_map if explored_map is not None else generate_unexplored_map()
 		self.start_time = time.time()
 		self.coverage_limit = coverage_limit
 		self.time_limit = time_limit
 
-		if on_move is None:
-			self.on_move = lambda: None
+		if on_update_map is None:
+			self.on_update_map = lambda: None
 		else:
-			self.on_move = on_move
+			self.on_update_map = on_update_map
 
 	@property
 	def coverage(self):
@@ -253,9 +257,8 @@ class Exploration:
 		if sense:
 			self.sense_and_repaint()
 
-		self.on_move()
-
 	def sense_and_repaint(self):
+		self.on_update_map()
 		sensor_values = self.robot.sense()
 
 		for i in range(len(sensor_values)):

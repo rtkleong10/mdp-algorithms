@@ -37,8 +37,7 @@ class RealRun:
 
 			# Exploration
 			if msg_type == RPi.EXPLORE_MSG:
-				exp = Exploration(self.robot, self.on_update)
-				self.explored_map = exp.explored_map
+				exp = Exploration(self.robot, self.on_update, explored_map=self.explored_map, time_limit=360)
 				exp.run_exploration()
 
 			# Waypoint
@@ -54,7 +53,6 @@ class RealRun:
 				print("Waypoint:", self.waypoint)
 
 				self.gui.waypoint = self.waypoint
-				self.gui.map = self.explored_map
 				self.update_gui()
 
 			# Reposition
@@ -81,7 +79,6 @@ class RealRun:
 		self.gui.start()
 
 	def update_gui(self):
-		self.gui.map = self.explored_map
 		self.gui.update_canvas()
 
 	def on_move(self, movement):
