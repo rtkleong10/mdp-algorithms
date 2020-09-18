@@ -37,13 +37,14 @@ class RealRun:
 
 			# Exploration
 			if msg_type == RPi.EXPLORE_MSG:
+				# EXPLORE
 				exp = Exploration(self.robot, self.on_update, explored_map=self.explored_map, time_limit=360)
 				exp.run_exploration()
 
 			# Waypoint
 			elif msg_type == RPi.WAYPOINT_MSG:
-				# Sample message: (1, 1)
-				m = re.match(r"\((\d+),\s*(\d+)\)", msg)
+				# Sample message: W:1,1
+				m = re.match(r"\(?(\d+),\s*(\d+\)?)", msg)
 
 				if m is None:
 					print("Unable to update waypoint")
@@ -57,8 +58,8 @@ class RealRun:
 
 			# Reposition
 			elif msg_type == RPi.REPOSITION_MSG:
-				# Sample message: (1, 1) N
-				m = re.match(r"\((\d+),\s*(\d+)\)\s*([NSEW])", msg)
+				# Sample message: M:1,1 N
+				m = re.match(r"\(?(\d+),\s*(\d+)\)?\s*([NSEW])", msg)
 
 				if m is None:
 					print("Unable to reposition")

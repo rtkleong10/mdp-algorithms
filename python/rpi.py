@@ -6,15 +6,16 @@ import re
 class RPi:
 	HOST = "192.168.4.4"
 	# HOST = "127.0.0.1"
-	PORT = 5143
+	PORT = 4444
 
 	# Message Types
-	EXPLORE_MSG = "EXPLORE"
-	FASTEST_PATH_MSG = "FASTEST_PATH"
-	WAYPOINT_MSG = "WAYPOINT"
-	REPOSITION_MSG = "REPOSITION"
-	SENSE_MSG = "SENSE"
-	MOVEMENT_MSG = "MOVEMENT"
+	EXPLORE_MSG = "E"
+	FASTEST_PATH_MSG = "F"
+	WAYPOINT_MSG = "W"
+	REPOSITION_MSG = "R"
+	SENSE_MSG = "S"
+	MOVEMENT_MSG = "M"
+	MDF_MSG = "D"
 	TYPE_DIVIDER = ": "
 
 	def __init__(self):
@@ -59,11 +60,12 @@ class RPi:
 			print("Unable to receive message\nError:", e)
 
 	def send_movement(self, movement, robot, explored_map=None):
-		msg = "{}{}{}; {}; {}".format(
+		msg = "{}{}{} {}{} {}".format(
 			RPi.MOVEMENT_MSG,
 			RPi.TYPE_DIVIDER,
 			Movement.convert_to_string(movement),
-			robot.pos,
+			robot.pos[0],
+			robot.pos[1],
 			Direction.convert_to_string(robot.direction),
 		)
 

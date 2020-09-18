@@ -3,7 +3,7 @@ from threading import Thread
 
 class Server:
 	HOST = "127.0.0.1"
-	PORT = 5143
+	PORT = 4444
 
 	# Message Types
 	EXPLORE_MSG = "EXPLORE"
