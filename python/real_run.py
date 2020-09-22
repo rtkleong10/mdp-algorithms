@@ -31,13 +31,13 @@ class RealRun:
 
 	def connect_to_rpi(self):
 		self.rpi.open_connection()
+		self.rpi.ping()
 
 		while True:
 			msg_type, msg = self.rpi.receive_msg_with_type()
 
 			# Exploration
 			if msg_type == RPi.EXPLORE_MSG:
-				# EXPLORE
 				exp = Exploration(self.robot, self.on_update, explored_map=self.explored_map, time_limit=360)
 				exp.run_exploration()
 

@@ -9,14 +9,16 @@ class RPi:
 	PORT = 4444
 
 	# Message Types
+	HELLO_MSG = "HELLO"
 	EXPLORE_MSG = "E"
 	FASTEST_PATH_MSG = "F"
 	WAYPOINT_MSG = "W"
 	REPOSITION_MSG = "R"
 	SENSE_MSG = "S"
+	TAKE_PHOTO_MSG = "P"
 	MOVEMENT_MSG = "M"
 	MDF_MSG = "D"
-	TYPE_DIVIDER = ": "
+	TYPE_DIVIDER = ":"
 
 	def __init__(self):
 		self.conn = None
@@ -59,8 +61,18 @@ class RPi:
 		except Exception as e:
 			print("Unable to receive message\nError:", e)
 
+	def receive_msg_with_type(self):
+		msg = self.receive()
+		m = re.match(rf"(.+){RPi.TYPE_DIVIDER}(.+)", msg)
+
+		if m is not None:
+			return m.group(1), m.group(2)
+		else:
+			return msg, ""
+
 	def send_movement(self, movement, robot, explored_map=None):
-		msg = "{}{}{} {}{} {}".format(
+		# Sample message: M:F 1,2 E
+		msg = "{}{}{} {},{} {}".format(
 			RPi.MOVEMENT_MSG,
 			RPi.TYPE_DIVIDER,
 			Movement.convert_to_string(movement),
@@ -75,14 +87,24 @@ class RPi:
 		self.send(msg)
 
 	def send_map(self, map):
+		# Sample message: D:FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,000000000400000001C800000000000700000000800000001F80000700000000020000000000
 		msg = ",".join(generate_map_descriptor(map))
 		self.send(msg)
 
+	def ping(self):
+		# Sample message: HELLO
+		self.send(RPi.HELLO_MSG)
+
 	def receive_sensor_values(self):
-		# Sample message: 1, 1, 1, 1, 1, 1
+		# Sample message: S
 		self.send(RPi.SENSE_MSG)
 
-		msg = self.receive()
+		# Sample message: S:1,1,1,1,1,1
+		msg_type, msg = self.receive_msg_with_type()
+
+		if msg_type != RPi.SENSE_MSG:
+			return []
+
 		m = re.match(r"(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)", msg)
 
 		if m is None:
@@ -97,14 +119,19 @@ class RPi:
 
 		return sensor_values
 
-	def receive_msg_with_type(self):
-		msg = self.receive()
-		m = re.match(rf"(.+){RPi.TYPE_DIVIDER}(.+)", msg)
+	def take_photo(self):
+		# Sample message: P
+		self.send(RPi.TAKE_PHOTO_MSG)
 
-		if m is not None:
-			return m.group(1), m.group(2)
+		# Sample message: P
+		msg_type, msg = self.receive_msg_with_type()
+
+		if msg_type != RPi.TAKE_PHOTO_MSG:
+			print("Unable to take photo")
+			return False
 		else:
-			return msg, ""
+			print("Photo successfully taken")
+			return True
 
 
 def main():
