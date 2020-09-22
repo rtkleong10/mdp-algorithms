@@ -16,17 +16,25 @@ class ImageRegAlgo(Exploration):
     def removeObstacleSide(self,pos): #pos must be tuple
         for i in range(1,4):
             if self.obstacles.get((pos[0]+i,pos[1]))!=None:
-                self.obstacles[pos].pop(1)
-                self.obstacles[(pos[0]+i,pos[1])].pop(3)
+                if self.obstacles[pos].get(1)!=None:
+                    self.obstacles[pos].pop(1)
+                if self.obstacles[(pos[0]+i,pos[1])].get(3)!=None:
+                    self.obstacles[(pos[0]+i,pos[1])].pop(3)
             if self.obstacles.get((pos[0]-i,pos[1]))!=None:
-                self.obstacles[pos].pop(3)
-                self.obstacles[(pos[0]-i,pos[1])].pop(1)
+                if self.obstacles[pos].get(3)!=None:
+                    self.obstacles[pos].pop(3)
+                if self.obstacles[(pos[0]-i,pos[1])].get(1)!=None:
+                    self.obstacles[(pos[0]-i,pos[1])].pop(1)
             if self.obstacles.get((pos[0],pos[1]+1))!=None:
-                self.obstacles[pos].pop(0)
-                self.obstacles[(pos[0],pos[1]+1)].pop(2)
+                if self.obstacles[pos].get(0)!=None:
+                    self.obstacles[pos].pop(0)
+                if self.obstacles[(pos[0],pos[1]+1)].get(2)!=None:
+                    self.obstacles[(pos[0],pos[1]+1)].pop(2)
             if self.obstacles.get((pos[0]+i,pos[1]-1))!=None:
-                self.obstacles[pos].pop(2)
-                self.obstacles[(pos[0]+i,pos[1]-1)].pop(0)
+                if self.obstacles[pos].get(2)!=None:
+                    self.obstacles[pos].pop(2)
+                if self.obstacles[(pos[0]+i,pos[1]-1)].get(0)!=None:
+                    self.obstacles[(pos[0]+i,pos[1]-1)].pop(0)
 
     def checkObstacleSide(self,pos,direction): #check for obstacles within the weird shape
         obstacle = False
@@ -82,19 +90,123 @@ class ImageRegAlgo(Exploration):
 
     
     def snapObstacleSide(self):
+        print('here')
         direction = self.robot.direction
         pos = self.robot.pos
         #if left side got obstacles with sides never see before, take photo
         left = (direction-1)%4
         check = self.checkObstacleSide(pos,left)
-        #if check take photo
+        if check:
+            print('left take photo')
+        #if front got obstacles with sides never see before, turn and take photo
+        check = self.checkObstacleSide(pos,direction)
+        front= False
+        if check:
+            self.move(Movement.RIGHT)
+            print('front take photo')
+            front = True
+        #if right side got obstacles with sides never see before, turn and take photo
         right = (direction+1)%4
         check = self.checkObstacleSide(pos,right)
-        #if check turn twice and take photo, then turn back
-        check = self.checkObstacleSide(pos,direction)
-        #if check turn right and take photo then turn back
-        
+        if check:
+            if not front:
+                self.move(Movement.RIGHT)
+            self.move(Movement.RIGHT)
+            print('right take photo')
+            self.move(Movement.LEFT)
+            self.move(Movement.LEFT)
+        else:
+            self.move(Movement.LEFT)
+        # if back got obstacles....
+        back = (direction+2)%4
+        check = self.checkObstacleSide(pos,back)
+        if check:
+            self.move(Movement.LEFT)
+            print('back take photo')
+            self.move(Movement.RIGHT)
+    
+    def sense_and_repaint(self):
+        self.on_update_map()
+        sensor_values = self.robot.sense()
 
+		# TODO: Handle empty sensor_values (sensor_values = [])
+        for i in range(len(sensor_values)):
+            sensor_value = sensor_values[i]
+            sensor = self.robot.sensors[i]
+            direction_vector = Direction.get_direction_vector(sensor.get_current_direction(self.robot))
+            current_sensor_pos = sensor.get_current_pos(self.robot)
+
+            if sensor_value == -1:
+                continue
+
+            elif sensor_value is None:
+                for j in range(*sensor.get_range()):
+                    pos_to_mark = (current_sensor_pos[0] + j * direction_vector[0], current_sensor_pos[1] + j * direction_vector[1])
+
+                    if 0 <= pos_to_mark[0] <= NUM_COLS - 1 and 0 <= pos_to_mark[1] <= NUM_ROWS - 1:
+                        self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.FREE
+
+            else:
+                for j in range(sensor.get_range()[0], min(sensor.get_range()[1], sensor_value + 1)):
+                    pos_to_mark = (current_sensor_pos[0] + j * direction_vector[0], current_sensor_pos[1] + j * direction_vector[1])
+
+                    if 0 <= pos_to_mark[0] <= NUM_COLS - 1 and 0 <= pos_to_mark[1] <= NUM_ROWS - 1:
+                        if j != sensor_value:
+                            self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.FREE 
+                        else:
+                            self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.OBSTACLE
+                            self.obstacles[pos_to_mark] = {0:0,1:0,2:0,3:0}
+                            self.removeObstacleSide(pos_to_mark)
+
+    def run_exploration(self):
+        self.start_time = time.time()
+        self.sense_and_repaint()
+
+        while True:
+            if self.is_limit_exceeded:
+                break
+
+            # print_map(self.explored_map, [self.robot.pos])
+            if self.entered_goal and self.robot.pos == START_POS:
+                break
+
+            if self.robot.pos == GOAL_POS:
+                self.entered_goal = True
+
+            if self.check_right():
+                self.move(Movement.RIGHT)
+                # self.snapObstacleSide()
+
+            elif self.check_forward():
+                self.move(Movement.FORWARD)
+                self.snapObstacleSide()
+
+            elif self.check_left():
+                self.move(Movement.LEFT)
+                # self.snapObstacleSide()
+
+            else:
+                self.move(Movement.RIGHT)
+                self.move(Movement.RIGHT)
+                # self.snapObstacleSide()
+
+        while True:
+            if self.is_limit_exceeded:
+                break
+
+            can_find = self.find_unexplored()
+            if not can_find:
+                break
+
+        # Go back to start
+        fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, START_POS)
+        movements = fp.movements
+
+        if movements is None:
+            print("Can't go back to start?")
+
+        for movement in movements:
+            self.move(movement)
 
 def main():
     with open("maps/sample_arena5.txt", "r") as f:
