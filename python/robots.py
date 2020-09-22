@@ -20,8 +20,8 @@ class Robot:
 			Sensor(True, (1, 1), Direction.EAST),
 			Sensor(True, (1, 0), Direction.EAST),
 			Sensor(True, (1, -1), Direction.EAST),
-			Sensor(True, (-1, -1), Direction.SOUTH),
 			Sensor(True, (1, -1), Direction.SOUTH),
+			Sensor(True, (-1, -1), Direction.SOUTH),
 		]
 
 	@property
