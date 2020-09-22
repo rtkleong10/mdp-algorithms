@@ -166,7 +166,8 @@ class ImageRegAlgo(Exploration):
             if self.is_limit_exceeded:
                 break
 
-            # print_map(self.explored_map, [self.robot.pos])
+            print_map(self.explored_map, [self.robot.pos])
+            print()
             if self.entered_goal and self.robot.pos == START_POS:
                 break
 
