@@ -115,7 +115,7 @@ class ImageRegAlgo(Exploration):
             print('right take photo')
             self.move(Movement.LEFT)
             self.move(Movement.LEFT)
-        else:
+        elif front:
             self.move(Movement.LEFT)
         # if back got obstacles....
         back = (direction+2)%4
@@ -155,8 +155,9 @@ class ImageRegAlgo(Exploration):
                             self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.FREE 
                         else:
                             self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.OBSTACLE
-                            self.obstacles[pos_to_mark] = {0:0,1:0,2:0,3:0}
-                            self.removeObstacleSide(pos_to_mark)
+                            if self.obstacles.get(pos_to_mark)==None:
+                                self.obstacles[pos_to_mark] = {0:0,1:0,2:0,3:0}
+                                self.removeObstacleSide(pos_to_mark)
 
     def run_exploration(self):
         self.start_time = time.time()
