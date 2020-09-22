@@ -9,7 +9,7 @@ import time
 
 class ImageRegAlgo(Exploration):
     def __init__(self, robot, on_update_map=None, explored_map=None, coverage_limit=None, time_limit=None):
-        super().__init__(robot, on_update_map=None, explored_map=None, coverage_limit=None, time_limit=None)
+        super().__init__(robot, on_update_map=on_update_map, explored_map=explored_map, coverage_limit=coverage_limit, time_limit=time_limit)
         self.obstacles ={} # {(pos):{0:0,1:0,2:0,3:0}} 0,1,2,3 represents each side
 
     # check if any of the obstacle side is blocked by another obstacle
