@@ -1,11 +1,13 @@
+# Robot Setup
+<img src="imgs/robot_setup.png" alt="Robot Setup" style="width:300px;"/>
+
 # Arduino
 ## Interactions
 ### Sensor Request
-![Sensor Order](imgs/sensor_order.png)
 - You will receive: `S`
 - Desired response: `S:<sensor_1>,<sensor_2>,<sensor_3>,<sensor_4>,<sensor_5>,<sensor_6>`
     - e.g. `S:1,2,1,2,1,2`
-    - Sensor order is in the image above
+    - Sensor order is in the robot setup
         - Red: Short range sensor
         - Blue: Long range sensor
         - Ordered in the clockwise direction starting from the left-facing sensor
