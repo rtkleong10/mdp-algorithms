@@ -16,7 +16,7 @@ class Robot:
 		self.direction = direction
 		self.on_move = on_move if on_move is not None else lambda movement: None
 		self.sensors = [
-			Sensor(False, (0, 1), Direction.NORTH),
+			Sensor(False, (1, 1), Direction.NORTH),
 			Sensor(True, (1, 1), Direction.EAST),
 			Sensor(True, (1, 0), Direction.EAST),
 			Sensor(True, (1, -1), Direction.EAST),
@@ -124,7 +124,7 @@ class Sensor:
 	# TODO: Add real ranges
 	# Inclusive at lower, exclusive at upper
 	SR_RANGE = (1, 3)
-	LR_RANGE = (1, 5)
+	LR_RANGE = (1, 6)
 
 	def __init__(self, is_short_range, pos, direction):
 		self.is_short_range = is_short_range
