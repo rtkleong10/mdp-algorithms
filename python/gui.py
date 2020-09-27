@@ -178,6 +178,7 @@ class SimulatorGUI(GUI):
         # Inputs
         self.selected_map_str = None
         self.mdf_input = None
+        self.with_image_rec = None
         self.coverage_limit_input = None
         self.time_limit_input = None
         self.has_waypoint_input = None
@@ -228,6 +229,9 @@ class SimulatorGUI(GUI):
         exploration_frame.pack(fill=tk.X, pady=10)
 
         self.create_heading(exploration_frame, "Exploration").pack(fill=tk.X)
+
+        self.with_image_rec = tk.IntVar()
+        tk.Checkbutton(exploration_frame, text="Use Image Recognition Algorithm", variable=self.with_image_rec).pack()
 
         self.exploration_coverage = tk.StringVar()
         self.exploration_coverage.set("Coverage: 0%")
@@ -318,11 +322,22 @@ class SimulatorGUI(GUI):
     def exploration(self):
         self.reset()
         self.robot.map = self.map
-        self.exp = Exploration(self.robot, self.update_canvas, coverage_limit=self.coverage_limit_input.get() / 100, time_limit=self.time_limit_input.get())
+
+        # Select exploration class
+        if self.with_image_rec.get() != 1:
+            exploration_class = Exploration
+        else:
+            # TODO: Add image recognition class
+            print("Image recognition")
+            exploration_class = Exploration
+
+        self.exp = exploration_class(self.robot, self.update_canvas, coverage_limit=self.coverage_limit_input.get() / 100, time_limit=self.time_limit_input.get())
+
         self.map = self.exp.explored_map
         self.update_canvas()
         self.exp.run_exploration()
-        print(generate_map_descriptor(self.exp.explored_map))
+        mdf = generate_map_descriptor(self.exp.explored_map)
+        print("MDF:", ",".join(mdf))
 
     def update_canvas(self):
         super(SimulatorGUI, self).update_canvas()
