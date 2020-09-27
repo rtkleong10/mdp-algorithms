@@ -10,6 +10,7 @@ class RPi:
 
 	# Message Types
 	HELLO_MSG = "HELLO"
+	CALIBRATE_MSG = "C"
 	EXPLORE_MSG = "E"
 	FASTEST_PATH_MSG = "F"
 	WAYPOINT_MSG = "W"
@@ -61,6 +62,14 @@ class RPi:
 		except Exception as e:
 			print("Unable to receive message\nError:", e)
 
+	def send_msg_with_type(self, msg_type, msg=None):
+		full_msg = msg_type
+
+		if msg is not None:
+			full_msg += RPi.TYPE_DIVIDER + msg
+
+		self.send(full_msg)
+
 	def receive_msg_with_type(self):
 		msg = self.receive()
 		m = re.match(rf"(.+){RPi.TYPE_DIVIDER}(.+)", msg)
@@ -70,26 +79,26 @@ class RPi:
 		else:
 			return msg, ""
 
-	def send_movement(self, movement, robot, explored_map=None):
+	def send_movement(self, movement, robot):
 		# Sample message: M:F 1,2 E
-		msg = "{}{}{} {},{} {}".format(
-			RPi.MOVEMENT_MSG,
-			RPi.TYPE_DIVIDER,
+		msg = "{} {},{} {}".format(
 			Movement.convert_to_string(movement),
 			robot.pos[0],
 			robot.pos[1],
 			Direction.convert_to_string(robot.direction),
 		)
+		self.send_msg_with_type(RPi.MOVEMENT_MSG, msg)
 
-		if explored_map is not None:
-			msg += " " + ",".join(generate_map_descriptor(explored_map))
+		while True:
+			# Sample message: M
+			msg_type, msg = self.receive_msg_with_type()
 
-		self.send(msg)
+			if msg_type == RPi.MOVEMENT_MSG:
+				break
 
 	def send_map(self, map):
 		# Sample message: D:FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,000000000400000001C800000000000700000000800000001F80000700000000020000000000
-		msg = ",".join(generate_map_descriptor(map))
-		self.send(msg)
+		self.send_msg_with_type(RPi.MDF_MSG, ",".join(generate_map_descriptor(map)))
 
 	def ping(self):
 		# Sample message: HELLO
@@ -99,40 +108,56 @@ class RPi:
 		# Sample message: S
 		self.send(RPi.SENSE_MSG)
 
-		# Sample message: S:1,1,1,1,1,1
-		msg_type, msg = self.receive_msg_with_type()
+		while True:
+			# Sample message: S:1,1,1,1,1,1
+			msg_type, msg = self.receive_msg_with_type()
 
-		if msg_type != RPi.SENSE_MSG:
-			return []
+			if msg_type != RPi.SENSE_MSG:
+				continue
 
-		m = re.match(r"(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+)", msg)
+			m = re.match(r"(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+)", msg)
 
-		if m is None:
-			print("Unable to receive sensor input")
-			return []
+			if m is None:
+				print("Unable to receive sensor input")
+				return []
+			else:
+				sensor_values = []
 
-		sensor_values = []
+				for i in range(1, 7):
+					num = int(m.group(i))
 
-		for i in range(1, 7):
-			num = int(m.group(i))
-			sensor_values.append(None if num == 0 else num)
+					if num < 0:
+						sensor_values.append(-1)
+					elif num == 0:
+						sensor_values.append(None)
+					else:
+						sensor_values.append(num)
 
-		return sensor_values
+				return sensor_values
 
 	def take_photo(self):
 		# Sample message: P
 		self.send(RPi.TAKE_PHOTO_MSG)
 
-		# Sample message: P
-		msg_type, msg = self.receive_msg_with_type()
+		while True:
+			# Sample message: P
+			msg_type, msg = self.receive_msg_with_type()
 
-		if msg_type != RPi.TAKE_PHOTO_MSG:
-			print("Unable to take photo")
-			return False
-		else:
-			print("Photo successfully taken")
-			return True
+			if msg_type == RPi.TAKE_PHOTO_MSG:
+				print("Photo successfully taken")
+				break
 
+	def calibrate(self):
+		# Sample message: C
+		self.send(RPi.CALIBRATE_MSG)
+
+		while True:
+			# Sample message: C
+			msg_type, msg = self.receive_msg_with_type()
+
+			if msg_type == RPi.CALIBRATE_MSG:
+				print("Calibration successful")
+				break
 
 def main():
 	rpi = RPi()

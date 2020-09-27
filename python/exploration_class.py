@@ -6,7 +6,7 @@ from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
 
-
+# TODO: Rename file to exploration.py
 class Exploration:
 	def __init__(self, robot, on_update_map=None, explored_map=None, coverage_limit=None, time_limit=None):
 		"""
@@ -202,7 +202,7 @@ class Exploration:
 			if self.is_limit_exceeded:
 				break
 
-			print_map(self.explored_map, [self.robot.pos])
+			# print_map(self.explored_map, [self.robot.pos])
 			if self.entered_goal and self.robot.pos == START_POS:
 				break
 
@@ -250,7 +250,6 @@ class Exploration:
 			self.sense_and_repaint()
 
 	def sense_and_repaint(self):
-		self.on_update_map()
 		sensor_values = self.robot.sense()
 
 		# TODO: Handle empty sensor_values (sensor_values = [])
@@ -276,6 +275,8 @@ class Exploration:
 
 					if 0 <= pos_to_mark[0] <= NUM_COLS - 1 and 0 <= pos_to_mark[1] <= NUM_ROWS - 1:
 						self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.FREE if j != sensor_value else Cell.OBSTACLE
+
+		self.on_update_map()
 
 
 def main():
