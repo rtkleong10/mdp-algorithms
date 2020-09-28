@@ -14,13 +14,13 @@ def possible_photo_pos(self, goal, direction):
 	x, y = goal
 	robot_direction = Direction((direction - 1) % 4)
 
-	if direction == Direction.NORTH:
+	if direction == 0:
 		arr = [(x, y + 2), (x - 1, y + 3), (x, y + 3), (x + 1, y + 3)]
-	elif direction == Direction.EAST:
+	elif direction == 1:
 		arr = [(x + 2, y), (x + 3, y - 1), (x + 3, y), (x + 3, y + 1)]
-	elif direction == Direction.SOUTH:
+	elif direction == 2:
 		arr = [(x, y - 2), (x - 1, y - 3), (x, y - 3), (x + 1, y - 3)]
-	elif direction == Direction.WEST:
+	elif direction == 3:
 		arr = [(x - 2, y), (x - 3, y - 1), (x - 3, y), (x - 3, y + 1)]
 	else:
 		raise ValueError

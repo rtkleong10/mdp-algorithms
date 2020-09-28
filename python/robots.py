@@ -66,10 +66,9 @@ class RealBot(Robot):
 		super(RealBot, self).__init__(pos, direction, on_move)
 		self.get_sensor_values = get_sensor_values
 
-	# TODO: Add estimated speed
 	@property
 	def speed(self):
-		return 0.1
+		return 2
 
 	def sense(self):
 		return self.get_sensor_values()

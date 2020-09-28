@@ -9,7 +9,7 @@ import time
 
 # TODO: Rename file to exploration.py
 class Exploration:
-	def __init__(self, robot, on_update_map=None, explored_map=None, coverage_limit=None, time_limit=None):
+	def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None):
 		"""
 		Args:
 			robot (robots.Robot): Robot object to explore the map.
@@ -25,12 +25,18 @@ class Exploration:
 		self.start_time = time.time()
 		self.coverage_limit = coverage_limit
 		self.time_limit = time_limit
+		self.steps_without_calibration = 0
 		self.obstacles = {}
 
 		if on_update_map is None:
 			self.on_update_map = lambda: None
 		else:
 			self.on_update_map = on_update_map
+
+		if on_calibrate is None:
+			self.on_calibrate = lambda is_front: None
+		else:
+			self.on_calibrate = on_calibrate
 
 	@property
 	def coverage(self):
@@ -250,11 +256,57 @@ class Exploration:
 			print("Can't go back to start?")
 
 		for movement in movements:
-			self.move(movement)
+			self.move(movement, sense=False)
+
+	def calibrate(self):
+		is_calibrated = False
+		front_direction = self.robot.direction
+		right_direction = (front_direction + 1) % 4
+		front_direction_vector = Direction.get_direction_vector(front_direction)
+		right_direction_vector = Direction.get_direction_vector(right_direction)
+
+		# Check front
+		can_calibrate_front = []
+		for i in [-1, 1]:
+			c = self.robot.pos[0] + 2 * front_direction_vector[0] + i * right_direction_vector[0]
+			r = self.robot.pos[1] + 2 * front_direction_vector[1] + i * right_direction_vector[1]
+
+			if c < 0 or c > NUM_COLS - 1 or r < 0 or r > NUM_ROWS - 1 or self.explored_map[r][c] == Cell.OBSTACLE:
+				can_calibrate_front.append(True)
+			else:
+				can_calibrate_front.append(False)
+
+		if all(can_calibrate_front):
+			self.on_calibrate(True)
+			is_calibrated = True
+
+		# Check right
+		can_calibrate_right = []
+		for i in [-1, 1]:
+			c = self.robot.pos[0] + i * front_direction_vector[0] + 2 * right_direction_vector[0]
+			r = self.robot.pos[1] + i * front_direction_vector[1] + 2 * right_direction_vector[1]
+
+			if c < 0 or c > NUM_COLS - 1 or r < 0 or r > NUM_ROWS - 1 or self.explored_map[r][c] == Cell.OBSTACLE:
+				can_calibrate_right.append(True)
+			else:
+				can_calibrate_right.append(False)
+
+		if all(can_calibrate_right):
+			self.on_calibrate(False)
+			is_calibrated = True
+
+		return is_calibrated
 
 	def move(self, movement, sense=True):
 		if movement == Movement.FORWARD or movement == Movement.BACKWARD:
 			self.prev_pos = self.robot.pos
+			self.steps_without_calibration += 1
+
+		if self.steps_without_calibration > 7:
+			can_calibrate = self.calibrate()
+
+			if can_calibrate:
+				self.steps_without_calibration = 0
 
 		self.robot.move(movement)
 
