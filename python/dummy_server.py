@@ -1,9 +1,22 @@
 import socket
 from threading import Thread
 
-class Server:
+
+class DummyServer:
+	"""
+	Configuration
+	- Uncomment `HOST = "127.0.0.1"` and `self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)` in rpi.py
+
+	Turning on:
+	1. `python dummy_server`
+	2. `python real_run`
+
+	Turning off:
+	1. Terminate real_run
+	2. Terminate dummy_server
+	"""
 	HOST = "127.0.0.1"
-	PORT = 5143
+	PORT = 4444
 
 	# Message Types
 	EXPLORE_MSG = "EXPLORE"
@@ -22,7 +35,7 @@ class Server:
 	def open_connection(self):
 		try:
 			self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			self.server.bind((Server.HOST, Server.PORT))
+			self.server.bind((DummyServer.HOST, DummyServer.PORT))
 			self.server.listen(1)
 			self.conn, addr = self.server.accept()
 			self.is_connected = True
@@ -65,7 +78,7 @@ class Server:
 
 def main():
 	print("Turning on server...")
-	s = Server()
+	s = DummyServer()
 	s.open_connection()
 	receive_thread = Thread(target=s.receive_endlessly, daemon=True)
 	receive_thread.start()

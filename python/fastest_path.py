@@ -1,6 +1,6 @@
 from constants import NUM_ROWS, NUM_COLS, START_POS, GOAL_POS
 from enums import Cell, Direction, Movement
-from utils import add_virtual_obstacles, print_map
+from utils import print_map
 from map_descriptor import generate_map
 
 
@@ -15,7 +15,7 @@ class FastestPath:
 			dest (tuple): Position of destination.
 			waypoint (tuple): Position of waypoint (optional).
 		"""
-		self.map = add_virtual_obstacles(explored_map)
+		self.map = FastestPath.add_virtual_obstacles(explored_map)
 
 		self.direction = direction
 		self.source = source
@@ -138,6 +138,49 @@ class FastestPath:
 		return [neighbour for neighbour in neighbours if self.map[neighbour[1]][neighbour[0]] == Cell.FREE]
 
 	@staticmethod
+	def add_virtual_obstacles(map_real):
+		"""Adds virtual obstacles to the map.
+
+		Treats unexplored cells as well as the cells around walls, unexplored cell and obstacles as virtual obstacles.
+
+		Args:
+			map_real (list): 2D list of `constants.Cell` objects representing the map layout.
+
+		Returns:
+			map_virtual (list): 2D list of `constants.Cell` objects representing the map layout with virtual obstacles.
+		"""
+		map_virtual = []
+
+		# Create base virtual map from real map (treat unexplored as obstacles)
+		for r in range(0, NUM_ROWS):
+			row_virtual = []
+
+			for c in range(0, NUM_COLS):
+				cell = map_real[r][c]
+				row_virtual.append(Cell.FREE if cell == Cell.FREE else Cell.OBSTACLE)
+
+			map_virtual.append(row_virtual)
+
+		# Add virtual boundaries to walls
+		for c in range(NUM_COLS):
+			map_virtual[0][c] = Cell.OBSTACLE
+			map_virtual[NUM_ROWS - 1][c] = Cell.OBSTACLE
+
+		for r in range(NUM_ROWS):
+			map_virtual[r][0] = Cell.OBSTACLE
+			map_virtual[r][NUM_COLS - 1] = Cell.OBSTACLE
+
+		# Add virtual boundaries to obstacles
+		for r in range(0, NUM_ROWS):
+			for c in range(0, NUM_COLS):
+				if map_real[r][c] != Cell.FREE:
+					for y in range(max(r - 1, 0), min(r + 2, NUM_ROWS)):
+						for x in range(max(c - 1, 0), min(c + 2, NUM_COLS)):
+							map_virtual[y][x] = Cell.OBSTACLE
+
+		return map_virtual
+
+	@staticmethod
 	def heuristic_function(p0, p1):
 		"""Computes the manhattan distance between point 0 and point 1 as the heuristic function.
 
@@ -222,6 +265,30 @@ class FastestPath:
 
 		return movements
 
+	def combined_movements(self):
+		combined_movement_list = []
+		forward_count = 0
+
+		for movement in self.movements:
+			if movement == Movement.FORWARD:
+				forward_count += 1
+
+				if forward_count == 9:
+					combined_movement_list.append(forward_count)
+					forward_count = 0
+
+			else:
+				if forward_count != 0:
+					combined_movement_list.append(forward_count)
+
+				forward_count = 0
+				combined_movement_list.append(movement)
+
+		if forward_count != 0:
+			combined_movement_list.append(forward_count)
+
+		return combined_movement_list
+
 
 def main():
 	with open("maps/map3.txt", "r") as f:
@@ -230,7 +297,7 @@ def main():
 	map_test = generate_map(*strs)
 	fp = FastestPath(map_test, Direction.EAST, START_POS, GOAL_POS)
 
-	print_map(add_virtual_obstacles(map_test), fp.steps)
+	print_map(FastestPath.add_virtual_obstacles(map_test), fp.steps)
 
 	if fp.path_found:
 		for i, step in enumerate(fp.steps):

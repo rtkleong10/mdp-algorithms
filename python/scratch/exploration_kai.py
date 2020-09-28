@@ -3,7 +3,7 @@ from utils import print_map
 from map_descriptor import generate_map
 from fastest_path import FastestPath
 
-with open("maps/sample_arena5.txt", "r") as f:
+with open("../maps/sample_arena5.txt", "r") as f:
 	strs = f.read().split("\n")
 
 map_real = generate_map(*strs)
