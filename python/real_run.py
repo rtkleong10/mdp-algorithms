@@ -37,11 +37,11 @@ class RealRun:
 		while True:
 			msg_type, msg = self.rpi.receive_msg_with_type()
 
-			# Exploration
-			if msg_type == RPi.EXPLORE_MSG:
-				if self.robot.pos == START_POS:
-					self.calibrate()
+			if msg_type == RPi.CALIBRATE_MSG:
+				self.calibrate()
 
+			# Exploration
+			elif msg_type == RPi.EXPLORE_MSG:
 				exp = Exploration(
 					robot=self.robot,
 					on_update_map=self.on_update,
