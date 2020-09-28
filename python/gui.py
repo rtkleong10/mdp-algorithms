@@ -27,10 +27,10 @@ class GUI:
     MAP_TAG = "map"
     ROBOT_TAG = "robot"
     
-    def __init__(self, map, robot):
+    def __init__(self, explored_map, robot):
         self.root = None
         self.canvas = None
-        self.map = map
+        self.map = explored_map
         self.robot = robot
         self.waypoint = None
 
@@ -331,7 +331,12 @@ class SimulatorGUI(GUI):
             print("Image recognition")
             exploration_class = Exploration
 
-        self.exp = exploration_class(self.robot, self.update_canvas, coverage_limit=self.coverage_limit_input.get() / 100, time_limit=self.time_limit_input.get())
+        self.exp = exploration_class(
+            self.robot,
+            self.update_canvas,
+            coverage_limit=self.coverage_limit_input.get() / 100,
+            time_limit=self.time_limit_input.get()
+        )
 
         self.map = self.exp.explored_map
         self.update_canvas()

@@ -1,19 +1,20 @@
 import socket
 from threading import Thread
 
+
 class DummyServer:
 	"""
-		Configuration
-		- Uncomment `HOST = "127.0.0.1"` and `self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)` in rpi.py
+	Configuration
+	- Uncomment `HOST = "127.0.0.1"` and `self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)` in rpi.py
 
-		Turning on:
-		1. `python dummy_server`
-		2. `python real_run`
+	Turning on:
+	1. `python dummy_server`
+	2. `python real_run`
 
-		Turning off:
-		1. Terminate real_run
-		2. Terminate dummy_server
-		"""
+	Turning off:
+	1. Terminate real_run
+	2. Terminate dummy_server
+	"""
 	HOST = "127.0.0.1"
 	PORT = 4444
 

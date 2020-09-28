@@ -6,6 +6,7 @@ from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
 
+
 # TODO: Rename file to exploration.py
 class Exploration:
 	def __init__(self, robot, on_update_map=None, explored_map=None, coverage_limit=None, time_limit=None):
@@ -41,7 +42,8 @@ class Exploration:
 	@property
 	def is_limit_exceeded(self):
 		is_coverage_limit_exceeded = self.coverage_limit is not None and self.coverage_limit < self.coverage
-		is_time_limit_exceeded = self.time_limit is not None and self.time_limit < self.time_elapsed + (FastestPath.heuristic_function(self.robot.pos, START_POS) * 2) / self.robot.speed
+		is_time_limit_exceeded = self.time_limit is not None and self.time_limit <\
+			self.time_elapsed + (FastestPath.heuristic_function(self.robot.pos, START_POS) * 2) / self.robot.speed
 
 		return is_coverage_limit_exceeded or is_time_limit_exceeded
 
@@ -135,7 +137,7 @@ class Exploration:
 		if len(pos_to_check) == 0:
 			return False
 
-		best_pos = min(pos_to_check.keys(), key=lambda pos: FastestPath.heuristic_function(self.robot.pos, pos))
+		best_pos = min(pos_to_check.keys(), key=lambda pos_i: FastestPath.heuristic_function(self.robot.pos, pos_i))
 		unexplored_pos = pos_to_check[best_pos]
 
 		fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, best_pos)

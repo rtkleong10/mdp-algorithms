@@ -3,6 +3,7 @@ from enums import Movement, Direction
 from map_descriptor import generate_map_descriptor
 import re
 
+
 class RPi:
 	HOST = "192.168.4.4"
 	# HOST = "127.0.0.1"
@@ -96,9 +97,9 @@ class RPi:
 			if msg_type == RPi.MOVEMENT_MSG:
 				break
 
-	def send_map(self, map):
+	def send_map(self, explored_map):
 		# Sample message: D:FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,000000000400000001C800000000000700000000800000001F80000700000000020000000000
-		self.send_msg_with_type(RPi.MDF_MSG, ",".join(generate_map_descriptor(map)))
+		self.send_msg_with_type(RPi.MDF_MSG, ",".join(generate_map_descriptor(explored_map)))
 
 	def ping(self):
 		# Sample message: HELLO
@@ -159,6 +160,7 @@ class RPi:
 				print("Calibration successful")
 				break
 
+
 def main():
 	rpi = RPi()
 	rpi.open_connection()
@@ -166,6 +168,7 @@ def main():
 	msg = rpi.receive()
 	print(msg)
 	rpi.close_connection()
+
 
 if __name__ == '__main__':
 	main()

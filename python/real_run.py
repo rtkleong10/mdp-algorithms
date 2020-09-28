@@ -5,7 +5,7 @@ from threading import Thread
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import RealBot
 from enums import Direction, Cell, Movement
-from map_descriptor import generate_map, generate_map_descriptor
+from map_descriptor import generate_map_descriptor
 from gui import GUI
 from utils import generate_unexplored_map
 import re
