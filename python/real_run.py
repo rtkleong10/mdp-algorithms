@@ -5,7 +5,7 @@ from threading import Thread
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import RealBot
 from enums import Direction, Cell, Movement
-from map_descriptor import generate_map, generate_map_descriptor
+from map_descriptor import generate_map_descriptor
 from gui import GUI
 from utils import generate_unexplored_map
 import re
@@ -89,7 +89,8 @@ class RealRun:
 				# TODO: Calibrate for fastest path
 				self.robot.pos = START_POS
 				fp = FastestPath(self.explored_map, self.robot.direction, START_POS, GOAL_POS, self.waypoint)
-				for movement in fp.movements:
+				combined_movement_list = fp.combined_movements()
+				for movement in combined_movement_list:
 					self.robot.move(movement)
 
 				# TODO: Standardise

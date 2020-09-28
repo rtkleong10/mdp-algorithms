@@ -1,11 +1,13 @@
 from threading import Thread
 from rpi import RPi
 
+
 class DummyClient(RPi):
 	def receive_endlessly(self):
 		while True:
 			if self.is_connected:
 				self.receive()
+
 
 def main():
 	print("Turning on server...")

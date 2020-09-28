@@ -265,6 +265,30 @@ class FastestPath:
 
 		return movements
 
+	def combined_movements(self):
+		combined_movement_list = []
+		forward_count = 0
+
+		for movement in self.movements:
+			if movement == Movement.FORWARD:
+				forward_count += 1
+
+				if forward_count == 9:
+					combined_movement_list.append(forward_count)
+					forward_count = 0
+
+			else:
+				if forward_count != 0:
+					combined_movement_list.append(forward_count)
+
+				forward_count = 0
+				combined_movement_list.append(movement)
+
+		if forward_count != 0:
+			combined_movement_list.append(forward_count)
+
+		return combined_movement_list
+
 
 def main():
 	with open("maps/map3.txt", "r") as f:
@@ -273,7 +297,7 @@ def main():
 	map_test = generate_map(*strs)
 	fp = FastestPath(map_test, Direction.EAST, START_POS, GOAL_POS)
 
-	print_map(add_virtual_obstacles(map_test), fp.steps)
+	print_map(FastestPath.add_virtual_obstacles(map_test), fp.steps)
 
 	if fp.path_found:
 		for i, step in enumerate(fp.steps):

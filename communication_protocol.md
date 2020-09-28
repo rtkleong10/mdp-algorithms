@@ -4,8 +4,9 @@
 # Arduino
 ## Interactions
 ### Sensor Request
-- You will receive: `S`
-- Desired response: `S:<sensor_1>,<sensor_2>,<sensor_3>,<sensor_4>,<sensor_5>,<sensor_6>`
+- Algo sends to RPi: `S`
+- RPi sends to Arduino: `S`
+- Desired response from Arduino: `S:<sensor_1>,<sensor_2>,<sensor_3>,<sensor_4>,<sensor_5>,<sensor_6>`
     - e.g. `S:1,2,1,2,1,2`
     - Sensor order is in the robot setup
         - Red: Short range sensor
@@ -17,10 +18,10 @@
         - `1-5`: How many blocks away is the nearest obstacle (1: Right next to robot)
 
 ### Calibration
-- You will receive: `C`
-- Desired response: `C`
+- Algo sends to RPi: `C`
+- RPi sends to Arduino: `C`
+- Desired response from Arduino: `C`
     - Calibrate the front facing sensors with the wall (sensor value = 1)
-    - When done, respond with `C`
 
 # Android
 ## Send
@@ -48,9 +49,11 @@
 # Everyone
 ## Receive/Interaction
 - Move: `M:<movement> x,y <direction>`
-    - e.g. `M:F 2,1 E`: Move forward and you will be in position (2, 1) facing East
+    - e.g. `M:R 2,1 E`: Move forward and you will be in position (2, 1) facing East
     - Position and direction are for after the movement is completed
-    - For arduino, when done, reply with `M`
+    - RPi sends to Arduino: `<movement>`
+        - e.g. `R`
+    - Desired response from Arduino: `M`
 - Map Descriptor Format: `D:<explored string>,<obstacle string>`
     - e.g. `D:FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,000000000400000001C800000000000700000000800000001F80000700000000020000000000`
     - Based on the format provided by NTU
@@ -72,7 +75,8 @@
 - Goal position is at the most North East
 
 ## Movements
-- F: Forward
+- 1-9: Forward x steps
+    - e.g. 2: Move forward 2 times
 - R: Rotate right
 - B: Backward
 - L: Rotate left
