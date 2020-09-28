@@ -266,26 +266,32 @@ class Exploration:
 		right_direction_vector = Direction.get_direction_vector(right_direction)
 
 		# Check front
-		can_calibrate_front = True
+		can_calibrate_front = []
 		for i in [-1, 1]:
-			c = self.robot.pos[0] + 2 * front_direction_vector[0] + i * right_direction_vector[1]
-			r = self.robot.pos[1] + 2 * front_direction_vector[0] + i * right_direction_vector[1]
-			if c < 0 or c > NUM_COLS - 1 or r < 0 or r > NUM_ROWS - 1 or self.explored_map[r][c] == Cell.OBSTACLE:
-				can_calibrate_front = False
+			c = self.robot.pos[0] + 2 * front_direction_vector[0] + i * right_direction_vector[0]
+			r = self.robot.pos[1] + 2 * front_direction_vector[1] + i * right_direction_vector[1]
 
-		if can_calibrate_front:
+			if c < 0 or c > NUM_COLS - 1 or r < 0 or r > NUM_ROWS - 1 or self.explored_map[r][c] == Cell.OBSTACLE:
+				can_calibrate_front.append(True)
+			else:
+				can_calibrate_front.append(False)
+
+		if all(can_calibrate_front):
 			self.on_calibrate(True)
 			is_calibrated = True
 
 		# Check right
-		can_calibrate_right = True
+		can_calibrate_right = []
 		for i in [-1, 1]:
-			c = self.robot.pos[0] + i * front_direction_vector[0] + 2 * right_direction_vector[1]
-			r = self.robot.pos[1] + i * front_direction_vector[0] + 2 * right_direction_vector[1]
-			if c < 0 or c > NUM_COLS - 1 or r < 0 or r > NUM_ROWS - 1 or self.explored_map[r][c] == Cell.OBSTACLE:
-				can_calibrate_right = False
+			c = self.robot.pos[0] + i * front_direction_vector[0] + 2 * right_direction_vector[0]
+			r = self.robot.pos[1] + i * front_direction_vector[1] + 2 * right_direction_vector[1]
 
-		if can_calibrate_right:
+			if c < 0 or c > NUM_COLS - 1 or r < 0 or r > NUM_ROWS - 1 or self.explored_map[r][c] == Cell.OBSTACLE:
+				can_calibrate_right.append(True)
+			else:
+				can_calibrate_right.append(False)
+
+		if all(can_calibrate_right):
 			self.on_calibrate(False)
 			is_calibrated = True
 
@@ -294,15 +300,13 @@ class Exploration:
 	def move(self, movement, sense=True):
 		if movement == Movement.FORWARD or movement == Movement.BACKWARD:
 			self.prev_pos = self.robot.pos
-			if self.steps_without_calibration > 7:
-				can_calibrate = self.calibrate()
+			self.steps_without_calibration += 1
 
-				if can_calibrate:
-					self.steps_without_calibration = 0
-				else:
-					self.steps_without_calibration += 1
-			else:
-				self.steps_without_calibration += 1
+		if self.steps_without_calibration > 7:
+			can_calibrate = self.calibrate()
+
+			if can_calibrate:
+				self.steps_without_calibration = 0
 
 		self.robot.move(movement)
 
