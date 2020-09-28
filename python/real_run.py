@@ -1,6 +1,7 @@
 from rpi import RPi
 from fastest_path import FastestPath
-from exploration_class import Exploration
+from exploration import Exploration
+from image_rec_exploration import ImageRecExploration
 from threading import Thread
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import RealBot
@@ -41,7 +42,22 @@ class RealRun:
 				if self.robot.pos == START_POS:
 					self.calibrate()
 
-				exp = Exploration(self.robot, self.on_update, explored_map=self.explored_map, time_limit=360)
+				exp = Exploration(
+					robot=self.robot,
+					on_update_map=self.on_update,
+					on_calibrate=self.rpi.calibrate,
+					explored_map=self.explored_map,
+					time_limit=360
+				)
+				# TODO: Uncomment for image recognition exploration
+				# exp = ImageRecExploration(
+				# 	robot=self.robot,
+				# 	on_update_map=self.on_update,
+				# 	on_calibrate=self.rpi.calibrate,
+				# 	on_take_photo=self.rpi.take_photo,
+				# 	explored_map=self.explored_map,
+				# 	time_limit=360
+				# )
 				exp.run_exploration()
 
 				mdf = generate_map_descriptor(self.explored_map)

@@ -144,10 +144,10 @@ class RPi:
 
 				return sensor_values
 
-	def take_photo(self):
-		# TODO: Add coordinates of obstacle
+	def take_photo(self, obstacles):
 		# Sample message: P
-		self.send(RPi.TAKE_PHOTO_MSG)
+		msg = " ".join(["{},{}".format(*obstacle) for obstacle in obstacles])
+		self.send_msg_with_type(RPi.TAKE_PHOTO_MSG, msg)
 
 		while True:
 			# Sample message: P
