@@ -25,6 +25,7 @@ class Exploration:
 		self.start_time = time.time()
 		self.coverage_limit = coverage_limit
 		self.time_limit = time_limit
+		self.obstacles = {}
 
 		if on_update_map is None:
 			self.on_update_map = lambda: None
@@ -125,20 +126,26 @@ class Exploration:
 
 		return True
 
-	def find_unexplored(self):
-		pos_to_check = {}
+	def is_pos_safe(self, pos):
+		x = pos[0]
+		y = pos[1]
 
-		for r in range(20):
-			for c in range(15):
-				if self.explored_map[r][c] == Cell.UNEXPLORED:
-					for pos in self.possible_pos((c, r)):
-						pos_to_check[pos] = (c, r)
+		if x < 1 or x > 13 or y < 1 or y > 18:
+			return False
 
+		for col in range(x - 1, x + 2):
+			for row in range(y - 1, y + 2):
+				if self.explored_map[row][col] == Cell.OBSTACLE or self.explored_map[row][col] == Cell.UNEXPLORED:
+					return False
+
+		return True
+
+	def fastest_path_to_pos_to_check(self, pos_to_check):
 		if len(pos_to_check) == 0:
 			return False
 
 		best_pos = min(pos_to_check.keys(), key=lambda pos_i: FastestPath.heuristic_function(self.robot.pos, pos_i))
-		unexplored_pos = pos_to_check[best_pos]
+		direction = pos_to_check[best_pos]
 
 		fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, best_pos)
 		movements = fp.movements
@@ -149,18 +156,7 @@ class Exploration:
 
 			self.move(movement)
 
-		if best_pos[0] - unexplored_pos[0] == 2:
-			correct_direction = Direction.WEST
-		elif best_pos[0] - unexplored_pos[0] == -2:
-			correct_direction = Direction.EAST
-		elif best_pos[1] - unexplored_pos[1] == 2:
-			correct_direction = Direction.SOUTH
-		elif best_pos[1] - unexplored_pos[1] == -2:
-			correct_direction = Direction.NORTH
-		else:
-			raise ValueError
-
-		num_rotate_right = (correct_direction - self.robot.direction) % 4
+		num_rotate_right = (direction - self.robot.direction) % 4
 
 		if num_rotate_right == 2:
 			self.move(Movement.RIGHT)
@@ -174,25 +170,38 @@ class Exploration:
 
 		return True
 
-	def is_pos_safe(self, x, y):
-		if x < 1 or x > 13 or y < 1 or y > 18:
-			return False
+	def find_unexplored_to_check(self):
+		pos_to_check = {}
 
-		for col in range(x - 1, x + 2):
-			for row in range(y - 1, y + 2):
-				if self.explored_map[row][col] == Cell.OBSTACLE or self.explored_map[row][col] == Cell.UNEXPLORED:
-					return False
+		for r in range(20):
+			for c in range(15):
+				if self.explored_map[r][c] == Cell.UNEXPLORED:
+					for pos, direction in self.possible_cell_pos((c, r)):
+						pos_to_check[pos] = direction
 
-		return True
+		return pos_to_check
 
-	def possible_pos(self, goal):
+	def possible_cell_pos(self, goal):
 		d = set()
 		x, y = goal
 		arr = [(0, -2), (-1, -2), (1, -2), (0, 2), (-1, 2), (1, 2), (2, 0), (2, -1), (2, 1), (-2, 0), (-2, 1), (-2, -1)]
+
 		for i in arr:
 			pos = (x + i[0], y + i[1])
-			if self.is_pos_safe(*pos):
-				d.add(pos)
+
+			if self.is_pos_safe(pos):
+				if pos[0] - x == 2:
+					direction = Direction.WEST
+				elif pos[0] - x == -2:
+					direction = Direction.EAST
+				elif pos[1] - y == 2:
+					direction = Direction.SOUTH
+				elif pos[1] - y == -2:
+					direction = Direction.NORTH
+				else:
+					raise ValueError
+
+				d.add((pos, direction))
 
 		return d
 
@@ -228,7 +237,8 @@ class Exploration:
 			if self.is_limit_exceeded:
 				break
 
-			can_find = self.find_unexplored()
+			unexplored_pos_to_check = self.find_unexplored_to_check()
+			can_find = self.fastest_path_to_pos_to_check(unexplored_pos_to_check)
 			if not can_find:
 				break
 
