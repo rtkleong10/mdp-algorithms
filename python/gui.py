@@ -7,7 +7,8 @@ from enums import Cell, Direction
 from robots import SimulatorBot
 from map_descriptor import generate_map, generate_map_descriptor
 from fastest_path import FastestPath
-from exploration_class import Exploration
+from exploration import Exploration
+from image_rec_exploration import ImageRecExploration
 
 
 class GUI:
@@ -322,14 +323,10 @@ class SimulatorGUI(GUI):
     def exploration(self):
         self.reset()
         self.robot.map = self.map
+        with_image_rec = self.with_image_rec.get() == 1
 
         # Select exploration class
-        if self.with_image_rec.get() != 1:
-            exploration_class = Exploration
-        else:
-            # TODO: Add image recognition class
-            print("Image recognition")
-            exploration_class = Exploration
+        exploration_class = ImageRecExploration if with_image_rec else Exploration
 
         self.exp = exploration_class(
             self.robot,
@@ -343,6 +340,9 @@ class SimulatorGUI(GUI):
         self.exp.run_exploration()
         mdf = generate_map_descriptor(self.exp.explored_map)
         print("MDF:", ",".join(mdf))
+
+        if with_image_rec:
+            print(self.exp.obstacles)
 
     def update_canvas(self):
         super(SimulatorGUI, self).update_canvas()

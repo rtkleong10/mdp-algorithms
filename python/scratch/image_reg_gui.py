@@ -158,7 +158,7 @@ class SimulatorGUI(GUI):
     MAX_SPEED = 10
 
     def __init__(self):
-        with open("maps/sample_arena1.txt", "r") as f:
+        with open("../maps/sample_arena1.txt", "r") as f:
             strs = f.read().split("\n")
 
         self.selected_map = generate_map(*strs)
