@@ -1,4 +1,4 @@
-from exploration_class import Exploration
+from exploration import Exploration
 from enums import Cell, Direction, Movement
 from utils import print_map, generate_unexplored_map
 from map_descriptor import generate_map
@@ -7,9 +7,9 @@ from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
 
-class ImageRegAlgo(Exploration):
-    def __init__(self, robot, on_update_map=None, explored_map=None, coverage_limit=None, time_limit=None):
-        super().__init__(robot, on_update_map=on_update_map, explored_map=explored_map, coverage_limit=coverage_limit, time_limit=time_limit)
+class ImageRecExploration(Exploration):
+    def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None):
+        super().__init__(robot, on_update_map=on_update_map, on_calibrate=on_calibrate, explored_map=explored_map, coverage_limit=coverage_limit, time_limit=time_limit)
         self.obstacles ={} # {(pos):{0:0,1:0,2:0,3:0}} 0,1,2,3 represents each side
 
     # check if any of the obstacle side is blocked by another obstacle
@@ -288,7 +288,7 @@ def main():
     map_real = generate_map(*strs)
     bot = SimulatorBot(START_POS, Direction.EAST, lambda m: None)
     bot.map = map_real
-    exp = ImageRegAlgo(bot, lambda: None)
+    exp = ImageRecExploration(bot, lambda: None)
     exp.run_exploration()
     print(exp.obstacles)
 	# print_map(exp.explored_map)
