@@ -139,7 +139,6 @@ class ImageRecExploration(Exploration):
             self.move(Movement.RIGHT)
 
     def sense_and_repaint(self):
-        self.on_update_map()
         sensor_values = self.robot.sense()
 
         # TODO: Handle empty sensor_values (sensor_values = [])
@@ -168,18 +167,14 @@ class ImageRecExploration(Exploration):
                             self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.FREE
                         else:
                             self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.OBSTACLE
-                            if self.obstacles.get(pos_to_mark)==None:
-                                self.obstacles[pos_to_mark] = {0:0,1:0,2:0,3:0}
+                            if self.obstacles.get(pos_to_mark) == None:
+                                self.obstacles[pos_to_mark] = {0: 0, 1: 0, 2: 0, 3: 0}
                                 self.removeObstacleSide(pos_to_mark)
 
+        self.on_update_map()
+
     def move(self, movement, sense=True):
-        if movement == Movement.FORWARD or movement == Movement.BACKWARD:
-            self.prev_pos = self.robot.pos
-
-        self.robot.move(movement)
-
-        if sense:
-            self.sense_and_repaint()
+        super(ImageRecExploration, self).move(movement, sense)
 
         if movement == Movement.FORWARD:
             self.snapObstacleSide()
@@ -192,8 +187,7 @@ class ImageRecExploration(Exploration):
             if self.is_limit_exceeded:
                 break
 
-            print_map(self.explored_map, [self.robot.pos])
-            print()
+            # print_map(self.explored_map, [self.robot.pos])
             if self.entered_goal and self.robot.pos == START_POS:
                 break
 
@@ -247,7 +241,7 @@ class ImageRecExploration(Exploration):
             print("Can't go back to start?")
 
         for movement in movements:
-            self.move(movement)
+            self.move(movement, sense=False)
 
 
     def find_unseen_to_check(self):
