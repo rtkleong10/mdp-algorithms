@@ -216,8 +216,22 @@ class ImageRegAlgo(Exploration):
             if self.is_limit_exceeded:
                 break
 
-            can_find = self.find_unexplored()
+            unexplored_pos_to_check = self.find_unexplored_to_check()
+            can_find = self.fastest_path_to_pos_to_check(unexplored_pos_to_check)
+
             if not can_find:
+                break
+        while True:
+            if self.is_limit_exceeded:
+                break
+
+            unexplored_pos_to_check = self.find_unseen_to_check()
+            can_find = self.fastest_path_to_pos_to_check(unexplored_pos_to_check)
+
+            if can_find:
+                self.snapObstacleSide()
+
+            else:
                 break
 
         # Go back to start
@@ -229,6 +243,43 @@ class ImageRegAlgo(Exploration):
 
         for movement in movements:
             self.move(movement)
+
+
+    def find_unseen_to_check(self):
+        pos_to_check = {}
+
+        for obstacle_pos in self.obstacles:
+            for obstacle_direction in self.obstacles[obstacle_pos]:
+                for pos, direction in self.possible_photo_pos(obstacle_pos, obstacle_direction):
+                    pos_to_check[pos] = direction
+
+        print("dope: ",pos_to_check)
+        return pos_to_check
+
+
+    def possible_photo_pos(self, goal, direction):
+        d = set()
+        x, y = goal
+        robot_direction = Direction((direction - 1) % 4)
+
+        if direction == Direction.NORTH:
+            arr = [(x, y + 2), (x - 1, y + 3), (x, y + 3), (x + 1, y + 3)]
+        elif direction == Direction.EAST:
+            arr = [(x + 2, y), (x + 3, y - 1), (x + 3, y), (x + 3, y + 1)]
+        elif direction == Direction.SOUTH:
+            arr = [(x, y - 2), (x - 1, y - 3), (x, y - 3), (x + 1, y - 3)]
+        elif direction == Direction.WEST:
+            arr = [(x - 2, y), (x - 3, y - 1), (x - 3, y), (x - 3, y + 1)]
+        else:
+            print('GGWP')
+            raise ValueError
+
+        for pos in arr:
+            if self.is_pos_safe(pos):
+                print(goal,direction)
+                d.add((pos, robot_direction))
+
+        return d
 
 def main():
     with open("maps/sample_arena5.txt", "r") as f:
