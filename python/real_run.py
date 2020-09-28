@@ -62,8 +62,7 @@ class RealRun:
 
 				mdf = generate_map_descriptor(self.explored_map)
 				print("MDF:", ",".join(mdf))
-				# TODO: Standardise
-				self.rpi.send("Exploration complete!")
+				self.rpi.send(RPi.EXPLORE_MSG)
 
 			# Waypoint
 			elif msg_type == RPi.WAYPOINT_MSG:
@@ -109,8 +108,7 @@ class RealRun:
 				for movement in combined_movement_list:
 					self.robot.move(movement)
 
-				# TODO: Standardise
-				self.rpi.send("Fastest path complete!")
+				self.rpi.send(RPi.FASTEST_PATH_MSG)
 
 	def display_gui(self):
 		self.gui.start()
@@ -128,52 +126,44 @@ class RealRun:
 
 	def calibrate(self):
 		if self.robot.direction == Direction.NORTH:
-			# Calibrate with west wall
+			# Calibrate facing south wall
 			self.robot.move(Movement.LEFT)
-			self.rpi.calibrate()
+			self.robot.move(Movement.LEFT)
+			self.rpi.calibrate(is_front=True)
+			self.rpi.calibrate(is_front=False)
 
-			# Calibrate with south wall
-			self.robot.move(Movement.LEFT)
-			self.rpi.calibrate()
+			# Calibrate facing west wall
+			self.robot.move(Movement.RIGHT)
+			self.rpi.calibrate(is_front=True)
 
 			# Turn back
-			self.robot.move(Movement.RIGHT)
 			self.robot.move(Movement.RIGHT)
 
 		elif self.robot.direction == Direction.EAST:
-			# Calibrate with south wall
+			# Calibrate facing south wall
 			self.robot.move(Movement.RIGHT)
-			self.rpi.calibrate()
-
-			# Calibrate with west wall
-			self.robot.move(Movement.RIGHT)
-			self.rpi.calibrate()
+			self.rpi.calibrate(is_front=True)
+			self.rpi.calibrate(is_front=False)
 
 			# Turn back
-			self.robot.move(Movement.LEFT)
 			self.robot.move(Movement.LEFT)
 
 		elif self.robot.direction == Direction.SOUTH:
-			# Calibrate with south wall
-			self.rpi.calibrate()
-
-			# Calibrate with west wall
-			self.robot.move(Movement.RIGHT)
-			self.rpi.calibrate()
-			
-			# Turn back
-			self.robot.move(Movement.LEFT)
+			# Calibrate facing south wall
+			self.rpi.calibrate(is_front=True)
+			self.rpi.calibrate(is_front=False)
 
 		elif self.robot.direction == Direction.WEST:
-			# Calibrate with west wall
-			self.rpi.calibrate()
-
-			# Calibrate with south wall
+			# Calibrate facing south wall
 			self.robot.move(Movement.LEFT)
-			self.rpi.calibrate()
+			self.rpi.calibrate(is_front=True)
+			self.rpi.calibrate(is_front=False)
 
 			# Turn back
 			self.robot.move(Movement.RIGHT)
+
+			# Calibrate facing west wall
+			self.rpi.calibrate(is_front=True)
 
 
 if __name__ == '__main__':
