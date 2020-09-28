@@ -42,6 +42,7 @@ class GUI:
         self.display_canvas()
 
         self.root.mainloop()
+        
 
     def display_side_panel(self):
         pass
@@ -323,6 +324,7 @@ class SimulatorGUI(GUI):
         self.update_canvas()
         self.exp.run_exploration()
         print(generate_map_descriptor(self.exp.explored_map))
+        print(self.exp.obstacles)
 
     def update_canvas(self):
         super(SimulatorGUI, self).update_canvas()

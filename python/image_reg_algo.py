@@ -20,27 +20,35 @@ class ImageRegAlgo(Exploration):
                     self.obstacles[pos].pop(1)
                 if self.obstacles[(pos[0]+i,pos[1])].get(3)!=None:
                     self.obstacles[(pos[0]+i,pos[1])].pop(3)
+            if pos[0]+i >14 and self.obstacles[pos].get(1)!=None:
+                self.obstacles[pos].pop(1)
             if self.obstacles.get((pos[0]-i,pos[1]))!=None:
                 if self.obstacles[pos].get(3)!=None:
                     self.obstacles[pos].pop(3)
                 if self.obstacles[(pos[0]-i,pos[1])].get(1)!=None:
                     self.obstacles[(pos[0]-i,pos[1])].pop(1)
-            if self.obstacles.get((pos[0],pos[1]+1))!=None:
+            if pos[0]-i <0 and self.obstacles[pos].get(3)!=None:
+                self.obstacles[pos].pop(3)
+            if self.obstacles.get((pos[0],pos[1]+i))!=None:
                 if self.obstacles[pos].get(0)!=None:
                     self.obstacles[pos].pop(0)
-                if self.obstacles[(pos[0],pos[1]+1)].get(2)!=None:
-                    self.obstacles[(pos[0],pos[1]+1)].pop(2)
-            if self.obstacles.get((pos[0]+i,pos[1]-1))!=None:
+                if self.obstacles[(pos[0],pos[1]+i)].get(2)!=None:
+                    self.obstacles[(pos[0],pos[1]+i)].pop(2)
+            if pos[1]+ i >19 and self.obstacles[pos].get(0)!=None:
+                self.obstacles[pos].pop(0)
+            if self.obstacles.get((pos[0],pos[1]-i))!=None:
                 if self.obstacles[pos].get(2)!=None:
                     self.obstacles[pos].pop(2)
-                if self.obstacles[(pos[0]+i,pos[1]-1)].get(0)!=None:
-                    self.obstacles[(pos[0]+i,pos[1]-1)].pop(0)
+                if self.obstacles[(pos[0],pos[1]-i)].get(0)!=None:
+                    self.obstacles[(pos[0],pos[1]-i)].pop(0)
+            if pos[1]-i<0 and self.obstacles[pos].get(2)!=None:
+                self.obstacles[pos].pop(2)
 
     def checkObstacleSide(self,pos,direction): #check for obstacles within the weird shape
         obstacle = False
         if direction==0:
             for i in range(-1,2):
-                for j in range(3,5):
+                for j in range(3,4): #change to 2 grid away
                     if self.obstacles.get((pos[0]+i,pos[1]+j))!=None:
                         if self.obstacles[(pos[0]+i,pos[1]+j)].get(2)!=None:
                             self.obstacles[(pos[0]+i,pos[1]+j)].pop(2)
@@ -50,7 +58,7 @@ class ImageRegAlgo(Exploration):
                     self.obstacles[(pos[0],pos[1]+2)].pop(2)
                     obstacle = True     
         elif direction ==1:
-            for i in range(3,5):
+            for i in range(3,4): #change to 2 grid away
                 for j in range(-1,2):
                     if self.obstacles.get((pos[0]+i,pos[1]+j))!=None:
                         if self.obstacles[(pos[0]+i,pos[1]+j)].get(3)!=None:
@@ -62,7 +70,7 @@ class ImageRegAlgo(Exploration):
                     obstacle = True
         elif direction ==2:
             for i in range(-1,2):
-                for j in range(-4,-3):
+                for j in range(-3,-2): #change to 2 grid away
                     if self.obstacles.get((pos[0]+i,pos[1]+j))!=None:
                         if self.obstacles[(pos[0]+i,pos[1]+j)].get(0)!=None:
                             self.obstacles[(pos[0]+i,pos[1]+j)].pop(0)
@@ -72,7 +80,7 @@ class ImageRegAlgo(Exploration):
                     self.obstacles[(pos[0],pos[1]-2)].pop(0)
                     obstacle = True
         elif direction ==3:
-            for i in range(-4,-3):
+            for i in range(-3,-2): #change to 2 grid away
                 for j in range(-1,2):
                     if self.obstacles.get((pos[0]+i,pos[1]+j))!=None:
                         if self.obstacles[(pos[0]+i,pos[1]+j)].get(1)!=None:
@@ -159,6 +167,18 @@ class ImageRegAlgo(Exploration):
                                 self.obstacles[pos_to_mark] = {0:0,1:0,2:0,3:0}
                                 self.removeObstacleSide(pos_to_mark)
 
+    def move(self, movement, sense=True):
+        if movement == Movement.FORWARD or movement == Movement.BACKWARD:
+            self.prev_pos = self.robot.pos
+
+        self.robot.move(movement)
+
+        if sense:
+            self.sense_and_repaint()
+        
+        if movement == Movement.FORWARD:
+            self.snapObstacleSide()
+
     def run_exploration(self):
         self.start_time = time.time()
         self.sense_and_repaint()
@@ -181,7 +201,7 @@ class ImageRegAlgo(Exploration):
 
             elif self.check_forward():
                 self.move(Movement.FORWARD)
-                self.snapObstacleSide()
+                # self.snapObstacleSide()
 
             elif self.check_left():
                 self.move(Movement.LEFT)
