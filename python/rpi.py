@@ -81,9 +81,17 @@ class RPi:
 			return msg, ""
 
 	def send_movement(self, movement, robot):
-		# Sample message: M:F 1,2 E
+		print(movement)
+		if movement == Movement.FORWARD:
+			movement_str = "1"
+		elif isinstance(movement, Movement):
+			movement_str = Movement.convert_to_string(movement)
+		else:
+			movement_str = str(movement)
+
+		# Sample message: M:R 1,2 E
 		msg = "{} {},{} {}".format(
-			Movement.convert_to_string(movement),
+			movement_str,
 			robot.pos[0],
 			robot.pos[1],
 			Direction.convert_to_string(robot.direction),
@@ -137,6 +145,7 @@ class RPi:
 				return sensor_values
 
 	def take_photo(self):
+		# TODO: Add coordinates of obstacle
 		# Sample message: P
 		self.send(RPi.TAKE_PHOTO_MSG)
 

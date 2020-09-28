@@ -265,6 +265,30 @@ class FastestPath:
 
 		return movements
 
+	def combined_movements(self):
+		combined_movement_list = []
+		forward_count = 0
+
+		for movement in self.movements:
+			if movement == Movement.FORWARD:
+				forward_count += 1
+
+				if forward_count == 9:
+					combined_movement_list.append(forward_count)
+					forward_count = 0
+
+			else:
+				if forward_count != 0:
+					combined_movement_list.append(forward_count)
+
+				forward_count = 0
+				combined_movement_list.append(movement)
+
+		if forward_count != 0:
+			combined_movement_list.append(forward_count)
+
+		return combined_movement_list
+
 
 def main():
 	with open("maps/map3.txt", "r") as f:
