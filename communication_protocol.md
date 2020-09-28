@@ -68,12 +68,12 @@
     - Position and direction are for after the movement is completed
 - RPi -> Arduino: `movement` (character as position 2)
     - e.g. `1` for `M:1`, `R` for `M:R`
-- Arduino -> RPi: `M`
+- Arduino -> RPi -> Algo: `M`
 
 ### From Android
 - Android -> RPi: `M:<movement>`
     - e.g. `M:1`: Move forward one step
-- RPi -> Arduino: `movement` (character as position 2)
+- RPi -> Arduino: `<movement>` (character as position 2)
     - e.g. `1` for `M:1` (move forward one step), `R` for `M:R` (turn right)
 - Arduino -> RPi: `M`
 
