@@ -25,10 +25,12 @@ class GUI:
     YELLOW = "#DABF56"
 
     # TAGS
-    MAP_TAG = "map"
-    ROBOT_TAG = "robot"
+    MAP_TAG_0 = "map0"
+    MAP_TAG_1 = "map2"
+    ROBOT_TAG = "rob1t"
     
     def __init__(self, explored_map, robot):
+        self.map_tag = True
         self.root = None
         self.canvas = None
         self.map = explored_map
@@ -54,7 +56,7 @@ class GUI:
         self.update_robot()
 
     def update_map(self):
-        self.canvas.delete(GUI.MAP_TAG)
+        self.canvas.delete(GUI.MAP_TAG_1 if self.map_tag else GUI.MAP_TAG_0)
 
         for r in range(NUM_ROWS):
             for c in range(NUM_COLS):
@@ -83,8 +85,10 @@ class GUI:
                     width=6,
                     outline=GUI.WHITE,
                     fill=color,
-                    tag=GUI.MAP_TAG,
+                    tag=GUI.MAP_TAG_0 if self.map_tag else GUI.MAP_TAG_1,
                 )
+
+        self.map_tag = not self.map_tag
 
     def update_robot(self):
         self.canvas.delete(GUI.ROBOT_TAG)
@@ -290,7 +294,7 @@ class SimulatorGUI(GUI):
         return tk.Label(
             master,
             text=text,
-            font=Font(family="Helvetica", size=18 if is_small else 20, weight="normal" if is_small else "bold"),
+            font=Font(family="Helvetica", size=16 if is_small else 18, weight="normal" if is_small else "bold"),
         )
 
     @staticmethod
@@ -298,9 +302,9 @@ class SimulatorGUI(GUI):
         return tk.Button(
             master,
             text=text,
-            font=Font(family="Helvetica", size=16),
+            font=Font(family="Helvetica", size=12),
             command=command,
-            pady=5,
+            pady=3,
         )
 
     def display_error_msg(self, text):
