@@ -104,8 +104,8 @@ class RealRun:
 				# TODO: Calibrate for fastest path
 				self.robot.pos = START_POS
 				fp = FastestPath(self.explored_map, self.robot.direction, START_POS, GOAL_POS, self.waypoint)
-				combined_movement_list = fp.combined_movements()
-				for movement in combined_movement_list:
+				movements = fp.combined_movements()
+				for movement in movements:
 					self.robot.move(movement)
 
 				self.rpi.send(RPi.FASTEST_PATH_MSG)

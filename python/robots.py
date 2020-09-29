@@ -29,7 +29,17 @@ class Robot:
 		return None
 
 	def move(self, movement):
-		if movement == Movement.FORWARD:
+		if not isinstance(movement, Movement):
+			if self.direction == Direction.NORTH:
+				self.pos = (self.pos[0], self.pos[1] + movement)
+			elif self.direction == Direction.EAST:
+				self.pos = (self.pos[0] + movement, self.pos[1])
+			elif self.direction == Direction.SOUTH:
+				self.pos = (self.pos[0], self.pos[1] - movement)
+			elif self.direction == Direction.WEST:
+				self.pos = (self.pos[0] - movement, self.pos[1])
+
+		elif movement == Movement.FORWARD:
 			if self.direction == Direction.NORTH:
 				self.pos = (self.pos[0], self.pos[1] + 1)
 			elif self.direction == Direction.EAST:
