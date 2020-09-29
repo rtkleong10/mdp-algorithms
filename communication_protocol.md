@@ -55,8 +55,10 @@
     - The obstacle list may have 1 to 4 obstacles
     - There may be an image on multiple obstacles or none of them
     - The position and direction of the robot can be taken from the most recent movement message
-    - Take note that the obstacle list will not contain obstacles that have been previously been taken a photo of
-        - e.g. if (1, 1)'s south side has been previously taken a photo of, it will not appear in future obstacle lists regardless of whether it is range (if you want it to be included, please let us know)
+    - Take note that the obstacle list will not contain
+        - Obstacles that have been previously been taken a photo of
+            - e.g. if (1, 1)'s south side has been previously taken a photo of, it will not appear in future obstacle lists regardless of whether it is range (if you want it to be included, please let us know)
+        - Obstacles that we have not yet detected through our sensors
 - RPi -> Algo: `P`
     - Send after photo is taken
     
