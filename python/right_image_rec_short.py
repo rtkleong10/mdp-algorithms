@@ -171,7 +171,7 @@ class ImageRecShort(Exploration):
 
         # Go back to start
         fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, START_POS)
-        movements = fp.movements
+        movements = fp.movements if isinstance(self.robot, SimulatorBot) else fp.combined_movements()
 
         if movements is None:
             print("Can't go back to start?")

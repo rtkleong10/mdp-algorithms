@@ -241,7 +241,7 @@ class ImageRecRight(Exploration):
 
         # Go back to start
         fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, START_POS)
-        movements = fp.movements
+        movements = fp.movements if isinstance(self.robot, SimulatorBot) else fp.combined_movements()
 
         if movements is None:
             print("Can't go back to start?")
@@ -264,7 +264,6 @@ class ImageRecRight(Exploration):
     def possible_photo_pos(self, goal, direction):
         d = set()
         x, y = goal
-        robot_direction = Direction((direction + 1) % 4)
 
         if direction == Direction.NORTH:
             arr = [(0, 2), (-1, 3), (0, 3), (1, 3)]
@@ -283,7 +282,7 @@ class ImageRecRight(Exploration):
 
             if self.is_pos_safe(pos):
                 print(goal,direction)
-                d.add((pos, robot_direction))
+                d.add((pos, None))
 
         return d
 
