@@ -12,6 +12,8 @@ class RPi:
 	# Message Types
 	HELLO_MSG = "HELLO"
 	CALIBRATE_MSG = "C"
+	CALIBRATE_FRONT_MSG = "f"
+	CALIBRATE_RIGHT_MSG = "r"
 	EXPLORE_MSG = "E"
 	FASTEST_PATH_MSG = "F"
 	WAYPOINT_MSG = "W"
@@ -144,10 +146,10 @@ class RPi:
 
 				return sensor_values
 
-	def take_photo(self):
-		# TODO: Add coordinates of obstacle
+	def take_photo(self, obstacles):
 		# Sample message: P
-		self.send(RPi.TAKE_PHOTO_MSG)
+		msg = " ".join(["{},{}".format(*obstacle) for obstacle in obstacles])
+		self.send_msg_with_type(RPi.TAKE_PHOTO_MSG, msg)
 
 		while True:
 			# Sample message: P
@@ -157,15 +159,16 @@ class RPi:
 				print("Photo successfully taken")
 				break
 
-	def calibrate(self):
+	def calibrate(self, is_front=True):
+		calibrate_msg = RPi.CALIBRATE_FRONT_MSG if is_front else RPi.CALIBRATE_RIGHT_MSG
 		# Sample message: C
-		self.send(RPi.CALIBRATE_MSG)
+		self.send(calibrate_msg)
 
 		while True:
 			# Sample message: C
 			msg_type, msg = self.receive_msg_with_type()
 
-			if msg_type == RPi.CALIBRATE_MSG:
+			if msg_type == calibrate_msg:
 				print("Calibration successful")
 				break
 

@@ -2,11 +2,9 @@
 <img src="imgs/robot_setup.png" alt="Robot Setup" style="width:300px;"/>
 
 # Arduino
-## Interactions
-### Sensor Request
-- Algo sends to RPi: `S`
-- RPi sends to Arduino: `S`
-- Desired response from Arduino: `S:<sensor_1>,<sensor_2>,<sensor_3>,<sensor_4>,<sensor_5>,<sensor_6>`
+## Sensor Request
+- Algo -> RPi -> Arduino: `S`
+- Arduino -> RPi -> Algo: `S:<sensor_1>,<sensor_2>,<sensor_3>,<sensor_4>,<sensor_5>,<sensor_6>`
     - e.g. `S:1,2,1,2,1,2`
     - Sensor order is in the robot setup
         - Red: Short range sensor
@@ -17,47 +15,88 @@
         - `0`: Higher than upper range
         - `1-5`: How many blocks away is the nearest obstacle (1: Right next to robot)
 
-### Calibration
-- Algo sends to RPi: `C`
-- RPi sends to Arduino: `C`
-- Desired response from Arduino: `C`
-    - Calibrate the front facing sensors with the wall (sensor value = 1)
+## Calibration Request
+### From Android
+- Android -> RPi -> Algo: `C`
+    - To start the calibation algorithm
+    - Algo will turn robot to face south and west walls around start pos for calibation
+
+### Calibrate with Front Facing Sensors (Sensors 2 & 4)
+- Algo -> RPi -> Arduino: `f`
+- Arduino -> RPi -> Algo: `f`
+    - Send after calibration is finished
+    - Calibrate the front facing sensors 2 & 4 with the wall (sensor value = 1)
+
+### Calibrate with Right Facing Sensors (Sensors 5 & 6)
+- Algo -> RPi -> Arduino: `r`
+- Arduino -> RPi -> Algo: `r`
+    - Send after calibration is finished
+    - Calibrate the right facing sensors 5 & 6 with the wall (sensor value = 1)
 
 # Android
-## Send
-- Start exploration: `E`
-- Start fastest path: `F`
-- Reposition: `R:x,y <direction>`
+## Set Starting Point (Reposition Robot)
+- Android -> RPi -> Algo: `R:x,y <direction>`
     - e.g. `R:1,2 N`: Reposition to position (1, 2) facing north
-- Set waypoint: `W:x,y`
+    - Send whenever the starting point position or direction is updated
+
+## Set Waypoint
+- Android -> RPi -> Algo: `W:x,y`
     - e.g. `W:2,12`: Set waypoint to (2, 12)
 
-## Receive
-- Exploration completion: `Exploration complete!`
-- Fastest path completion: `Fastest path complete!`
-
 # RPi
-## Receive
-- Hello message: `HELLO`
+## Hello Message
+- Algo -> RPi: `HELLO`
     - Sent at the beginning to establish connection
+- RPi -> Algo: `HELLO TEAM`
 
-## Interactions
-### Photo Request
-- You will receive: `P`
-- Desired response: `P`
+## Photo Request
+- Algo -> RPi: `P:<list of possible nearby obstacles>`
+    - e.g. `P:1,1 2,1 1,3`: Take photo and the possible nearby obstacles are (1, 1), (2, 1) and (1,3)
+    - The obstacle list may have 1 to 4 obstacles
+    - There may be an image on multiple obstacles or none of them
+    - The position and direction of the robot can be taken from the most recent movement message
+    - Take note that the obstacle list will not contain obstacles that have been previously been taken a photo of
+        - e.g. if (1, 1)'s south side has been previously taken a photo of, it will not appear in future obstacle lists regardless of whether it is range (if you want it to be included, please let us know)
+- RPi -> Algo: `P`
+    - Send after photo is taken
     
 # Everyone
-## Receive/Interaction
-- Move: `M:<movement> x,y <direction>`
-    - e.g. `M:R 2,1 E`: Move forward and you will be in position (2, 1) facing East
+## Movement Messages
+### From Algo
+- Algo -> RPi -> Android: `M:<movement> x,y <direction>`
+    - e.g. `M:1 2,1 E`: Move forward one step and you will be in position (2, 1) facing East
     - Position and direction are for after the movement is completed
-    - RPi sends to Arduino: `<movement>`
-        - e.g. `R`
-    - Desired response from Arduino: `M`
-- Map Descriptor Format: `D:<explored string>,<obstacle string>`
+- RPi -> Arduino: `movement` (character as position 2)
+    - e.g. `1` for `M:1`, `R` for `M:R`
+- Arduino -> RPi -> Algo: `M`
+
+### From Android
+- Android -> RPi: `M:<movement>`
+    - e.g. `M:1`: Move forward one step
+- RPi -> Arduino: `<movement>` (character as position 2)
+    - e.g. `1` for `M:1` (move forward one step), `R` for `M:R` (turn right)
+- Arduino -> RPi: `M`
+
+## Map Descriptor Format
+- Algo -> RPi -> Android: `D:<explored string>,<obstacle string>`
     - e.g. `D:FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,000000000400000001C800000000000700000000800000001F80000700000000020000000000`
     - Based on the format provided by NTU
     - Explored string and obstacle string will be concatenated with a comma
+    - Arduino can ignore this message
+
+## Exploration
+- Android -> RPi -> Algo: `E`
+    - Sent to start exploration
+- Algo -> RPi -> Android: `E`
+    - Sent when exploration is complete
+- Arduino can ignore these messages
+
+## Fastest Path
+- Android -> RPi -> Algo: `F`
+    - Sent to start fastest path
+- Algo -> RPi -> Android: `F`
+    - Sent when fastest path is complete
+- Arduino can ignore these messages
 
 # Terminology
 ## Positions
@@ -77,6 +116,14 @@
 ## Movements
 - 1-9: Forward x steps
     - e.g. 2: Move forward 2 times
+    - The maximum number of forward steps in a row will be 9
 - R: Rotate right
 - B: Backward
 - L: Rotate left
+
+## Messages
+- Sender -> Receiver
+    - Sender sends message to receiver
+- Sender -> Forwarder -> Receiver
+    - Sender sends message to forwarder
+    - Forwared sends the same message to receiver

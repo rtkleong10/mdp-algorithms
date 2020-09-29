@@ -252,16 +252,16 @@ class FastestPath:
 			# Determine robot movements
 			num_rotate_right = (move_direction - robot_direction) % 4
 
-			if num_rotate_right == 2:
-				movements.append(Movement.BACKWARD)
-			else:
-				if num_rotate_right == 1:
-					movements.append(Movement.RIGHT)
-				elif num_rotate_right == 3:
-					movements.append(Movement.LEFT)
+			if num_rotate_right == 1:
+				movements.append(Movement.RIGHT)
+			elif num_rotate_right == 2:
+				movements.append(Movement.RIGHT)
+				movements.append(Movement.RIGHT)
+			elif num_rotate_right == 3:
+				movements.append(Movement.LEFT)
 
-				movements.append(Movement.FORWARD)
-				robot_direction = move_direction
+			movements.append(Movement.FORWARD)
+			robot_direction = move_direction
 
 		return movements
 
