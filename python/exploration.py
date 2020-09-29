@@ -162,7 +162,7 @@ class Exploration:
 
 			self.move(movement)
 
-		num_rotate_right = (direction - self.robot.direction) % 4
+		num_rotate_right = (direction - self.robot.direction) % 4 if direction is not None else 0
 
 		if num_rotate_right == 2:
 			self.move(Movement.RIGHT)

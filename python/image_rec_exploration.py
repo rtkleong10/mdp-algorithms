@@ -257,8 +257,6 @@ class ImageRecExploration(Exploration):
     def possible_photo_pos(self, goal, direction):
         d = set()
         x, y = goal
-        robot_direction = Direction((direction - 1) % 4)
-
         if direction == Direction.NORTH:
             arr = [(0, 2), (-1, 3), (0, 3), (1, 3)]
         elif direction == Direction.EAST:
@@ -268,15 +266,13 @@ class ImageRecExploration(Exploration):
         elif direction == Direction.WEST:
             arr = [(-2, 0), (-3, -1), (-3, 0), (-3, 1)]
         else:
-            print('GGWP')
             raise ValueError
 
         for i in arr:
             pos = (x + i[0], y + i[1])
 
             if self.is_pos_safe(pos):
-                print(goal,direction)
-                d.add((pos, robot_direction))
+                d.add((pos, None))
 
         return d
 
