@@ -7,7 +7,7 @@ from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
 
-class ImageRecExploration(Exploration):
+class ImageRecRight(Exploration):
     def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None, on_take_photo=None):
         super().__init__(robot, on_update_map=on_update_map, on_calibrate=on_calibrate, explored_map=explored_map, coverage_limit=coverage_limit, time_limit=time_limit)
 
@@ -102,47 +102,47 @@ class ImageRecExploration(Exploration):
         print('here')
         direction = self.robot.direction
         pos = self.robot.pos
-        #if left side got obstacles with sides never see before, take photo
-        left = (direction-1)%4
-        obstacles = self.checkObstacleSide(pos,left)
+        #if right side got obstacles with sides never see before, take photo
+        right = (direction+1)%4
+        obstacles = self.checkObstacleSide(pos,right)
         if len(obstacles) != 0:
             self.on_take_photo(obstacles)
-            print('left take photo')
+            print('right take photo')
         #if front got obstacles with sides never see before, turn and take photo
         obstacles = self.checkObstacleSide(pos,direction)
         front= False
         if len(obstacles) != 0:
-            self.move(Movement.RIGHT)
+            self.move(Movement.LEFT)
             self.on_take_photo(obstacles)
             print('front take photo')
             front = True
-        #if right side got obstacles with sides never see before, turn and take photo
-        right = (direction+1)%4
-        obstacles = self.checkObstacleSide(pos,right)
-        right = False
+        #if left side got obstacles with sides never see before, turn and take photo
+        left = (direction-1)%4
+        obstacles = self.checkObstacleSide(pos,left)
+        left = False
         if len(obstacles) != 0:
             if not front:
-                self.move(Movement.RIGHT)
-            self.move(Movement.RIGHT)
-            self.on_take_photo(obstacles)
-            print('right take photo')
-            right = True
-        elif front:
+                self.move(Movement.LEFT)
             self.move(Movement.LEFT)
+            self.on_take_photo(obstacles)
+            print('left take photo')
+            left = True
+        elif front:
+            self.move(Movement.RIGHT)
         # if back got obstacles....
         back = (direction+2)%4
         obstacles = self.checkObstacleSide(pos,back)
         if len(obstacles) != 0:
-            if not right:
-                self.move(Movement.LEFT)
-            else:
+            if not left:
                 self.move(Movement.RIGHT)
+            else:
+                self.move(Movement.LEFT)
             print('back take photo')
             self.on_take_photo(obstacles)
+            self.move(Movement.LEFT)
+        elif left:
             self.move(Movement.RIGHT)
-        elif right:
-            self.move(Movement.LEFT)
-            self.move(Movement.LEFT)
+            self.move(Movement.RIGHT)
 
     def sense_and_repaint(self):
         sensor_values = self.robot.sense()
@@ -180,7 +180,7 @@ class ImageRecExploration(Exploration):
         self.on_update_map()
 
     def move(self, movement, sense=True):
-        super(ImageRecExploration, self).move(movement, sense)
+        super(ImageRecRight, self).move(movement, sense)
 
         if movement == Movement.FORWARD:
             self.snapObstacleSide()
@@ -264,7 +264,7 @@ class ImageRecExploration(Exploration):
     def possible_photo_pos(self, goal, direction):
         d = set()
         x, y = goal
-        robot_direction = Direction((direction - 1) % 4)
+        robot_direction = Direction((direction + 1) % 4)
 
         if direction == Direction.NORTH:
             arr = [(0, 2), (-1, 3), (0, 3), (1, 3)]
@@ -294,7 +294,7 @@ def main():
     map_real = generate_map(*strs)
     bot = SimulatorBot(START_POS, Direction.EAST, lambda m: None)
     bot.map = map_real
-    exp = ImageRecExploration(bot, lambda: None)
+    exp = ImageRecRight(bot, lambda: None)
     exp.run_exploration()
     print(exp.obstacles)
     # print_map(exp.explored_map)
