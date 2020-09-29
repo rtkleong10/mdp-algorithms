@@ -162,7 +162,7 @@ class Exploration:
 
 			self.move(movement)
 
-		num_rotate_right = (direction - self.robot.direction) % 4
+		num_rotate_right = (direction - self.robot.direction) % 4 if direction is not None else 0
 
 		if num_rotate_right == 2:
 			self.move(Movement.RIGHT)
@@ -250,8 +250,7 @@ class Exploration:
 
 		# Go back to start
 		fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, START_POS)
-		movements = fp.movements
-
+		movements = fp.movements if isinstance(self.robot, SimulatorBot) else fp.combined_movements()
 		if movements is None:
 			print("Can't go back to start?")
 

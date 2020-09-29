@@ -11,6 +11,8 @@ from gui import GUI
 from utils import generate_unexplored_map
 import re
 
+# Set to True for image recognition exploration
+USE_IMAGE_REC_EXPLORATION = False
 
 class RealRun:
 	def __init__(self):
@@ -21,14 +23,15 @@ class RealRun:
 			on_move=self.on_move,
 			get_sensor_values=self.rpi.receive_sensor_values,
 		)
-		self.explored_map = generate_unexplored_map()
-		self.gui = GUI(self.explored_map, self.robot)
+		# self.explored_map = generate_unexplored_map()
 		self.waypoint = None
 
 		# with open("maps/map3.txt", "r") as f:
 		# 	strs = f.read().split("\n")
 		#
 		# self.explored_map = generate_map(*strs)
+
+		self.gui = GUI(self.explored_map, self.robot)
 
 	def connect_to_rpi(self):
 		self.rpi.open_connection()
@@ -42,22 +45,28 @@ class RealRun:
 
 			# Exploration
 			elif msg_type == RPi.EXPLORE_MSG:
-				exp = Exploration(
-					robot=self.robot,
-					on_update_map=self.on_update,
-					on_calibrate=self.rpi.calibrate,
-					explored_map=self.explored_map,
-					time_limit=360
-				)
-				# TODO: Uncomment for image recognition exploration
-				# exp = ImageRecExploration(
-				# 	robot=self.robot,
-				# 	on_update_map=self.on_update,
-				# 	on_calibrate=self.rpi.calibrate,
-				# 	on_take_photo=self.rpi.take_photo,
-				# 	explored_map=self.explored_map,
-				# 	time_limit=360
-				# )
+				self.explored_map = generate_unexplored_map()
+				self.gui.map = self.explored_map
+				self.on_update()
+
+				if USE_IMAGE_REC_EXPLORATION:
+					exp = ImageRecExploration(
+						robot=self.robot,
+						on_update_map=self.on_update,
+						on_calibrate=self.rpi.calibrate,
+						on_take_photo=self.rpi.take_photo,
+						explored_map=self.explored_map,
+						time_limit=360
+					)
+				else:
+					exp = Exploration(
+						robot=self.robot,
+						on_update_map=self.on_update,
+						on_calibrate=self.rpi.calibrate,
+						explored_map=self.explored_map,
+						time_limit=360
+					)
+
 				exp.run_exploration()
 
 				mdf = generate_map_descriptor(self.explored_map)
@@ -104,8 +113,8 @@ class RealRun:
 				# TODO: Calibrate for fastest path
 				self.robot.pos = START_POS
 				fp = FastestPath(self.explored_map, self.robot.direction, START_POS, GOAL_POS, self.waypoint)
-				combined_movement_list = fp.combined_movements()
-				for movement in combined_movement_list:
+				movements = fp.combined_movements()
+				for movement in movements:
 					self.robot.move(movement)
 
 				self.rpi.send(RPi.FASTEST_PATH_MSG)
