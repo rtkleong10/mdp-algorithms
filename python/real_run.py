@@ -45,6 +45,8 @@ class RealRun:
 
 			# Exploration
 			elif msg_type == RPi.EXPLORE_MSG:
+				# TODO: Uncomment
+				# self.rpi.set_speed(is_high=False)
 				self.explored_map = generate_unexplored_map()
 				self.gui.map = self.explored_map
 				self.on_update()
@@ -110,7 +112,9 @@ class RealRun:
 
 			# Fastest Path
 			elif msg_type == RPi.FASTEST_PATH_MSG:
-				# TODO: Calibrate for fastest path
+				# TODO: Uncomment
+				# self.rpi.set_speed(is_high=True)
+
 				self.robot.pos = START_POS
 				fp = FastestPath(self.explored_map, self.robot.direction, START_POS, GOAL_POS, self.waypoint)
 				movements = fp.combined_movements()

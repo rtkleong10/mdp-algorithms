@@ -22,6 +22,8 @@ class RPi:
 	TAKE_PHOTO_MSG = "P"
 	MOVEMENT_MSG = "M"
 	MDF_MSG = "D"
+	HIGH_SPEED_MSG = "H"
+	LOW_SPEED_MSG = "L"
 	TYPE_DIVIDER = ":"
 
 	def __init__(self):
@@ -170,6 +172,19 @@ class RPi:
 
 			if msg_type == calibrate_msg:
 				print("Calibration successful")
+				break
+
+	def set_speed(self, is_high=True):
+		speed_msg = RPi.HIGH_SPEED_MSG if is_high else RPi.LOW_SPEED_MSG
+		# Sample message: H
+		self.send(speed_msg)
+
+		while True:
+			# Sample message: H
+			msg_type, msg = self.receive_msg_with_type()
+
+			if msg_type == speed_msg:
+				print("Successfully updated speed to", "high" if is_high else "low", "speed")
 				break
 
 
