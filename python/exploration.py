@@ -7,7 +7,6 @@ from robots import SimulatorBot
 import time
 
 
-# TODO: Rename file to exploration.py
 class Exploration:
 	def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None):
 		"""

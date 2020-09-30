@@ -227,7 +227,6 @@ class FastestPathEuclidean(FastestPath):
 					pos = self.map[i][j]
 					perpendicular_distance = abs(m * j - i + c) / denominator
 
-					# TODO: Tweak perpendicular distance from centre of obstacle to line (currently, it's sqrt(2))
 					if pos == Cell.OBSTACLE and perpendicular_distance <= 1.414:
 						return True
 
