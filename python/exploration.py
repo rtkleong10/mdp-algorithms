@@ -297,7 +297,7 @@ class Exploration:
 		return is_calibrated
 
 	def move(self, movement, sense=True):
-		if movement == Movement.FORWARD or movement == Movement.BACKWARD:
+		if not isinstance(movement, Movement) or movement == Movement.FORWARD or movement == Movement.BACKWARD:
 			self.prev_pos = self.robot.pos
 			self.steps_without_calibration += 1
 

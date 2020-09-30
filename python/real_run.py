@@ -23,7 +23,7 @@ class RealRun:
 			on_move=self.on_move,
 			get_sensor_values=self.rpi.receive_sensor_values,
 		)
-		# self.explored_map = generate_unexplored_map()
+		self.explored_map = generate_unexplored_map()
 		self.waypoint = None
 
 		# with open("maps/map3.txt", "r") as f:
@@ -118,8 +118,10 @@ class RealRun:
 				self.robot.pos = START_POS
 				fp = FastestPath(self.explored_map, self.robot.direction, START_POS, GOAL_POS, self.waypoint)
 				movements = fp.combined_movements()
-				for movement in movements:
-					self.robot.move(movement)
+
+				if movements is not None:
+					for movement in movements:
+						self.robot.move(movement)
 
 				self.rpi.send(RPi.FASTEST_PATH_MSG)
 
