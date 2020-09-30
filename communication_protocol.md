@@ -18,7 +18,7 @@
 ## Calibration Request
 ### From Android
 - Android -> RPi -> Algo: `C`
-    - To start the calibation algorithm
+    - To start the calibration algorithm
     - Algo will turn robot to face south and west walls around start pos for calibation
 
 ### Calibrate with Front Facing Sensors (Sensors 2 & 4)

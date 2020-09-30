@@ -163,11 +163,11 @@ class RPi:
 
 	def calibrate(self, is_front=True):
 		calibrate_msg = RPi.CALIBRATE_FRONT_MSG if is_front else RPi.CALIBRATE_RIGHT_MSG
-		# Sample message: C
+		# Sample message: f
 		self.send(calibrate_msg)
 
 		while True:
-			# Sample message: C
+			# Sample message: f
 			msg_type, msg = self.receive_msg_with_type()
 
 			if msg_type == calibrate_msg:
