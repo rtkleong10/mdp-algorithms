@@ -72,7 +72,12 @@
         - Obstacles that we have not yet detected through our sensors
 - RPi -> Algo: `P`
     - Send after photo is taken
-    
+
+## Image Recognition Result
+- RPi -> Android: `I:x,y <image ID>`
+    - e.g. `I:4,5 3`: Right arrow on obstacle at position (4, 5)
+    - Image ID is based on the list provided by NTU
+
 # Everyone
 ## Movement Messages
 ### From Algo
