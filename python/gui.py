@@ -8,7 +8,7 @@ from robots import SimulatorBot
 from map_descriptor import generate_map, generate_map_descriptor
 from fastest_path import FastestPath
 from exploration import Exploration
-from image_rec_exploration import ImageRecExploration
+from right_image_rec_exploration import ImageRecRight
 
 
 class GUI:
@@ -330,7 +330,7 @@ class SimulatorGUI(GUI):
         with_image_rec = self.with_image_rec.get() == 1
 
         # Select exploration class
-        exploration_class = ImageRecExploration if with_image_rec else Exploration
+        exploration_class = ImageRecRight if with_image_rec else Exploration
 
         self.exp = exploration_class(
             self.robot,

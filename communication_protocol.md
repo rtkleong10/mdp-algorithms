@@ -18,7 +18,7 @@
 ## Calibration Request
 ### From Android
 - Android -> RPi -> Algo: `C`
-    - To start the calibation algorithm
+    - To start the calibration algorithm
     - Algo will turn robot to face south and west walls around start pos for calibation
 
 ### Calibrate with Front Facing Sensors (Sensors 2 & 4)
@@ -32,6 +32,17 @@
 - Arduino -> RPi -> Algo: `r`
     - Send after calibration is finished
     - Calibrate the right facing sensors 5 & 6 with the wall (sensor value = 1)
+
+## Set Speed Request
+### Low Speed (For Exploration)
+- Algo -> RPi -> Arduino: `L`
+- Arduino -> RPi -> Algo: `L`
+    - Send after speed has been updated to low speed
+
+### High Speed (For Fastest Path)
+- Algo -> RPi -> Arduino: `H`
+- Arduino -> RPi -> Algo: `H`
+    - Send after speed has been updated to high speed
 
 # Android
 ## Set Starting Point (Reposition Robot)
@@ -55,8 +66,10 @@
     - The obstacle list may have 1 to 4 obstacles
     - There may be an image on multiple obstacles or none of them
     - The position and direction of the robot can be taken from the most recent movement message
-    - Take note that the obstacle list will not contain obstacles that have been previously been taken a photo of
-        - e.g. if (1, 1)'s south side has been previously taken a photo of, it will not appear in future obstacle lists regardless of whether it is range (if you want it to be included, please let us know)
+    - Take note that the obstacle list will not contain
+        - Obstacles that have been previously been taken a photo of
+            - e.g. if (1, 1)'s south side has been previously taken a photo of, it will not appear in future obstacle lists regardless of whether it is range (if you want it to be included, please let us know)
+        - Obstacles that we have not yet detected through our sensors
 - RPi -> Algo: `P`
     - Send after photo is taken
     

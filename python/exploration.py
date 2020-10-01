@@ -7,7 +7,6 @@ from robots import SimulatorBot
 import time
 
 
-# TODO: Rename file to exploration.py
 class Exploration:
 	def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None):
 		"""
@@ -297,7 +296,7 @@ class Exploration:
 		return is_calibrated
 
 	def move(self, movement, sense=True):
-		if movement == Movement.FORWARD or movement == Movement.BACKWARD:
+		if not isinstance(movement, Movement) or movement == Movement.FORWARD or movement == Movement.BACKWARD:
 			self.prev_pos = self.robot.pos
 			self.steps_without_calibration += 1
 

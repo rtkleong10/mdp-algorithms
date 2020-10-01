@@ -1,7 +1,7 @@
 from rpi import RPi
 from fastest_path import FastestPath
 from exploration import Exploration
-from image_rec_exploration import ImageRecExploration
+from right_image_rec_exploration import ImageRecRight
 from threading import Thread
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import RealBot
@@ -23,7 +23,7 @@ class RealRun:
 			on_move=self.on_move,
 			get_sensor_values=self.rpi.receive_sensor_values,
 		)
-		# self.explored_map = generate_unexplored_map()
+		self.explored_map = generate_unexplored_map()
 		self.waypoint = None
 
 		# with open("maps/map3.txt", "r") as f:
@@ -45,12 +45,14 @@ class RealRun:
 
 			# Exploration
 			elif msg_type == RPi.EXPLORE_MSG:
+				# TODO: Uncomment
+				# self.rpi.set_speed(is_high=False)
 				self.explored_map = generate_unexplored_map()
 				self.gui.map = self.explored_map
 				self.on_update()
 
 				if USE_IMAGE_REC_EXPLORATION:
-					exp = ImageRecExploration(
+					exp = ImageRecRight(
 						robot=self.robot,
 						on_update_map=self.on_update,
 						on_calibrate=self.rpi.calibrate,
@@ -110,12 +112,16 @@ class RealRun:
 
 			# Fastest Path
 			elif msg_type == RPi.FASTEST_PATH_MSG:
-				# TODO: Calibrate for fastest path
+				# TODO: Uncomment
+				# self.rpi.set_speed(is_high=True)
+
 				self.robot.pos = START_POS
 				fp = FastestPath(self.explored_map, self.robot.direction, START_POS, GOAL_POS, self.waypoint)
 				movements = fp.combined_movements()
-				for movement in movements:
-					self.robot.move(movement)
+
+				if movements is not None:
+					for movement in movements:
+						self.robot.move(movement)
 
 				self.rpi.send(RPi.FASTEST_PATH_MSG)
 

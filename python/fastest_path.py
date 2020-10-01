@@ -269,6 +269,9 @@ class FastestPath:
 		combined_movement_list = []
 		forward_count = 0
 
+		if self.movements is None:
+			return None
+
 		for movement in self.movements:
 			if movement == Movement.FORWARD:
 				forward_count += 1
