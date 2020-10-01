@@ -1,7 +1,7 @@
 from rpi import RPi
 from fastest_path import FastestPath
 from exploration import Exploration
-from image_rec_exploration import ImageRecExploration
+from right_image_rec_exploration import ImageRecRight
 from threading import Thread
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import RealBot
@@ -52,7 +52,7 @@ class RealRun:
 				self.on_update()
 
 				if USE_IMAGE_REC_EXPLORATION:
-					exp = ImageRecExploration(
+					exp = ImageRecRight(
 						robot=self.robot,
 						on_update_map=self.on_update,
 						on_calibrate=self.rpi.calibrate,
