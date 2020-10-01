@@ -41,6 +41,8 @@ class RealRun:
 			msg_type, msg = self.rpi.receive_msg_with_type()
 
 			if msg_type == RPi.CALIBRATE_MSG:
+				# TODO: Uncomment
+				# self.rpi.set_speed(is_high=False)
 				self.calibrate()
 
 			# Exploration
