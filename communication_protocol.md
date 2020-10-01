@@ -77,6 +77,8 @@
 - RPi -> Android: `I:x,y <image ID>`
     - e.g. `I:4,5 3`: Right arrow on obstacle at position (4, 5)
     - Image ID is based on the list provided by NTU
+    - If RPi doesn't know the position of the image, do not send this message
+        - Just display on the PC
 
 # Everyone
 ## Movement Messages
