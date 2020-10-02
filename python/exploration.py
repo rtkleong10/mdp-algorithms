@@ -6,6 +6,7 @@ from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
 
+MIN_STEPS_WITHOUT_CALIBRATION = 7
 
 class Exploration:
 	def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None):
@@ -300,7 +301,7 @@ class Exploration:
 			self.prev_pos = self.robot.pos
 			self.steps_without_calibration += 1
 
-		if self.steps_without_calibration > 7:
+		if self.steps_without_calibration > MIN_STEPS_WITHOUT_CALIBRATION:
 			can_calibrate = self.calibrate()
 
 			if can_calibrate:
