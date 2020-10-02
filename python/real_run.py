@@ -48,8 +48,6 @@ class RealRun:
 			# msg = msg_parts[1] if len(msg_parts) > 1 else ""
 
 			if msg_type == RPi.CALIBRATE_MSG:
-				# TODO: Uncomment
-				# self.rpi.set_speed(is_high=False)
 				self.calibrate()
 
 			# Exploration
@@ -78,7 +76,16 @@ class RealRun:
 						time_limit=360
 					)
 
+				# Run exploration
 				exp.run_exploration()
+
+				# Prepare robot position for fastest path
+				self.calibrate()
+
+				if self.robot.direction == Direction.SOUTH:
+					self.robot.move(Movement.LEFT)
+				elif self.robot.direction == Direction.WEST:
+					self.robot.move(Movement.RIGHT)
 
 				mdf = generate_map_descriptor(self.explored_map)
 				print("MDF:", ",".join(mdf))
@@ -117,6 +124,9 @@ class RealRun:
 					for j in range(max(0, c - 1), min(NUM_COLS, c + 2)):
 						self.explored_map[i][j] = Cell.FREE
 
+				if self.robot.pos == START_POS:
+					self.calibrate()
+
 				self.update_gui()
 
 			# Fastest Path
@@ -151,6 +161,9 @@ class RealRun:
 		self.update_gui()
 
 	def calibrate(self):
+		# TODO: Uncomment
+		# self.rpi.set_speed(is_high=False)
+
 		if self.robot.direction == Direction.NORTH:
 			# Calibrate facing south wall
 			self.robot.move(Movement.LEFT)
