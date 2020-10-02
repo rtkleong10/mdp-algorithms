@@ -11,6 +11,9 @@ from gui import GUI
 from utils import generate_unexplored_map
 import re
 
+# Set to True for Algo GUI
+USE_GUI = False
+
 # Set to True for image recognition exploration
 USE_IMAGE_REC_EXPLORATION = False
 
@@ -135,7 +138,8 @@ class RealRun:
 		self.gui.start()
 
 	def update_gui(self):
-		self.gui.update_canvas()
+		if USE_GUI:
+			self.gui.update_canvas()
 
 	def on_move(self, movement, sense=False):
 		sensor_values = self.rpi.send_movement(movement, self.robot, sense)
@@ -190,5 +194,9 @@ class RealRun:
 
 if __name__ == '__main__':
 	rr = RealRun()
-	Thread(target=rr.connect_to_rpi).start()
-	rr.display_gui()
+
+	if USE_GUI:
+		Thread(target=rr.connect_to_rpi).start()
+		rr.display_gui()
+	else:
+		rr.connect_to_rpi()
