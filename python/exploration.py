@@ -320,7 +320,6 @@ class Exploration:
 		if sensor_values is None:
 			sensor_values = self.robot.sense()
 
-		# TODO: Handle empty sensor_values (sensor_values = [])
 		for i in range(len(sensor_values)):
 			sensor_value = sensor_values[i]
 			sensor = self.robot.sensors[i]

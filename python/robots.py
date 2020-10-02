@@ -130,7 +130,6 @@ class SimulatorBot(Robot):
 
 
 class Sensor:
-	# TODO: Add real ranges
 	# Inclusive at lower, exclusive at upper
 	SR_RANGE = (1, 3)
 	LR_RANGE = (1, 6)
