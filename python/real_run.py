@@ -27,7 +27,7 @@ class RealRun:
 			get_sensor_values=self.rpi.receive_sensor_values,
 		)
 		self.exp = None
-		self.is_running = True
+		self.is_running = False
 		self.explored_map = generate_unexplored_map()
 		self.waypoint = None
 
@@ -150,8 +150,10 @@ class RealRun:
 
 				if movements is not None:
 					for movement in movements:
-						if self.is_running:
-							self.robot.move(movement)
+						if not self.is_running:
+							break
+
+						self.robot.move(movement)
 
 				self.rpi.send(RPi.FASTEST_PATH_MSG)
 
@@ -218,7 +220,8 @@ class RealRun:
 			self.rpi.calibrate(is_front=True)
 
 	def on_quit(self):
-		self.exp.is_running = False
+		if self.exp:
+			self.exp.is_running = False
 		self.is_running = False
 
 if __name__ == '__main__':
