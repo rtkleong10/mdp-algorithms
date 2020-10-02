@@ -6,7 +6,7 @@ from threading import Thread
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import RealBot
 from enums import Direction, Cell, Movement
-from map_descriptor import generate_map_descriptor
+from map_descriptor import generate_map_descriptor, generate_map
 from gui import GUI
 from utils import generate_unexplored_map
 import re
@@ -26,10 +26,10 @@ class RealRun:
 		self.explored_map = generate_unexplored_map()
 		self.waypoint = None
 
-		# with open("maps/map3.txt", "r") as f:
-		# 	strs = f.read().split("\n")
-		#
-		# self.explored_map = generate_map(*strs)
+		with open("maps/map3.txt", "r") as f:
+			strs = f.read().split("\n")
+		
+		self.explored_map = generate_map(*strs)
 
 		self.gui = GUI(self.explored_map, self.robot)
 
@@ -38,7 +38,11 @@ class RealRun:
 		self.rpi.ping()
 
 		while True:
-			msg_type, msg = self.rpi.receive_msg_with_type()
+			# msg_type, msg = self.rpi.receive_msg_with_type()
+			message = input("Message: ")
+			msg_parts = message.split(":")
+			msg_type = msg_parts[0]
+			msg = msg_parts[1] if len(msg_parts) > 1 else ""
 
 			if msg_type == RPi.CALIBRATE_MSG:
 				# TODO: Uncomment
@@ -131,6 +135,7 @@ class RealRun:
 		self.gui.start()
 
 	def update_gui(self):
+		# pass
 		self.gui.update_canvas()
 
 	def on_move(self, movement):
@@ -186,4 +191,5 @@ class RealRun:
 if __name__ == '__main__':
 	rr = RealRun()
 	Thread(target=rr.connect_to_rpi).start()
+	# rr.connect_to_rpi()
 	rr.display_gui()
