@@ -67,7 +67,7 @@ class Robot:
 
 		self.on_move(movement)
 
-	def sense(self, send_msg=False):
+	def sense(self):
 		pass
 
 
@@ -80,8 +80,8 @@ class RealBot(Robot):
 	def speed(self):
 		return 2
 
-	def sense(self, send_msg=False):
-		return self.get_sensor_values(send_msg)
+	def sense(self):
+		return self.get_sensor_values()
 
 
 class SimulatorBot(Robot):
@@ -105,7 +105,7 @@ class SimulatorBot(Robot):
 		# Move virtual state
 		super().move(movement)
 
-	def sense(self, send_msg=False):
+	def sense(self):
 		sensor_values = []
 
 		for sensor in self.sensors:

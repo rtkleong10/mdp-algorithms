@@ -102,14 +102,12 @@ class RPi:
 		)
 		self.send_msg_with_type(RPi.MOVEMENT_MSG, msg)
 
-		# while True:
-		# 	# Sample message: M
-		# 	msg_type, msg = self.receive_msg_with_type()
+		while True:
+			# Sample message: M
+			msg_type, msg = self.receive_msg_with_type()
 
-		# 	if msg_type == RPi.MOVEMENT_MSG:
-		# 		break
-
-		# 	print("I want move, not this pls", msg_type, ":", msg)
+			if msg_type == RPi.MOVEMENT_MSG:
+				break
 
 	def send_map(self, explored_map):
 		# Sample message: D:FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,000000000400000001C800000000000700000000800000001F80000700000000020000000000
@@ -119,18 +117,15 @@ class RPi:
 		# Sample message: HELLO
 		self.send(RPi.HELLO_MSG)
 
-	def receive_sensor_values(self, send_msg=False):
+	def receive_sensor_values(self):
 		# Sample message: S
-		print("SENSE PLS")
-		if send_msg:
-			self.send(RPi.SENSE_MSG)
+		self.send(RPi.SENSE_MSG)
 
 		while True:
 			# Sample message: S:1,1,1,1,1,1
 			msg_type, msg = self.receive_msg_with_type()
 
 			if msg_type != RPi.SENSE_MSG:
-				print("I want sensor, not this pls", msg_type, ":", msg)
 				continue
 
 			m = re.match(r"(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+)", msg)

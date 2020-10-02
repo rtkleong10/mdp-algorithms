@@ -212,7 +212,7 @@ class Exploration:
 
 	def run_exploration(self):
 		self.start_time = time.time()
-		self.sense_and_repaint(True)
+		self.sense_and_repaint()
 
 		while True:
 			if self.is_limit_exceeded:
@@ -311,8 +311,8 @@ class Exploration:
 		if sense:
 			self.sense_and_repaint()
 
-	def sense_and_repaint(self, send_msg=False):
-		sensor_values = self.robot.sense(send_msg)
+	def sense_and_repaint(self):
+		sensor_values = self.robot.sense()
 
 		# TODO: Handle empty sensor_values (sensor_values = [])
 		for i in range(len(sensor_values)):
