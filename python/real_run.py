@@ -80,12 +80,13 @@ class RealRun:
 				exp.run_exploration()
 
 				# Prepare robot position for fastest path
-				self.calibrate()
+				if self.robot.pos == START_POS:
+					self.calibrate()
 
-				if self.robot.direction == Direction.SOUTH:
-					self.robot.move(Movement.LEFT)
-				elif self.robot.direction == Direction.WEST:
-					self.robot.move(Movement.RIGHT)
+					if self.robot.direction == Direction.SOUTH:
+						self.robot.move(Movement.LEFT)
+					elif self.robot.direction == Direction.WEST:
+						self.robot.move(Movement.RIGHT)
 
 				mdf = generate_map_descriptor(self.explored_map)
 				print("MDF:", ",".join(mdf))
