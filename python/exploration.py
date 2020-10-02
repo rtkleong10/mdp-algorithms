@@ -27,6 +27,7 @@ class Exploration:
 		self.time_limit = time_limit
 		self.steps_without_calibration = 0
 		self.obstacles = {}
+		self.is_running = True
 
 		if on_update_map is None:
 			self.on_update_map = lambda: None
@@ -52,7 +53,7 @@ class Exploration:
 		is_time_limit_exceeded = self.time_limit is not None and self.time_limit <\
 			self.time_elapsed + (FastestPath.heuristic_function(self.robot.pos, START_POS) * 2) / self.robot.speed
 
-		return is_coverage_limit_exceeded or is_time_limit_exceeded
+		return not self.is_running or is_coverage_limit_exceeded or is_time_limit_exceeded
 
 	# find cord wrt the bot based on where it's facing
 	def find_right_pos(self):
@@ -255,6 +256,9 @@ class Exploration:
 			print("Can't go back to start?")
 
 		for movement in movements:
+			if not self.is_running:
+				break
+
 			self.move(movement, sense=False)
 
 	def calibrate(self):

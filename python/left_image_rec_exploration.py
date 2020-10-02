@@ -247,6 +247,9 @@ class ImageRecExploration(Exploration):
             print("Can't go back to start?")
 
         for movement in movements:
+            if not self.is_running:
+                break
+
             self.move(movement, sense=False)
 
 

@@ -24,11 +24,13 @@ class RPi:
 	MDF_MSG = "D"
 	HIGH_SPEED_MSG = "H"
 	LOW_SPEED_MSG = "L"
+	QUIT_MSG = "Q"
 	TYPE_DIVIDER = ":"
 
-	def __init__(self):
+	def __init__(self, on_quit=None):
 		self.conn = None
 		self.is_connected = False
+		self.on_quit = on_quit if on_quit is not None else lambda: None
 
 	def open_connection(self):
 		try:
@@ -76,14 +78,18 @@ class RPi:
 		self.send(full_msg)
 
 	def receive_msg_with_type(self):
-		msg = self.receive().strip()
-		m = re.match(rf"(.+){RPi.TYPE_DIVIDER}(.+)", msg)
+		full_msg = self.receive().strip()
+		m = re.match(rf"(.+){RPi.TYPE_DIVIDER}(.+)", full_msg)
 
 		if m is not None:
-			return m.group(1), m.group(2)
+			msg_type, msg = m.group(1), m.group(2)
 		else:
-			return msg, ""
+			msg_type, msg = full_msg, ""
 
+		if msg_type == RPi.QUIT_MSG:
+			self.on_quit()
+
+		return msg_type, msg
 
 	def ping(self):
 		# Sample message: HELLO
@@ -115,7 +121,7 @@ class RPi:
 				# Sample message: M
 				msg_type, msg = self.receive_msg_with_type()
 
-				if msg_type == RPi.MOVEMENT_MSG:
+				if msg_type == RPi.MOVEMENT_MSG or msg_type == RPi.QUIT_MSG:
 					return None
 
 	def send_map(self, explored_map):
@@ -130,6 +136,9 @@ class RPi:
 		while True:
 			# Sample message: S:1,1,1,1,1,1
 			msg_type, msg = self.receive_msg_with_type()
+
+			if msg_type == RPi.QUIT_MSG:
+				return []
 
 			if msg_type != RPi.SENSE_MSG:
 				continue
@@ -163,6 +172,9 @@ class RPi:
 			# Sample message: P
 			msg_type, msg = self.receive_msg_with_type()
 
+			if msg_type == RPi.QUIT_MSG:
+				break
+
 			if msg_type == RPi.TAKE_PHOTO_MSG:
 				print("Photo successfully taken")
 				break
@@ -176,6 +188,9 @@ class RPi:
 			# Sample message: f
 			msg_type, msg = self.receive_msg_with_type()
 
+			if msg_type == RPi.QUIT_MSG:
+				break
+
 			if msg_type == calibrate_msg:
 				print("Calibration successful")
 				break
@@ -188,6 +203,9 @@ class RPi:
 		while True:
 			# Sample message: H
 			msg_type, msg = self.receive_msg_with_type()
+
+			if msg_type == RPi.QUIT_MSG:
+				break
 
 			if msg_type == speed_msg:
 				print("Successfully updated speed to", "high" if is_high else "low", "speed")

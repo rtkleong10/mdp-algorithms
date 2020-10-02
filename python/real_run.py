@@ -19,13 +19,15 @@ USE_IMAGE_REC_EXPLORATION = False
 
 class RealRun:
 	def __init__(self):
-		self.rpi = RPi()
+		self.rpi = RPi(on_quit=self.on_quit)
 		self.robot = RealBot(
 			pos=START_POS,
 			direction=Direction.EAST,
 			on_move=self.on_move,
 			get_sensor_values=self.rpi.receive_sensor_values,
 		)
+		self.exp = None
+		self.is_running = True
 		self.explored_map = generate_unexplored_map()
 		self.waypoint = None
 
@@ -52,6 +54,8 @@ class RealRun:
 
 			# Exploration
 			elif msg_type == RPi.EXPLORE_MSG:
+				self.is_running = True
+
 				# TODO: Uncomment
 				# self.rpi.set_speed(is_high=False)
 				self.explored_map = generate_unexplored_map()
@@ -59,7 +63,7 @@ class RealRun:
 				self.on_update()
 
 				if USE_IMAGE_REC_EXPLORATION:
-					exp = ImageRecRight(
+					self.exp = ImageRecRight(
 						robot=self.robot,
 						on_update_map=self.on_update,
 						on_calibrate=self.rpi.calibrate,
@@ -68,7 +72,7 @@ class RealRun:
 						time_limit=360
 					)
 				else:
-					exp = Exploration(
+					self.exp = Exploration(
 						robot=self.robot,
 						on_update_map=self.on_update,
 						on_calibrate=self.rpi.calibrate,
@@ -77,7 +81,7 @@ class RealRun:
 					)
 
 				# Run exploration
-				exp.run_exploration()
+				self.exp.run_exploration()
 
 				# Prepare robot position for fastest path
 				if self.robot.pos == START_POS:
@@ -87,6 +91,8 @@ class RealRun:
 						self.robot.move(Movement.LEFT)
 					elif self.robot.direction == Direction.WEST:
 						self.robot.move(Movement.RIGHT)
+
+				self.is_running = False
 
 				mdf = generate_map_descriptor(self.explored_map)
 				print("MDF:", ",".join(mdf))
@@ -132,18 +138,24 @@ class RealRun:
 
 			# Fastest Path
 			elif msg_type == RPi.FASTEST_PATH_MSG:
+				self.is_running = True
+
 				# TODO: Uncomment
 				# self.rpi.set_speed(is_high=True)
 
 				self.robot.pos = START_POS
+				self.update_gui()
 				fp = FastestPath(self.explored_map, self.robot.direction, START_POS, GOAL_POS, self.waypoint)
 				movements = fp.combined_movements()
 
 				if movements is not None:
 					for movement in movements:
-						self.robot.move(movement)
+						if self.is_running:
+							self.robot.move(movement)
 
 				self.rpi.send(RPi.FASTEST_PATH_MSG)
+
+				self.is_running = False
 
 	def display_gui(self):
 		self.gui.start()
@@ -205,6 +217,9 @@ class RealRun:
 			# Calibrate facing west wall
 			self.rpi.calibrate(is_front=True)
 
+	def on_quit(self):
+		self.exp.is_running = False
+		self.is_running = False
 
 if __name__ == '__main__':
 	rr = RealRun()
