@@ -14,7 +14,7 @@ class Robot:
 		"""
 		self.pos = pos
 		self.direction = direction
-		self.on_move = on_move if on_move is not None else lambda movement: None
+		self.on_move = on_move if on_move is not None else lambda movement, sense: None
 		self.sensors = [
 			Sensor(False, (1, 1), Direction.NORTH),
 			Sensor(True, (1, 1), Direction.EAST),
@@ -28,7 +28,7 @@ class Robot:
 	def speed(self):
 		return None
 
-	def move(self, movement):
+	def move(self, movement, sense=False):
 		if not isinstance(movement, Movement):
 			if self.direction == Direction.NORTH:
 				self.pos = (self.pos[0], self.pos[1] + movement)
@@ -65,7 +65,7 @@ class Robot:
 		elif movement == Movement.LEFT:
 			self.direction = Direction((self.direction - 1) % 4)
 
-		self.on_move(movement)
+		return self.on_move(movement, sense)
 
 	def sense(self):
 		pass
@@ -98,12 +98,12 @@ class SimulatorBot(Robot):
 	def speed(self, speed):
 		self.time_interval = 1 / speed
 
-	def move(self, movement):
+	def move(self, movement, sense=False):
 		# Wait to simulate robot
 		time.sleep(self.time_interval)
 
 		# Move virtual state
-		super().move(movement)
+		super().move(movement, sense)
 
 	def sense(self):
 		sensor_values = []

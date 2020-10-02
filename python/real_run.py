@@ -137,9 +137,10 @@ class RealRun:
 	def update_gui(self):
 		self.gui.update_canvas()
 
-	def on_move(self, movement):
-		self.rpi.send_movement(movement, self.robot)
+	def on_move(self, movement, sense=False):
+		sensor_values = self.rpi.send_movement(movement, self.robot, sense)
 		self.update_gui()
+		return sensor_values
 
 	def on_update(self):
 		self.rpi.send_map(self.explored_map)
