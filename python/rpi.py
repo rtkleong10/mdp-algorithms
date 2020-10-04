@@ -3,10 +3,11 @@ from enums import Movement, Direction
 from map_descriptor import generate_map_descriptor
 import re
 
+# Set to True for testing with dummy server
+IS_DUMMY = False
 
 class RPi:
-	HOST = "192.168.4.4"
-	# HOST = "127.0.0.1"
+	HOST = "127.0.0.1" if IS_DUMMY else "192.168.4.4"
 	PORT = 4444
 
 	# Message Types
@@ -34,8 +35,7 @@ class RPi:
 
 	def open_connection(self):
 		try:
-			self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-			# self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM) if IS_DUMMY else socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 			self.conn.connect((RPi.HOST, RPi.PORT))
 			self.is_connected = True
 			print("Successfully established connection...")
