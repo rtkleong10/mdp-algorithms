@@ -54,6 +54,11 @@
 - Android -> RPi -> Algo: `W:x,y`
     - e.g. `W:2,12`: Set waypoint to (2, 12)
 
+## Prematurely End Exploration or Algorithm
+- Android -> RPi -> Algo: `Q`
+    - If exploration is running, end exploration
+    - If fastest path is running, end fastest path
+
 # RPi
 ## Hello Message
 - Algo -> RPi: `HELLO`
@@ -77,6 +82,8 @@
 - RPi -> Android: `I:x,y <image ID>`
     - e.g. `I:4,5 3`: Right arrow on obstacle at position (4, 5)
     - Image ID is based on the list provided by NTU
+    - If RPi doesn't know the position of the image, do not send this message
+        - Just display on the PC
 
 # Everyone
 ## Movement Messages
@@ -85,15 +92,23 @@
     - e.g. `M:1 2,1 E`: Move forward one step and you will be in position (2, 1) facing East
     - Position and direction are for after the movement is completed
 - RPi -> Arduino: `movement` (character as position 2)
-    - e.g. `1` for `M:1`, `R` for `M:R`
-- Arduino -> RPi -> Algo: `M`
+    - e.g. `1` for `M:1 2,1 E`, `R` for `M:R 2,1 E`
+- Arduino -> RPi -> Algo: `S:<sensor_1>,<sensor_2>,<sensor_3>,<sensor_4>,<sensor_5>,<sensor_6>`
+    - e.g. `S:1,2,1,2,1,2`
+    - Sensor order is in the robot setup
+        - Red: Short range sensor
+        - Blue: Long range sensor
+        - Ordered in the clockwise direction starting from the left-facing sensor
+    - Sensor values
+        - `-1`: Lower than lower range (within blindspot)
+        - `0`: Higher than upper range
+        - `1-5`: How many blocks away is the nearest obstacle (1: Right next to robot)
 
 ### From Android
 - Android -> RPi: `M:<movement>`
     - e.g. `M:1`: Move forward one step
 - RPi -> Arduino: `<movement>` (character as position 2)
     - e.g. `1` for `M:1` (move forward one step), `R` for `M:R` (turn right)
-- Arduino -> RPi: `M`
 
 ## Map Descriptor Format
 - Algo -> RPi -> Android: `D:<explored string>,<obstacle string>`

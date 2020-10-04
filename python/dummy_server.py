@@ -85,10 +85,6 @@ def main():
 
 	while True:
 		msg = input("Message: ")
-
-		if msg in ["q", "Q"]:
-			break
-
 		s.send(msg)
 
 	s.close_connection()

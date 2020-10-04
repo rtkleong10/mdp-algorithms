@@ -6,6 +6,7 @@ from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
 
+MIN_STEPS_WITHOUT_CALIBRATION = 7
 
 class Exploration:
 	def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None):
@@ -26,6 +27,7 @@ class Exploration:
 		self.time_limit = time_limit
 		self.steps_without_calibration = 0
 		self.obstacles = {}
+		self.is_running = True
 
 		if on_update_map is None:
 			self.on_update_map = lambda: None
@@ -51,7 +53,7 @@ class Exploration:
 		is_time_limit_exceeded = self.time_limit is not None and self.time_limit <\
 			self.time_elapsed + (FastestPath.heuristic_function(self.robot.pos, START_POS) * 2) / self.robot.speed
 
-		return is_coverage_limit_exceeded or is_time_limit_exceeded
+		return not self.is_running or is_coverage_limit_exceeded or is_time_limit_exceeded
 
 	# find cord wrt the bot based on where it's facing
 	def find_right_pos(self):
@@ -212,7 +214,7 @@ class Exploration:
 
 	def run_exploration(self):
 		self.start_time = time.time()
-		self.sense_and_repaint(True)
+		self.sense_and_repaint()
 
 		while True:
 			if self.is_limit_exceeded:
@@ -254,7 +256,10 @@ class Exploration:
 			print("Can't go back to start?")
 
 		for movement in movements:
-			self.move(movement, sense=False)
+			if not self.is_running:
+				break
+
+			self.move(movement)
 
 	def calibrate(self):
 		is_calibrated = False
@@ -300,21 +305,21 @@ class Exploration:
 			self.prev_pos = self.robot.pos
 			self.steps_without_calibration += 1
 
-		if self.steps_without_calibration > 7:
+		if self.steps_without_calibration > MIN_STEPS_WITHOUT_CALIBRATION:
 			can_calibrate = self.calibrate()
 
 			if can_calibrate:
 				self.steps_without_calibration = 0
 
-		self.robot.move(movement)
+		sensor_values = self.robot.move(movement)
 
 		if sense:
-			self.sense_and_repaint()
+			self.sense_and_repaint(sensor_values)
 
-	def sense_and_repaint(self, send_msg=False):
-		sensor_values = self.robot.sense(send_msg)
+	def sense_and_repaint(self, sensor_values=None):
+		if sensor_values is None:
+			sensor_values = self.robot.sense()
 
-		# TODO: Handle empty sensor_values (sensor_values = [])
 		for i in range(len(sensor_values)):
 			sensor_value = sensor_values[i]
 			sensor = self.robot.sensors[i]

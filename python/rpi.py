@@ -3,10 +3,11 @@ from enums import Movement, Direction
 from map_descriptor import generate_map_descriptor
 import re
 
+# Set to True for testing with dummy server
+IS_DUMMY = False
 
 class RPi:
-	HOST = "192.168.4.4"
-	# HOST = "127.0.0.1"
+	HOST = "127.0.0.1" if IS_DUMMY else "192.168.4.4"
 	PORT = 4444
 
 	# Message Types
@@ -24,16 +25,17 @@ class RPi:
 	MDF_MSG = "D"
 	HIGH_SPEED_MSG = "H"
 	LOW_SPEED_MSG = "L"
+	QUIT_MSG = "Q"
 	TYPE_DIVIDER = ":"
 
-	def __init__(self):
+	def __init__(self, on_quit=None):
 		self.conn = None
 		self.is_connected = False
+		self.on_quit = on_quit if on_quit is not None else lambda: None
 
 	def open_connection(self):
 		try:
-			self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-			# self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM) if IS_DUMMY else socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 			self.conn.connect((RPi.HOST, RPi.PORT))
 			self.is_connected = True
 			print("Successfully established connection...")
@@ -76,13 +78,22 @@ class RPi:
 		self.send(full_msg)
 
 	def receive_msg_with_type(self):
-		msg = self.receive().strip()
-		m = re.match(rf"(.+){RPi.TYPE_DIVIDER}(.+)", msg)
+		full_msg = self.receive().strip()
+		m = re.match(rf"(.+){RPi.TYPE_DIVIDER}(.+)", full_msg)
 
 		if m is not None:
-			return m.group(1), m.group(2)
+			msg_type, msg = m.group(1), m.group(2)
 		else:
-			return msg, ""
+			msg_type, msg = full_msg, ""
+
+		if msg_type == RPi.QUIT_MSG:
+			self.on_quit()
+
+		return msg_type, msg
+
+	def ping(self):
+		# Sample message: HELLO
+		self.send(RPi.HELLO_MSG)
 
 	def send_movement(self, movement, robot):
 		print(movement)
@@ -101,27 +112,14 @@ class RPi:
 			Direction.convert_to_string(robot.direction),
 		)
 		self.send_msg_with_type(RPi.MOVEMENT_MSG, msg)
-
-		# while True:
-		# 	# Sample message: M
-		# 	msg_type, msg = self.receive_msg_with_type()
-
-		# 	if msg_type == RPi.MOVEMENT_MSG:
-		# 		break
-
-		# 	print("I want move, not this pls", msg_type, ":", msg)
+		return self.receive_sensor_values(send_msg=False)
 
 	def send_map(self, explored_map):
 		# Sample message: D:FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,000000000400000001C800000000000700000000800000001F80000700000000020000000000
 		self.send_msg_with_type(RPi.MDF_MSG, ",".join(generate_map_descriptor(explored_map)))
 
-	def ping(self):
-		# Sample message: HELLO
-		self.send(RPi.HELLO_MSG)
-
-	def receive_sensor_values(self, send_msg=False):
+	def receive_sensor_values(self, send_msg=True):
 		# Sample message: S
-		print("SENSE PLS")
 		if send_msg:
 			self.send(RPi.SENSE_MSG)
 
@@ -129,8 +127,10 @@ class RPi:
 			# Sample message: S:1,1,1,1,1,1
 			msg_type, msg = self.receive_msg_with_type()
 
+			if msg_type == RPi.QUIT_MSG:
+				return []
+
 			if msg_type != RPi.SENSE_MSG:
-				print("I want sensor, not this pls", msg_type, ":", msg)
 				continue
 
 			m = re.match(r"(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+)", msg)
@@ -162,6 +162,9 @@ class RPi:
 			# Sample message: P
 			msg_type, msg = self.receive_msg_with_type()
 
+			if msg_type == RPi.QUIT_MSG:
+				break
+
 			if msg_type == RPi.TAKE_PHOTO_MSG:
 				print("Photo successfully taken")
 				break
@@ -175,6 +178,9 @@ class RPi:
 			# Sample message: f
 			msg_type, msg = self.receive_msg_with_type()
 
+			if msg_type == RPi.QUIT_MSG:
+				break
+
 			if msg_type == calibrate_msg:
 				print("Calibration successful")
 				break
@@ -187,6 +193,9 @@ class RPi:
 		while True:
 			# Sample message: H
 			msg_type, msg = self.receive_msg_with_type()
+
+			if msg_type == RPi.QUIT_MSG:
+				break
 
 			if msg_type == speed_msg:
 				print("Successfully updated speed to", "high" if is_high else "low", "speed")

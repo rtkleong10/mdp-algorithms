@@ -28,7 +28,7 @@ class Robot:
 	def speed(self):
 		return None
 
-	def move(self, movement):
+	def move(self, movement, sense=False):
 		if not isinstance(movement, Movement):
 			if self.direction == Direction.NORTH:
 				self.pos = (self.pos[0], self.pos[1] + movement)
@@ -65,9 +65,9 @@ class Robot:
 		elif movement == Movement.LEFT:
 			self.direction = Direction((self.direction - 1) % 4)
 
-		self.on_move(movement)
+		return self.on_move(movement)
 
-	def sense(self, send_msg=False):
+	def sense(self):
 		pass
 
 
@@ -80,8 +80,8 @@ class RealBot(Robot):
 	def speed(self):
 		return 2
 
-	def sense(self, send_msg=False):
-		return self.get_sensor_values(send_msg)
+	def sense(self):
+		return self.get_sensor_values()
 
 
 class SimulatorBot(Robot):
@@ -98,14 +98,14 @@ class SimulatorBot(Robot):
 	def speed(self, speed):
 		self.time_interval = 1 / speed
 
-	def move(self, movement):
+	def move(self, movement, sense=False):
 		# Wait to simulate robot
 		time.sleep(self.time_interval)
 
 		# Move virtual state
-		super().move(movement)
+		super().move(movement, sense)
 
-	def sense(self, send_msg=False):
+	def sense(self):
 		sensor_values = []
 
 		for sensor in self.sensors:
@@ -130,7 +130,6 @@ class SimulatorBot(Robot):
 
 
 class Sensor:
-	# TODO: Add real ranges
 	# Inclusive at lower, exclusive at upper
 	SR_RANGE = (1, 3)
 	LR_RANGE = (1, 6)
