@@ -54,6 +54,11 @@
 - Android -> RPi -> Algo: `W:x,y`
     - e.g. `W:2,12`: Set waypoint to (2, 12)
 
+## Prematurely End Exploration or Algorithm
+- Android -> RPi -> Algo: `Q`
+    - If exploration is running, end exploration
+    - If fastest path is running, end fastest path
+
 # RPi
 ## Hello Message
 - Algo -> RPi: `HELLO`
