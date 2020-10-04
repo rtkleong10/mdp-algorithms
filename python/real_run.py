@@ -126,6 +126,7 @@ class RealRun:
 				r = int(m.group(2))
 				self.robot.pos = (c, r)
 				self.robot.direction = Direction.convert_from_string(m.group(3))
+				self.update_gui()
 
 				for i in range(max(0, r - 1), min(NUM_ROWS, r + 2)):
 					for j in range(max(0, c - 1), min(NUM_COLS, c + 2)):
@@ -166,8 +167,8 @@ class RealRun:
 		if USE_GUI:
 			self.gui.update_canvas()
 
-	def on_move(self, movement, sense=False):
-		sensor_values = self.rpi.send_movement(movement, self.robot, sense)
+	def on_move(self, movement):
+		sensor_values = self.rpi.send_movement(movement, self.robot)
 		self.update_gui()
 		return sensor_values
 
@@ -201,6 +202,9 @@ class RealRun:
 
 			# Turn back
 			self.robot.move(Movement.LEFT)
+
+			# Calibrate facing east
+			self.rpi.calibrate(is_front=False)
 
 		elif self.robot.direction == Direction.SOUTH:
 			# Calibrate facing south wall

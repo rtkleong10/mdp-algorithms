@@ -14,7 +14,7 @@ class Robot:
 		"""
 		self.pos = pos
 		self.direction = direction
-		self.on_move = on_move if on_move is not None else lambda movement, sense: None
+		self.on_move = on_move if on_move is not None else lambda movement: None
 		self.sensors = [
 			Sensor(False, (1, 1), Direction.NORTH),
 			Sensor(True, (1, 1), Direction.EAST),
@@ -65,7 +65,7 @@ class Robot:
 		elif movement == Movement.LEFT:
 			self.direction = Direction((self.direction - 1) % 4)
 
-		return self.on_move(movement, sense)
+		return self.on_move(movement)
 
 	def sense(self):
 		pass

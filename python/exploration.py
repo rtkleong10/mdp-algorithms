@@ -259,7 +259,7 @@ class Exploration:
 			if not self.is_running:
 				break
 
-			self.move(movement, sense=False)
+			self.move(movement)
 
 	def calibrate(self):
 		is_calibrated = False
@@ -311,7 +311,7 @@ class Exploration:
 			if can_calibrate:
 				self.steps_without_calibration = 0
 
-		sensor_values = self.robot.move(movement, sense)
+		sensor_values = self.robot.move(movement)
 
 		if sense:
 			self.sense_and_repaint(sensor_values)

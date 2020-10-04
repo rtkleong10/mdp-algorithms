@@ -95,7 +95,7 @@ class RPi:
 		# Sample message: HELLO
 		self.send(RPi.HELLO_MSG)
 
-	def send_movement(self, movement, robot, sense=False):
+	def send_movement(self, movement, robot):
 		print(movement)
 		if movement == Movement.FORWARD:
 			movement_str = "1"
@@ -112,17 +112,7 @@ class RPi:
 			Direction.convert_to_string(robot.direction),
 		)
 		self.send_msg_with_type(RPi.MOVEMENT_MSG, msg)
-
-		if sense:
-			# Sample message: S:1,1,1,1,1,1
-			return self.receive_sensor_values(send_msg=False)
-		else:
-			while True:
-				# Sample message: M
-				msg_type, msg = self.receive_msg_with_type()
-
-				if msg_type == RPi.MOVEMENT_MSG or msg_type == RPi.QUIT_MSG:
-					return None
+		return self.receive_sensor_values(send_msg=False)
 
 	def send_map(self, explored_map):
 		# Sample message: D:FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,000000000400000001C800000000000700000000800000001F80000700000000020000000000

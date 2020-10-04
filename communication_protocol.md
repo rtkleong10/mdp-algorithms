@@ -88,7 +88,6 @@
     - Position and direction are for after the movement is completed
 - RPi -> Arduino: `movement` (character as position 2)
     - e.g. `1` for `M:1 2,1 E`, `R` for `M:R 2,1 E`
-- Arduino -> RPi -> Algo: `M`
 - Arduino -> RPi -> Algo: `S:<sensor_1>,<sensor_2>,<sensor_3>,<sensor_4>,<sensor_5>,<sensor_6>`
     - e.g. `S:1,2,1,2,1,2`
     - Sensor order is in the robot setup

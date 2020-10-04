@@ -249,7 +249,7 @@ class ImageRecExploration(Exploration):
             if not self.is_running:
                 break
 
-            self.move(movement, sense=False)
+            self.move(movement)
 
 
     def find_unseen_to_check(self):

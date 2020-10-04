@@ -178,7 +178,7 @@ class ImageRecShort(Exploration):
             if not self.is_running:
                 break
 
-            self.move(movement, sense=False)
+            self.move(movement)
 
 
 
