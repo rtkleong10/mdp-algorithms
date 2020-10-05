@@ -212,10 +212,7 @@ class Exploration:
 
 		return d
 
-	def run_exploration(self):
-		self.start_time = time.time()
-		self.sense_and_repaint()
-
+	def right_hug(self):
 		while True:
 			if self.is_limit_exceeded:
 				break
@@ -240,6 +237,7 @@ class Exploration:
 				self.move(Movement.RIGHT)
 				self.move(Movement.RIGHT)
 
+	def explore_unexplored(self):
 		while True:
 			if self.is_limit_exceeded:
 				break
@@ -249,7 +247,7 @@ class Exploration:
 			if not can_find:
 				break
 
-		# Go back to start
+	def fastest_path_to_start(self):
 		fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, START_POS)
 		movements = fp.movements if isinstance(self.robot, SimulatorBot) else fp.combined_movements()
 		if movements is None:
@@ -260,6 +258,13 @@ class Exploration:
 				break
 
 			self.move(movement)
+
+	def run_exploration(self):
+		self.start_time = time.time()
+		self.sense_and_repaint()
+		self.right_hug()
+		self.explore_unexplored()
+		self.fastest_path_to_start()
 
 	def calibrate(self):
 		is_calibrated = False
