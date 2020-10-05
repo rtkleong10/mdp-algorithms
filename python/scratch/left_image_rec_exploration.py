@@ -185,53 +185,13 @@ class ImageRecExploration(Exploration):
         if movement == Movement.FORWARD:
             self.snapObstacleSide()
 
-    def run_exploration(self):
-        self.start_time = time.time()
-        self.sense_and_repaint()
-
+    def explore_unseen(self):
         while True:
             if self.is_limit_exceeded:
                 break
 
-            # print_map(self.explored_map, [self.robot.pos])
-            if self.entered_goal and self.robot.pos == START_POS:
-                break
-
-            if self.robot.pos == GOAL_POS:
-                self.entered_goal = True
-
-            if self.check_right():
-                self.move(Movement.RIGHT)
-                # self.snapObstacleSide()
-
-            elif self.check_forward():
-                self.move(Movement.FORWARD)
-                # self.snapObstacleSide()
-
-            elif self.check_left():
-                self.move(Movement.LEFT)
-                # self.snapObstacleSide()
-
-            else:
-                self.move(Movement.RIGHT)
-                self.move(Movement.RIGHT)
-                # self.snapObstacleSide()
-
-        while True:
-            if self.is_limit_exceeded:
-                break
-
-            unexplored_pos_to_check = self.find_unexplored_to_check()
-            can_find = self.fastest_path_to_pos_to_check(unexplored_pos_to_check)
-
-            if not can_find:
-                break
-        while True:
-            if self.is_limit_exceeded:
-                break
-
-            unexplored_pos_to_check = self.find_unseen_to_check()
-            can_find = self.fastest_path_to_pos_to_check(unexplored_pos_to_check)
+            unseen_pos_to_check = self.find_unseen_to_check()
+            can_find = self.fastest_path_to_pos_to_check(unseen_pos_to_check)
 
             if can_find:
                 self.snapObstacleSide()
@@ -239,18 +199,13 @@ class ImageRecExploration(Exploration):
             else:
                 break
 
-        # Go back to start
-        fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, START_POS)
-        movements = fp.movements if isinstance(self.robot, SimulatorBot) else fp.combined_movements()
-        if movements is None:
-            print("Can't go back to start?")
-
-        for movement in movements:
-            if not self.is_running:
-                break
-
-            self.move(movement)
-
+    def run_exploration(self):
+        self.start_time = time.time()
+        self.sense_and_repaint()
+        self.right_hug()
+        self.explore_unexplored()
+        self.explore_unseen()
+        self.fastest_path_to_start()
 
     def find_unseen_to_check(self):
         pos_to_check = {}
@@ -286,7 +241,7 @@ class ImageRecExploration(Exploration):
         return d
 
 def main():
-    with open("maps/sample_arena5.txt", "r") as f:
+    with open("../maps/sample_arena5.txt", "r") as f:
         strs = f.read().split("\n")
 
     map_real = generate_map(*strs)
