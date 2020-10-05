@@ -278,7 +278,7 @@ class Exploration:
 			c = self.robot.pos[0] + 2 * front_direction_vector[0] + i * right_direction_vector[0]
 			r = self.robot.pos[1] + 2 * front_direction_vector[1] + i * right_direction_vector[1]
 
-			if 0 < c < NUM_COLS - 1 and 0 < r < NUM_ROWS - 1 and self.explored_map[r][c] != Cell.OBSTACLE:
+			if 0 <= c < NUM_COLS and 0 <= r < NUM_ROWS and self.explored_map[r][c] != Cell.OBSTACLE:
 				can_calibrate_front = False
 
 		if can_calibrate_front:
@@ -291,7 +291,7 @@ class Exploration:
 				c = self.robot.pos[0] + i * front_direction_vector[0] + 2 * right_direction_vector[0]
 				r = self.robot.pos[1] + i * front_direction_vector[1] + 2 * right_direction_vector[1]
 
-				if 0 < c < NUM_COLS - 1 and 0 < r < NUM_ROWS - 1 and self.explored_map[r][c] != Cell.OBSTACLE:
+				if 0 <= c < NUM_COLS and 0 <= r < NUM_ROWS and self.explored_map[r][c] != Cell.OBSTACLE:
 					can_calibrate_right = False
 
 			if can_calibrate_right:
