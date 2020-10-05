@@ -20,80 +20,80 @@ class ImageRecRight(Exploration):
     # check if any of the obstacle side is blocked by another obstacle
     def removeObstacleSide(self,pos): #pos must be tuple
         for i in range(1,4):
-            if self.obstacles.get((pos[0]+i,pos[1]))!=None:
-                if self.obstacles[pos].get(1)!=None:
-                    self.obstacles[pos].pop(1)
-                if self.obstacles[(pos[0]+i,pos[1])].get(3)!=None:
-                    self.obstacles[(pos[0]+i,pos[1])].pop(3)
-            if pos[0]+i >14 and self.obstacles[pos].get(1)!=None:
-                self.obstacles[pos].pop(1)
-            if self.obstacles.get((pos[0]-i,pos[1]))!=None:
-                if self.obstacles[pos].get(3)!=None:
-                    self.obstacles[pos].pop(3)
-                if self.obstacles[(pos[0]-i,pos[1])].get(1)!=None:
-                    self.obstacles[(pos[0]-i,pos[1])].pop(1)
-            if pos[0]-i <0 and self.obstacles[pos].get(3)!=None:
-                self.obstacles[pos].pop(3)
-            if self.obstacles.get((pos[0],pos[1]+i))!=None:
-                if self.obstacles[pos].get(0)!=None:
-                    self.obstacles[pos].pop(0)
-                if self.obstacles[(pos[0],pos[1]+i)].get(2)!=None:
-                    self.obstacles[(pos[0],pos[1]+i)].pop(2)
-            if pos[1]+ i >19 and self.obstacles[pos].get(0)!=None:
-                self.obstacles[pos].pop(0)
-            if self.obstacles.get((pos[0],pos[1]-i))!=None:
-                if self.obstacles[pos].get(2)!=None:
-                    self.obstacles[pos].pop(2)
-                if self.obstacles[(pos[0],pos[1]-i)].get(0)!=None:
-                    self.obstacles[(pos[0],pos[1]-i)].pop(0)
-            if pos[1]-i<0 and self.obstacles[pos].get(2)!=None:
-                self.obstacles[pos].pop(2)
+            if (pos[0]+i,pos[1]) in self.obstacles:
+                if 1 in self.obstacles[pos]:
+                    self.obstacles[pos].remove(1)
+                if 3 in self.obstacles[(pos[0]+i,pos[1])]:
+                    self.obstacles[(pos[0]+i,pos[1])].remove(3)
+            if pos[0]+i >14 and 1 in self.obstacles[pos]:
+                self.obstacles[pos].remove(1)
+            if (pos[0]-i,pos[1]) in self.obstacles:
+                if 3 in self.obstacles[pos]:
+                    self.obstacles[pos].remove(3)
+                if 1 in self.obstacles[(pos[0]-i,pos[1])]:
+                    self.obstacles[(pos[0]-i,pos[1])].remove(1)
+            if pos[0]-i <0 and 3 in self.obstacles[pos]:
+                self.obstacles[pos].remove(3)
+            if (pos[0],pos[1]+i) in self.obstacles:
+                if 0 in self.obstacles[pos]:
+                    self.obstacles[pos].remove(0)
+                if 2 in self.obstacles[(pos[0],pos[1]+i)]:
+                    self.obstacles[(pos[0],pos[1]+i)].remove(2)
+            if pos[1]+ i >19 and 0 in self.obstacles[pos]:
+                self.obstacles[pos].remove(0)
+            if (pos[0],pos[1]-i) in self.obstacles:
+                if 2 in self.obstacles[pos]:
+                    self.obstacles[pos].remove(2)
+                if 0 in self.obstacles[(pos[0],pos[1]-i)]:
+                    self.obstacles[(pos[0],pos[1]-i)].remove(0)
+            if pos[1]-i<0 and 2 in self.obstacles[pos]:
+                self.obstacles[pos].remove(2)
 
     def checkObstacleSide(self,pos,direction): #check for obstacles within the weird shape
         obstacles = []
         if direction==0:
             for i in range(-1,2):
                 for j in range(3,4): #change to 2 grid away
-                    if self.obstacles.get((pos[0]+i,pos[1]+j))!=None:
-                        if self.obstacles[(pos[0]+i,pos[1]+j)].get(2)!=None:
-                            self.obstacles[(pos[0]+i,pos[1]+j)].pop(2)
+                    if (pos[0]+i,pos[1]+j) in self.obstacles:
+                        if 2 in self.obstacles[(pos[0]+i,pos[1]+j)]:
+                            self.obstacles[(pos[0]+i,pos[1]+j)].remove(2)
                             obstacles.append((pos[0]+i,pos[1]+j))
-            if self.obstacles.get((pos[0],pos[1]+2))!=None:
-                if self.obstacles[(pos[0],pos[1]+2)].get(2)!=None:
-                    self.obstacles[(pos[0],pos[1]+2)].pop(2)
+            if (pos[0],pos[1]+2) in self.obstacles:
+                if 2 in self.obstacles[(pos[0],pos[1]+2)]:
+                    self.obstacles[(pos[0],pos[1]+2)].remove(2)
                     obstacles.append((pos[0],pos[1]+2))
         elif direction ==1:
             for i in range(3,4): #change to 2 grid away
                 for j in range(-1,2):
-                    if self.obstacles.get((pos[0]+i,pos[1]+j))!=None:
-                        if self.obstacles[(pos[0]+i,pos[1]+j)].get(3)!=None:
-                            self.obstacles[(pos[0]+i,pos[1]+j)].pop(3)
+                    if (pos[0]+i,pos[1]+j) in self.obstacles:
+                        if 3 in self.obstacles[(pos[0]+i,pos[1]+j)]:
+                            self.obstacles[(pos[0]+i,pos[1]+j)].remove(3)
                             obstacles.append((pos[0]+i,pos[1]+j))
-            if self.obstacles.get((pos[0]+2,pos[1]))!=None:
-                if self.obstacles[(pos[0]+2,pos[1])].get(3)!=None:
-                    self.obstacles[(pos[0]+2,pos[1])].pop(3)
+            if (pos[0]+2,pos[1]) in self.obstacles:
+                if 3 in self.obstacles[(pos[0]+2,pos[1])]:
+                    self.obstacles[(pos[0]+2,pos[1])].remove(3)
                     obstacles.append((pos[0]+2,pos[1]))
         elif direction ==2:
             for i in range(-1,2):
                 for j in range(-3,-2): #change to 2 grid away
-                    if self.obstacles.get((pos[0]+i,pos[1]+j))!=None:
-                        if self.obstacles[(pos[0]+i,pos[1]+j)].get(0)!=None:
-                            self.obstacles[(pos[0]+i,pos[1]+j)].pop(0)
+                    if (pos[0]+i,pos[1]+j) in self.obstacles:
+                        if 0 in self.obstacles[(pos[0]+i,pos[1]+j)]:
+                            self.obstacles[(pos[0]+i,pos[1]+j)].remove(0)
                             obstacles.append((pos[0]+i,pos[1]+j))
-            if self.obstacles.get((pos[0],pos[1]-2))!=None:
-                if self.obstacles[(pos[0],pos[1]-2)].get(0)!=None:
-                    self.obstacles[(pos[0],pos[1]-2)].pop(0)
+            if (pos[0],pos[1]-2) in self.obstacles:
+                if 0 in self.obstacles[(pos[0],pos[1]-2)]:
+                    self.obstacles[(pos[0],pos[1]-2)].remove(0)
                     obstacles.append((pos[0],pos[1]-2))
         elif direction ==3:
             for i in range(-3,-2): #change to 2 grid away
                 for j in range(-1,2):
-                    if self.obstacles.get((pos[0]+i,pos[1]+j))!=None:
-                        if self.obstacles[(pos[0]+i,pos[1]+j)].get(1)!=None:
-                            self.obstacles[(pos[0]+i,pos[1]+j)].pop(1)
+                    if (pos[0]+i,pos[1]+j) in self.obstacles:
+                        if 1 in self.obstacles[(pos[0]+i,pos[1]+j)]:
+                            self.obstacles[(pos[0]+i,pos[1]+j)].remove(1)
                             obstacles.append((pos[0]+i,pos[1]+j))
-            if self.obstacles.get((pos[0]-2,pos[1]))!=None:
-                if self.obstacles[(pos[0]-2,pos[1])].get(1)!=None:
-                    self.obstacles[(pos[0]-2,pos[1])].pop(1)
+            if (pos[0]-2,pos[1]) in self.obstacles:
+                if 1 in self.obstacles[(pos[0]-2,pos[1])]:
+                    self.obstacles[(pos[0]-2,pos[1])].remove(1)
                     obstacles.append((pos[0]-2,pos[1]))
         return obstacles
 
@@ -172,8 +172,8 @@ class ImageRecRight(Exploration):
                             self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.FREE
                         else:
                             self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.OBSTACLE
-                            if self.obstacles.get(pos_to_mark) == None:
-                                self.obstacles[pos_to_mark] = {0: 0, 1: 0, 2: 0, 3: 0}
+                            if pos_to_mark not in self.obstacles:
+                                self.obstacles[pos_to_mark] = {0, 1, 2, 3}
                                 self.removeObstacleSide(pos_to_mark)
 
         self.on_update_map()
@@ -184,53 +184,13 @@ class ImageRecRight(Exploration):
         if movement == Movement.FORWARD:
             self.snapObstacleSide()
 
-    def run_exploration(self):
-        self.start_time = time.time()
-        self.sense_and_repaint()
-
+    def explore_unseen(self):
         while True:
             if self.is_limit_exceeded:
                 break
 
-            # print_map(self.explored_map, [self.robot.pos])
-            if self.entered_goal and self.robot.pos == START_POS:
-                break
-
-            if self.robot.pos == GOAL_POS:
-                self.entered_goal = True
-
-            if self.check_right():
-                self.move(Movement.RIGHT)
-                # self.snapObstacleSide()
-
-            elif self.check_forward():
-                self.move(Movement.FORWARD)
-                # self.snapObstacleSide()
-
-            elif self.check_left():
-                self.move(Movement.LEFT)
-                # self.snapObstacleSide()
-
-            else:
-                self.move(Movement.RIGHT)
-                self.move(Movement.RIGHT)
-                # self.snapObstacleSide()
-
-        while True:
-            if self.is_limit_exceeded:
-                break
-
-            unexplored_pos_to_check = self.find_unexplored_to_check()
-            can_find = self.fastest_path_to_pos_to_check(unexplored_pos_to_check)
-
-            if not can_find:
-                break
-        while True:
-            if self.is_limit_exceeded:
-                break
-
-            unexplored_pos_to_check = self.find_unseen_to_check()
-            can_find = self.fastest_path_to_pos_to_check(unexplored_pos_to_check)
+            unseen_pos_to_check = self.find_unseen_to_check()
+            can_find = self.fastest_path_to_pos_to_check(unseen_pos_to_check)
 
             if can_find:
                 self.snapObstacleSide()
@@ -238,19 +198,13 @@ class ImageRecRight(Exploration):
             else:
                 break
 
-        # Go back to start
-        fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, START_POS)
-        movements = fp.movements if isinstance(self.robot, SimulatorBot) else fp.combined_movements()
-
-        if movements is None:
-            print("Can't go back to start?")
-
-        for movement in movements:
-            if not self.is_running:
-                break
-
-            self.move(movement)
-
+    def run_exploration(self):
+        self.start_time = time.time()
+        self.sense_and_repaint()
+        self.right_hug()
+        self.explore_unexplored()
+        self.explore_unseen()
+        self.fastest_path_to_start()
 
     def find_unseen_to_check(self):
         pos_to_check = {}
