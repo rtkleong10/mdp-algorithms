@@ -234,8 +234,8 @@ class Exploration:
 				self.move(Movement.LEFT)
 
 			else:
-				self.move(Movement.RIGHT)
-				self.move(Movement.RIGHT)
+				self.move(Movement.LEFT)
+				self.move(Movement.LEFT)
 
 	def explore_unexplored(self):
 		print("EXPLORE UNEXPLORED")

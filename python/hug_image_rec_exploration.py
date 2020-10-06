@@ -55,43 +55,42 @@ class ImageRecHug(Exploration):
             for i in range(-1, 2):
                 if (pos[0] + i, pos[1] + 3) in self.obstacles:
                     if 2 in self.obstacles[(pos[0] + i, pos[1] + 3)]:
-                        self.obstacles[(pos[0] + i, pos[1] + 3)].remove(2)
                         obstacles.append((pos[0] + i, pos[1] + 3))
             if (pos[0], pos[1] + 2) in self.obstacles:
                 if 2 in self.obstacles[(pos[0], pos[1] + 2)]:
-                    self.obstacles[(pos[0], pos[1] + 2)].remove(2)
                     obstacles.append((pos[0], pos[1] + 2))
         elif direction == 1:
             for i in range(-1, 2):
                 if (pos[0] + 3, pos[1] + i) in self.obstacles:
                     if 3 in self.obstacles[(pos[0] + 3, pos[1] + i)]:
-                        self.obstacles[(pos[0] + 3, pos[1] + i)].remove(3)
                         obstacles.append((pos[0] + 3, pos[1] + i))
             if (pos[0] + 2, pos[1]) in self.obstacles:
                 if 3 in self.obstacles[(pos[0] + 2, pos[1])]:
-                    self.obstacles[(pos[0] + 2, pos[1])].remove(3)
                     obstacles.append((pos[0] + 2, pos[1]))
         elif direction == 2:
             for i in range(-1, 2):
                 if (pos[0] + i, pos[1] - 3) in self.obstacles:
                     if 0 in self.obstacles[(pos[0] + i, pos[1] - 3)]:
-                        self.obstacles[(pos[0] + i, pos[1] - 3)].remove(0)
                         obstacles.append((pos[0] + i, pos[1] - 3))
             if (pos[0], pos[1] - 2) in self.obstacles:
                 if 0 in self.obstacles[(pos[0], pos[1] - 2)]:
-                    self.obstacles[(pos[0], pos[1] - 2)].remove(0)
                     obstacles.append((pos[0], pos[1] - 2))
         elif direction == 3:
             for i in range(-1, 2):
                 if (pos[0] - 3, pos[1] + i) in self.obstacles:
                     if 1 in self.obstacles[(pos[0] - 3, pos[1] + i)]:
-                        self.obstacles[(pos[0] - 3, pos[1] + i)].remove(1)
                         obstacles.append((pos[0] - 3, pos[1] + i))
             if (pos[0] - 2, pos[1]) in self.obstacles:
                 if 1 in self.obstacles[(pos[0] - 2, pos[1])]:
-                    self.obstacles[(pos[0] - 2, pos[1])].remove(1)
                     obstacles.append((pos[0] - 2, pos[1]))
         return obstacles
+
+    def check_if_contains_corners(self, obstacles):
+        for obstacle in obstacles:
+            if obstacle[0] == 0 or obstacle[0] == NUM_COLS - 1 or obstacle[1] == 0 or obstacle[1] == NUM_ROWS - 1:
+                return True
+
+        return False
 
     def snapObstacleSide(self):
         direction = self.robot.direction
@@ -100,13 +99,17 @@ class ImageRecHug(Exploration):
         right = (direction + 1) % 4
         obstacles = self.checkObstacleSide(pos, right)
         if len(obstacles) != 0:
+            for i in obstacles:
+                self.obstacles[i].remove((right + 2) % 4)
             self.on_take_photo(obstacles)
             print('right take photo')
 
         # if front got obstacles with sides never see before, turn and take photo
         obstacles = self.checkObstacleSide(pos, direction)
         front = False
-        if len(obstacles) != 0 and any([obstacle[0] == 0 or obstacle[0] == NUM_COLS - 1 or obstacle[1] == 0 or obstacle[1] == NUM_ROWS - 1 for obstacle in obstacles]):
+        if len(obstacles) != 0 and self.check_if_contains_corners(obstacles):
+            for i in obstacles:
+                self.obstacles[i].remove((direction + 2) % 4)
             self.move(Movement.LEFT)
             self.on_take_photo(obstacles)
             print('front take photo')
@@ -116,7 +119,10 @@ class ImageRecHug(Exploration):
         left = (direction - 1) % 4
         obstacles = self.checkObstacleSide(pos, left)
         left = False
-        if len(obstacles) != 0 and any([obstacle[0] == 0 or obstacle[0] == NUM_COLS - 1 or obstacle[1] == 0 or obstacle[1] == NUM_ROWS - 1 for obstacle in obstacles]):
+        if len(obstacles) != 0 and self.check_if_contains_corners(obstacles):
+            for i in obstacles:
+                self.obstacles[i].remove((left + 2) % 4)
+
             if not front:
                 self.move(Movement.LEFT)
             self.move(Movement.LEFT)
@@ -129,7 +135,10 @@ class ImageRecHug(Exploration):
         # if back got obstacles....
         back = (direction + 2) % 4
         obstacles = self.checkObstacleSide(pos, back)
-        if len(obstacles) != 0 and any([obstacle[0] == 0 or obstacle[0] == NUM_COLS - 1 or obstacle[1] == 0 or obstacle[1] == NUM_ROWS - 1 for obstacle in obstacles]):
+        if len(obstacles) != 0 and self.check_if_contains_corners(obstacles):
+            for i in obstacles:
+                self.obstacles[i].remove((back + 2) % 4)
+
             if not left:
                 self.move(Movement.RIGHT)
             else:
@@ -205,8 +214,8 @@ class ImageRecHug(Exploration):
                 self.move(Movement.LEFT)
 
             else:
-                self.move(Movement.RIGHT)
-                self.move(Movement.RIGHT)
+                self.move(Movement.LEFT)
+                self.move(Movement.LEFT)
 
             if self.robot.pos == initial_pos:
                 break
