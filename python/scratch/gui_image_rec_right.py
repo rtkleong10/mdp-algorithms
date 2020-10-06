@@ -28,7 +28,7 @@ class GUI:
     MAP_TAG_0 = "map0"
     MAP_TAG_1 = "map2"
     ROBOT_TAG = "rob1t"
-    
+
     def __init__(self, explored_map, robot):
         self.map_tag = True
         self.root = None
@@ -159,10 +159,10 @@ class SimulatorGUI(GUI):
 
     # SPEED
     MIN_SPEED = 1
-    MAX_SPEED = 10
+    MAX_SPEED = 20
 
     def __init__(self):
-        with open("maps/sample_arena1.txt", "r") as f:
+        with open("../maps/sample_arena1.txt", "r") as f:
             strs = f.read().split("\n")
 
         self.selected_map = generate_map(*strs)
