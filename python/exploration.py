@@ -133,7 +133,7 @@ class Exploration:
 
 		return True
 
-	def is_pos_safe(self, pos):
+	def is_pos_safe(self, pos, consider_unexplored=True):
 		x = pos[0]
 		y = pos[1]
 
@@ -142,7 +142,7 @@ class Exploration:
 
 		for col in range(x - 1, x + 2):
 			for row in range(y - 1, y + 2):
-				if self.explored_map[row][col] == Cell.OBSTACLE or self.explored_map[row][col] == Cell.UNEXPLORED:
+				if self.explored_map[row][col] == Cell.OBSTACLE or (consider_unexplored and self.explored_map[row][col] == Cell.UNEXPLORED):
 					return False
 
 		return True

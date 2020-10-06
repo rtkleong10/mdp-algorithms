@@ -85,9 +85,14 @@ class ImageRecHug(Exploration):
                     obstacles.append((pos[0] - 2, pos[1]))
         return obstacles
 
-    def check_if_contains_corners(self, obstacles):
+    def check_if_contains_corners(self, obstacles, direction):
+        obstacle_direction = (direction + 2) % 4
+        direction_vector = Direction.get_direction_vector(obstacle_direction)
         for obstacle in obstacles:
-            if obstacle[0] == 0 or obstacle[0] == NUM_COLS - 1 or obstacle[1] == 0 or obstacle[1] == NUM_ROWS - 1:
+            pos = (obstacle[0] + 2 * direction_vector[0], obstacle[1] + 2 * direction_vector[1])
+
+            if not self.is_pos_safe(pos, consider_unexplored=False):
+                print(pos, obstacle)
                 return True
 
         return False
@@ -106,47 +111,47 @@ class ImageRecHug(Exploration):
 
         # if front got obstacles with sides never see before, turn and take photo
         obstacles = self.checkObstacleSide(pos, direction)
-        front = False
-        if len(obstacles) != 0 and self.check_if_contains_corners(obstacles):
+        has_front = False
+        if len(obstacles) != 0 and self.check_if_contains_corners(obstacles, direction):
             for i in obstacles:
                 self.obstacles[i].remove((direction + 2) % 4)
             self.move(Movement.LEFT)
             self.on_take_photo(obstacles)
             print('front take photo')
-            front = True
+            has_front = True
 
         # if left side got obstacles with sides never see before, turn and take photo
         left = (direction - 1) % 4
         obstacles = self.checkObstacleSide(pos, left)
-        left = False
-        if len(obstacles) != 0 and self.check_if_contains_corners(obstacles):
+        has_left = False
+        if len(obstacles) != 0 and self.check_if_contains_corners(obstacles, left):
             for i in obstacles:
                 self.obstacles[i].remove((left + 2) % 4)
 
-            if not front:
+            if not has_front:
                 self.move(Movement.LEFT)
             self.move(Movement.LEFT)
             self.on_take_photo(obstacles)
             print('left take photo')
-            left = True
-        elif front:
+            has_left = True
+        elif has_front:
             self.move(Movement.RIGHT)
 
         # if back got obstacles....
         back = (direction + 2) % 4
         obstacles = self.checkObstacleSide(pos, back)
-        if len(obstacles) != 0 and self.check_if_contains_corners(obstacles):
+        if len(obstacles) != 0 and self.check_if_contains_corners(obstacles, back):
             for i in obstacles:
                 self.obstacles[i].remove((back + 2) % 4)
 
-            if not left:
+            if not has_left:
                 self.move(Movement.RIGHT)
             else:
                 self.move(Movement.LEFT)
             print('back take photo')
             self.on_take_photo(obstacles)
             self.move(Movement.LEFT)
-        elif left:
+        elif has_left:
             self.move(Movement.RIGHT)
             self.move(Movement.RIGHT)
 
