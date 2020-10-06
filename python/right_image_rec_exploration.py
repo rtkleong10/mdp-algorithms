@@ -189,10 +189,7 @@ class ImageRecRight(Exploration):
             unseen_pos_to_check = self.find_unseen_to_check()
             can_find = self.fastest_path_to_pos_to_check(unseen_pos_to_check)
 
-            if can_find:
-                self.snapObstacleSide()
-
-            else:
+            if not can_find:
                 break
 
     def run_exploration(self):

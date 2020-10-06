@@ -141,9 +141,7 @@ class ImageRecShort(Exploration):
 
     def move(self, movement, sense=True):
         super(ImageRecShort, self).move(movement, sense)
-
-        if movement == Movement.FORWARD:
-            self.snapObstacleSide()
+        self.snapObstacleSide()
 
 
 def main():
