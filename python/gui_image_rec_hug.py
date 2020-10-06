@@ -1,10 +1,10 @@
 from map_descriptor import generate_map, generate_map_descriptor
 from exploration import Exploration
-from right_short_image_rec_exploration import ImageRecShort
+from hug_image_rec_exploration import ImageRecHug
 from gui import SimulatorGUI
 
 
-class ShortSimulatorGUI(SimulatorGUI):
+class HugSimulatorGUI(SimulatorGUI):
     def exploration(self):
         self.is_running = True
         self.reset()
@@ -12,7 +12,7 @@ class ShortSimulatorGUI(SimulatorGUI):
         with_image_rec = self.with_image_rec.get() == 1
 
         # Select exploration class
-        exploration_class = ImageRecShort if with_image_rec else Exploration
+        exploration_class = ImageRecHug if with_image_rec else Exploration
 
         self.exp = exploration_class(
             self.robot,
@@ -34,5 +34,5 @@ class ShortSimulatorGUI(SimulatorGUI):
 
 
 if __name__ == '__main__':
-    gui = ShortSimulatorGUI()
+    gui = HugSimulatorGUI()
     gui.start()

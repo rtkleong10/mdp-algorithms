@@ -155,7 +155,7 @@ class SimulatorGUI(GUI):
 
     # SPEED
     MIN_SPEED = 1
-    MAX_SPEED = 10
+    MAX_SPEED = 20
 
     def __init__(self):
         with open("../maps/sample_arena1.txt", "r") as f:

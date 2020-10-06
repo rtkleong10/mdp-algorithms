@@ -154,12 +154,13 @@ class SimulatorGUI(GUI):
         "Sample Arena 3": "maps/sample_arena3.txt",
         "Sample Arena 4": "maps/sample_arena4.txt",
         "Sample Arena 5": "maps/sample_arena5.txt",
+        "Sample Arena 6": "maps/sample_arena6.txt",
         "Custom": None,
     }
 
     # SPEED
     MIN_SPEED = 1
-    MAX_SPEED = 10
+    MAX_SPEED = 20
 
     def __init__(self):
         with open("maps/sample_arena1.txt", "r") as f:
