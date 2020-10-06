@@ -185,6 +185,7 @@ class ImageRecRight(Exploration):
             self.snapObstacleSide()
 
     def explore_unseen(self):
+        print("EXPLORE UNSEEN")
         while True:
             if self.is_limit_exceeded:
                 break

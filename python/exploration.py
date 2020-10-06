@@ -238,6 +238,7 @@ class Exploration:
 				self.move(Movement.RIGHT)
 
 	def explore_unexplored(self):
+		print("EXPLORE UNEXPLORED")
 		while True:
 			if self.is_limit_exceeded:
 				break
@@ -248,6 +249,7 @@ class Exploration:
 				break
 
 	def fastest_path_to_start(self):
+		print("FASTEST PATH TO START")
 		fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, START_POS)
 		movements = fp.movements if isinstance(self.robot, SimulatorBot) else fp.combined_movements()
 		if movements is None:
