@@ -212,6 +212,46 @@ class Exploration:
 
 		return d
 
+	def find_remaining_unexplored(self):
+		pos_to_check = {}
+
+		for r in range(20):
+			for c in range(15):
+				if self.explored_map[r][c] == Cell.UNEXPLORED:
+					for pos, direction in self.possible_remaining_unexplored((c, r)):
+						pos_to_check[pos] = direction
+
+		return pos_to_check
+
+	def possible_remaining_unexplored(self, goal):
+		d = set()
+
+		for direction in range(4):
+			for sensor in self.robot.sensors:
+				sensor_direction = (direction + sensor.direction - Direction.EAST) % 4
+				reverse_sensor_direction = (sensor_direction + 2) % 4
+				direction_vector = Direction.get_direction_vector(reverse_sensor_direction)
+
+				for i in range(*sensor.get_range()):
+					sensor_pos = (goal[0] + i * direction_vector[0], goal[1] + i * direction_vector[1])
+
+					if sensor_pos[0] < 0 or sensor_pos[0] >= NUM_COLS or sensor_pos[1] < 0 or sensor_pos[1] >= NUM_ROWS or self.explored_map[sensor_pos[1]][sensor_pos[0]] == Cell.OBSTACLE:
+						break
+
+					if direction == Direction.NORTH:
+						pos = sensor_pos[0] + sensor.pos[1], sensor_pos[1] - sensor.pos[0]
+					elif direction == Direction.EAST:
+						pos = sensor_pos[0] - sensor.pos[0], sensor_pos[1] - sensor.pos[1]
+					elif direction == Direction.SOUTH:
+						pos = sensor_pos[0] - sensor.pos[1], sensor_pos[1] + sensor.pos[0]
+					else:  # Direction.WEST
+						pos = sensor_pos[0] + sensor.pos[0], sensor_pos[1] + sensor.pos[1]
+
+					if self.is_pos_safe(pos):
+						d.add((pos, direction))
+
+		return d
+
 	def right_hug(self):
 		while True:
 			if self.is_limit_exceeded:
@@ -244,6 +284,15 @@ class Exploration:
 				break
 
 			unexplored_pos_to_check = self.find_unexplored_to_check()
+			can_find = self.fastest_path_to_pos_to_check(unexplored_pos_to_check)
+			if not can_find:
+				break
+
+		while True:
+			if self.is_limit_exceeded:
+				break
+
+			unexplored_pos_to_check = self.find_remaining_unexplored()
 			can_find = self.fastest_path_to_pos_to_check(unexplored_pos_to_check)
 			if not can_find:
 				break
