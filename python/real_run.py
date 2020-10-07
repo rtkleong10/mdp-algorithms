@@ -39,6 +39,7 @@ class RealRun:
 		self.gui = GUI(self.explored_map, self.robot)
 
 	def connect_to_rpi(self):
+		Thread(target=self.rpi.receive_endlessly).start()
 		self.rpi.open_connection()
 		self.rpi.ping()
 

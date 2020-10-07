@@ -32,6 +32,7 @@ class RPi:
 		self.conn = None
 		self.is_connected = False
 		self.on_quit = on_quit if on_quit is not None else lambda: None
+		self.queue = []
 
 	def open_connection(self):
 		try:
@@ -78,7 +79,10 @@ class RPi:
 		self.send(full_msg)
 
 	def receive_msg_with_type(self):
-		full_msg = self.receive().strip()
+		while len(self.queue) < 1:
+			pass
+
+		full_msg = self.queue.pop(0).strip()
 		m = re.match(rf"(.+){RPi.TYPE_DIVIDER}(.+)", full_msg)
 
 		if m is not None:
@@ -200,6 +204,12 @@ class RPi:
 			if msg_type == speed_msg:
 				print("Successfully updated speed to", "high" if is_high else "low", "speed")
 				break
+
+	def receive_endlessly(self):
+		while True:
+			if self.is_connected:
+				msg = self.receive()
+				self.queue.append(msg)
 
 
 def main():
