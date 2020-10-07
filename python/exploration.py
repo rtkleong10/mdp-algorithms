@@ -300,7 +300,7 @@ class Exploration:
 	def fastest_path_to_start(self):
 		print("FASTEST PATH TO START")
 		fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, START_POS)
-		movements = fp.movements if isinstance(self.robot, SimulatorBot) else fp.combined_movements()
+		movements = fp.movements
 		if movements is None:
 			print("Can't go back to start?")
 
