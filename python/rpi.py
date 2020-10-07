@@ -2,6 +2,8 @@ import socket
 from enums import Movement, Direction
 from map_descriptor import generate_map_descriptor
 import re
+from collections import deque
+from datetime import datetime
 
 
 class RPi:
@@ -22,11 +24,22 @@ class RPi:
 	TAKE_PHOTO_MSG = "P"
 	MOVEMENT_MSG = "M"
 	MDF_MSG = "D"
+<<<<<<< Updated upstream
+=======
+	HIGH_SPEED_MSG = "H"
+	LOW_SPEED_MSG = "T"
+	QUIT_MSG = "Q"
+>>>>>>> Stashed changes
 	TYPE_DIVIDER = ":"
 
 	def __init__(self):
 		self.conn = None
 		self.is_connected = False
+<<<<<<< Updated upstream
+=======
+		self.on_quit = on_quit if on_quit is not None else lambda: None
+		self.queue = deque([])
+>>>>>>> Stashed changes
 
 	def open_connection(self):
 		try:
@@ -58,6 +71,8 @@ class RPi:
 
 	def receive(self, bufsize=2048):
 		try:
+			print("Receiving RPI message: "
+ + datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
 			msg = self.conn.recv(bufsize).decode("utf-8")
 			print("Message received:", msg)
 			return msg
@@ -74,11 +89,22 @@ class RPi:
 		self.send(full_msg)
 
 	def receive_msg_with_type(self):
+<<<<<<< Updated upstream
 		msg = self.receive().strip()
 		m = re.match(rf"(.+){RPi.TYPE_DIVIDER}(.+)", msg)
 
 		if m is not None:
 			return m.group(1), m.group(2)
+=======
+		while len(self.queue) < 1:
+			pass
+
+		full_msg = self.queue.popleft().strip()
+		m = full_msg.split(RPi.TYPE_DIVIDER)
+
+		if m is not None:
+			msg_type, msg = m[0], RPi.TYPE_DIVIDER.join(m[1:])
+>>>>>>> Stashed changes
 		else:
 			return msg, ""
 
@@ -156,15 +182,27 @@ class RPi:
 		msg = " ".join(["{},{}".format(*obstacle) for obstacle in obstacles])
 		self.send_msg_with_type(RPi.TAKE_PHOTO_MSG, msg)
 
-		while True:
-			# Sample message: P
-			msg_type, msg = self.receive_msg_with_type()
+		# while True:
+		# 	# Sample message: P
+		# 	msg_type, msg = self.receive_msg_with_type()
 
+<<<<<<< Updated upstream
 			if msg_type == RPi.TAKE_PHOTO_MSG:
 				print("Photo successfully taken")
 				break
+=======
+		# 	if msg_type == RPi.QUIT_MSG:
+		# 		break
+
+		# 	if msg_type == RPi.TAKE_PHOTO_MSG:
+		# 		print("Photo successfully taken")
+		# 		break
+>>>>>>> Stashed changes
 
 	def calibrate(self, is_front=True):
+		if is_front:
+			return
+
 		calibrate_msg = RPi.CALIBRATE_FRONT_MSG if is_front else RPi.CALIBRATE_RIGHT_MSG
 		# Sample message: C
 		self.send(calibrate_msg)
@@ -177,6 +215,30 @@ class RPi:
 				print("Calibration successful")
 				break
 
+<<<<<<< Updated upstream
+=======
+	def set_speed(self, is_high=True):
+		speed_msg = RPi.HIGH_SPEED_MSG if is_high else RPi.LOW_SPEED_MSG
+		# Sample message: H
+		self.send(speed_msg)
+
+		while True:
+			# Sample message: H
+			msg_type, msg = self.receive_msg_with_type()
+
+			if msg_type == RPi.QUIT_MSG:
+				break
+
+			if msg_type == speed_msg:
+				print("Successfully updated speed to", "high" if is_high else "low", "speed")
+				break
+
+	def receive_endlessly(self):
+		while True:
+			msg = self.receive()
+			self.queue.append(msg)
+
+>>>>>>> Stashed changes
 
 def main():
 	rpi = RPi()

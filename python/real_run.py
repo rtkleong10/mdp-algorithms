@@ -1,7 +1,11 @@
 from rpi import RPi
 from fastest_path import FastestPath
 from exploration import Exploration
+<<<<<<< Updated upstream
 from image_rec_exploration import ImageRecExploration
+=======
+from right_short_image_rec_exploration import ImageRecShort
+>>>>>>> Stashed changes
 from threading import Thread
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import RealBot
@@ -11,8 +15,14 @@ from gui import GUI
 from utils import generate_unexplored_map
 import re
 
+<<<<<<< Updated upstream
+=======
+# Set to True for Algo GUI
+USE_GUI = True
+
+>>>>>>> Stashed changes
 # Set to True for image recognition exploration
-USE_IMAGE_REC_EXPLORATION = False
+USE_IMAGE_REC_EXPLORATION = True
 
 class RealRun:
 	def __init__(self):
@@ -33,10 +43,17 @@ class RealRun:
 
 		self.gui = GUI(self.explored_map, self.robot)
 
+<<<<<<< Updated upstream
 	def connect_to_rpi(self):
+=======
+	def start(self):
+>>>>>>> Stashed changes
 		self.rpi.open_connection()
 		self.rpi.ping()
+		Thread(target=self.connect_to_rpi).start()
+		self.rpi.receive_endlessly()
 
+	def connect_to_rpi(self):
 		while True:
 			# msg_type, msg = self.rpi.receive_msg_with_type()
 			message = input("Message: ")
@@ -54,7 +71,11 @@ class RealRun:
 				self.on_update()
 
 				if USE_IMAGE_REC_EXPLORATION:
+<<<<<<< Updated upstream
 					exp = ImageRecExploration(
+=======
+					self.exp = ImageRecShort(
+>>>>>>> Stashed changes
 						robot=self.robot,
 						on_update_map=self.on_update,
 						on_calibrate=self.rpi.calibrate,
@@ -182,6 +203,15 @@ class RealRun:
 
 if __name__ == '__main__':
 	rr = RealRun()
+<<<<<<< Updated upstream
 	Thread(target=rr.connect_to_rpi).start()
 	# rr.connect_to_rpi()
 	rr.display_gui()
+=======
+
+	if USE_GUI:
+		Thread(target=rr.start).start()
+		rr.display_gui()
+	else:
+		rr.start()
+>>>>>>> Stashed changes

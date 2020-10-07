@@ -6,6 +6,10 @@ from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
 
+<<<<<<< Updated upstream
+=======
+MIN_STEPS_WITHOUT_CALIBRATION = 5
+>>>>>>> Stashed changes
 
 # TODO: Rename file to exploration.py
 class Exploration:
@@ -300,6 +304,7 @@ class Exploration:
 		if movement == Movement.FORWARD or movement == Movement.BACKWARD:
 			self.prev_pos = self.robot.pos
 			self.steps_without_calibration += 1
+		print(self.steps_without_calibration)
 
 		if self.steps_without_calibration > 7:
 			can_calibrate = self.calibrate()
