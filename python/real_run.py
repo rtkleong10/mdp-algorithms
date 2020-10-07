@@ -1,53 +1,44 @@
 from rpi import RPi
 from fastest_path import FastestPath
 from exploration import Exploration
-<<<<<<< Updated upstream
-from image_rec_exploration import ImageRecExploration
-=======
 from right_short_image_rec_exploration import ImageRecShort
->>>>>>> Stashed changes
 from threading import Thread
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import RealBot
 from enums import Direction, Cell, Movement
-from map_descriptor import generate_map_descriptor, generate_map
+from map_descriptor import generate_map_descriptor
 from gui import GUI
 from utils import generate_unexplored_map
 import re
 
-<<<<<<< Updated upstream
-=======
 # Set to True for Algo GUI
-USE_GUI = True
+USE_GUI = False
 
->>>>>>> Stashed changes
 # Set to True for image recognition exploration
-USE_IMAGE_REC_EXPLORATION = True
+USE_IMAGE_REC_EXPLORATION = False
 
 class RealRun:
 	def __init__(self):
-		self.rpi = RPi()
+		self.rpi = RPi(on_quit=self.on_quit)
 		self.robot = RealBot(
 			pos=START_POS,
 			direction=Direction.EAST,
 			on_move=self.on_move,
 			get_sensor_values=self.rpi.receive_sensor_values,
 		)
-		# self.explored_map = generate_unexplored_map()
+		self.exp = None
+		self.is_running = False
+		self.explored_map = generate_unexplored_map()
 		self.waypoint = None
 
-		with open("maps/map3.txt", "r") as f:
-			strs = f.read().split("\n")
-		
-		self.explored_map = generate_map(*strs)
+		# with open("maps/map3.txt", "r") as f:
+		# 	strs = f.read().split("\n")
+		#
+		# self.explored_map = generate_map(*strs)
 
 		self.gui = GUI(self.explored_map, self.robot)
 
-<<<<<<< Updated upstream
-	def connect_to_rpi(self):
-=======
 	def start(self):
->>>>>>> Stashed changes
 		self.rpi.open_connection()
 		self.rpi.ping()
 		Thread(target=self.connect_to_rpi).start()
@@ -55,27 +46,27 @@ class RealRun:
 
 	def connect_to_rpi(self):
 		while True:
-			# msg_type, msg = self.rpi.receive_msg_with_type()
-			message = input("Message: ")
-			msg_parts = message.split(":")
-			msg_type = msg_parts[0]
-			msg = msg_parts[1] if len(msg_parts) > 1 else ""
+			msg_type, msg = self.rpi.receive_msg_with_type()
+			# message = input("Message: ")
+			# msg_parts = message.split(":")
+			# msg_type = msg_parts[0]
+			# msg = msg_parts[1] if len(msg_parts) > 1 else ""
 
 			if msg_type == RPi.CALIBRATE_MSG:
 				self.calibrate()
 
 			# Exploration
 			elif msg_type == RPi.EXPLORE_MSG:
+				self.is_running = True
+
+				# TODO: Uncomment
+				# self.rpi.set_speed(is_high=False)
 				self.explored_map = generate_unexplored_map()
 				self.gui.map = self.explored_map
 				self.on_update()
 
 				if USE_IMAGE_REC_EXPLORATION:
-<<<<<<< Updated upstream
-					exp = ImageRecExploration(
-=======
 					self.exp = ImageRecShort(
->>>>>>> Stashed changes
 						robot=self.robot,
 						on_update_map=self.on_update,
 						on_calibrate=self.rpi.calibrate,
@@ -84,7 +75,7 @@ class RealRun:
 						time_limit=360
 					)
 				else:
-					exp = Exploration(
+					self.exp = Exploration(
 						robot=self.robot,
 						on_update_map=self.on_update,
 						on_calibrate=self.rpi.calibrate,
@@ -92,7 +83,19 @@ class RealRun:
 						time_limit=360
 					)
 
-				exp.run_exploration()
+				# Run exploration
+				self.exp.run_exploration()
+
+				# Prepare robot position for fastest path
+				if self.robot.pos == START_POS:
+					self.calibrate()
+
+					if self.robot.direction == Direction.SOUTH:
+						self.robot.move(Movement.LEFT)
+					elif self.robot.direction == Direction.WEST:
+						self.robot.move(Movement.RIGHT)
+
+				self.is_running = False
 
 				mdf = generate_map_descriptor(self.explored_map)
 				print("MDF:", ",".join(mdf))
@@ -126,40 +129,60 @@ class RealRun:
 				r = int(m.group(2))
 				self.robot.pos = (c, r)
 				self.robot.direction = Direction.convert_from_string(m.group(3))
+				self.update_gui()
 
 				for i in range(max(0, r - 1), min(NUM_ROWS, r + 2)):
 					for j in range(max(0, c - 1), min(NUM_COLS, c + 2)):
 						self.explored_map[i][j] = Cell.FREE
 
+				if self.robot.pos == START_POS:
+					self.calibrate()
+
 				self.update_gui()
 
 			# Fastest Path
 			elif msg_type == RPi.FASTEST_PATH_MSG:
-				# TODO: Calibrate for fastest path
+				self.is_running = True
+
+				# TODO: Uncomment
+				# self.rpi.set_speed(is_high=True)
+
 				self.robot.pos = START_POS
+				self.update_gui()
 				fp = FastestPath(self.explored_map, self.robot.direction, START_POS, GOAL_POS, self.waypoint)
 				movements = fp.combined_movements()
-				for movement in movements:
-					self.robot.move(movement)
+
+				if movements is not None:
+					for movement in movements:
+						if not self.is_running:
+							break
+
+						self.robot.move(movement)
 
 				self.rpi.send(RPi.FASTEST_PATH_MSG)
+
+				self.is_running = False
 
 	def display_gui(self):
 		self.gui.start()
 
 	def update_gui(self):
-		# pass
-		self.gui.update_canvas()
+		if USE_GUI:
+			self.gui.update_canvas()
 
 	def on_move(self, movement):
-		self.rpi.send_movement(movement, self.robot)
+		sensor_values = self.rpi.send_movement(movement, self.robot)
 		self.update_gui()
+		return sensor_values
 
 	def on_update(self):
 		self.rpi.send_map(self.explored_map)
 		self.update_gui()
 
 	def calibrate(self):
+		# TODO: Uncomment
+		# self.rpi.set_speed(is_high=False)
+
 		if self.robot.direction == Direction.NORTH:
 			# Calibrate facing south wall
 			self.robot.move(Movement.LEFT)
@@ -183,6 +206,9 @@ class RealRun:
 			# Turn back
 			self.robot.move(Movement.LEFT)
 
+			# Calibrate facing east
+			self.rpi.calibrate(is_front=False)
+
 		elif self.robot.direction == Direction.SOUTH:
 			# Calibrate facing south wall
 			self.rpi.calibrate(is_front=True)
@@ -200,18 +226,16 @@ class RealRun:
 			# Calibrate facing west wall
 			self.rpi.calibrate(is_front=True)
 
+	def on_quit(self):
+		if self.exp:
+			self.exp.is_running = False
+		self.is_running = False
 
 if __name__ == '__main__':
 	rr = RealRun()
-<<<<<<< Updated upstream
-	Thread(target=rr.connect_to_rpi).start()
-	# rr.connect_to_rpi()
-	rr.display_gui()
-=======
-
+	
 	if USE_GUI:
 		Thread(target=rr.start).start()
 		rr.display_gui()
 	else:
 		rr.start()
->>>>>>> Stashed changes

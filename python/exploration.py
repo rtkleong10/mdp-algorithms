@@ -6,12 +6,8 @@ from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
 
-<<<<<<< Updated upstream
-=======
 MIN_STEPS_WITHOUT_CALIBRATION = 5
->>>>>>> Stashed changes
 
-# TODO: Rename file to exploration.py
 class Exploration:
 	def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None):
 		"""
@@ -31,6 +27,7 @@ class Exploration:
 		self.time_limit = time_limit
 		self.steps_without_calibration = 0
 		self.obstacles = {}
+		self.is_running = True
 
 		if on_update_map is None:
 			self.on_update_map = lambda: None
@@ -56,7 +53,7 @@ class Exploration:
 		is_time_limit_exceeded = self.time_limit is not None and self.time_limit <\
 			self.time_elapsed + (FastestPath.heuristic_function(self.robot.pos, START_POS) * 2) / self.robot.speed
 
-		return is_coverage_limit_exceeded or is_time_limit_exceeded
+		return not self.is_running or is_coverage_limit_exceeded or is_time_limit_exceeded
 
 	# find cord wrt the bot based on where it's facing
 	def find_right_pos(self):
@@ -136,7 +133,7 @@ class Exploration:
 
 		return True
 
-	def is_pos_safe(self, pos):
+	def is_pos_safe(self, pos, consider_unexplored=True):
 		x = pos[0]
 		y = pos[1]
 
@@ -145,7 +142,7 @@ class Exploration:
 
 		for col in range(x - 1, x + 2):
 			for row in range(y - 1, y + 2):
-				if self.explored_map[row][col] == Cell.OBSTACLE or self.explored_map[row][col] == Cell.UNEXPLORED:
+				if self.explored_map[row][col] == Cell.OBSTACLE or (consider_unexplored and self.explored_map[row][col] == Cell.UNEXPLORED):
 					return False
 
 		return True
@@ -215,10 +212,47 @@ class Exploration:
 
 		return d
 
-	def run_exploration(self):
-		self.start_time = time.time()
-		self.sense_and_repaint(True)
+	def find_remaining_unexplored(self):
+		pos_to_check = {}
 
+		for r in range(20):
+			for c in range(15):
+				if self.explored_map[r][c] == Cell.UNEXPLORED:
+					for pos, direction in self.possible_remaining_unexplored((c, r)):
+						pos_to_check[pos] = direction
+
+		return pos_to_check
+
+	def possible_remaining_unexplored(self, goal):
+		d = set()
+
+		for direction in range(4):
+			for sensor in self.robot.sensors:
+				sensor_direction = (direction + sensor.direction - Direction.EAST) % 4
+				reverse_sensor_direction = (sensor_direction + 2) % 4
+				direction_vector = Direction.get_direction_vector(reverse_sensor_direction)
+
+				for i in range(*sensor.get_range()):
+					sensor_pos = (goal[0] + i * direction_vector[0], goal[1] + i * direction_vector[1])
+
+					if sensor_pos[0] < 0 or sensor_pos[0] >= NUM_COLS or sensor_pos[1] < 0 or sensor_pos[1] >= NUM_ROWS or self.explored_map[sensor_pos[1]][sensor_pos[0]] == Cell.OBSTACLE:
+						break
+
+					if direction == Direction.NORTH:
+						pos = sensor_pos[0] + sensor.pos[1], sensor_pos[1] - sensor.pos[0]
+					elif direction == Direction.EAST:
+						pos = sensor_pos[0] - sensor.pos[0], sensor_pos[1] - sensor.pos[1]
+					elif direction == Direction.SOUTH:
+						pos = sensor_pos[0] - sensor.pos[1], sensor_pos[1] + sensor.pos[0]
+					else:  # Direction.WEST
+						pos = sensor_pos[0] + sensor.pos[0], sensor_pos[1] + sensor.pos[1]
+
+					if self.is_pos_safe(pos):
+						d.add((pos, direction))
+
+		return d
+
+	def right_hug(self):
 		while True:
 			if self.is_limit_exceeded:
 				break
@@ -240,9 +274,11 @@ class Exploration:
 				self.move(Movement.LEFT)
 
 			else:
-				self.move(Movement.RIGHT)
-				self.move(Movement.RIGHT)
+				self.move(Movement.LEFT)
+				self.move(Movement.LEFT)
 
+	def explore_unexplored(self):
+		print("EXPLORE UNEXPLORED")
 		while True:
 			if self.is_limit_exceeded:
 				break
@@ -252,75 +288,83 @@ class Exploration:
 			if not can_find:
 				break
 
-		# Go back to start
+		while True:
+			if self.is_limit_exceeded:
+				break
+
+			unexplored_pos_to_check = self.find_remaining_unexplored()
+			can_find = self.fastest_path_to_pos_to_check(unexplored_pos_to_check)
+			if not can_find:
+				break
+
+	def fastest_path_to_start(self):
+		print("FASTEST PATH TO START")
 		fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, START_POS)
-		movements = fp.movements if isinstance(self.robot, SimulatorBot) else fp.combined_movements()
+		movements = fp.movements
 		if movements is None:
 			print("Can't go back to start?")
 
 		for movement in movements:
-			self.move(movement, sense=False)
+			if not self.is_running:
+				break
+
+			self.move(movement)
+
+	def run_exploration(self):
+		self.start_time = time.time()
+		self.sense_and_repaint()
+		self.right_hug()
+		self.explore_unexplored()
+		self.fastest_path_to_start()
 
 	def calibrate(self):
-		is_calibrated = False
 		front_direction = self.robot.direction
 		right_direction = (front_direction + 1) % 4
 		front_direction_vector = Direction.get_direction_vector(front_direction)
 		right_direction_vector = Direction.get_direction_vector(right_direction)
 
 		# Check front
-		can_calibrate_front = []
+		can_calibrate_front = True
 		for i in [-1, 1]:
 			c = self.robot.pos[0] + 2 * front_direction_vector[0] + i * right_direction_vector[0]
 			r = self.robot.pos[1] + 2 * front_direction_vector[1] + i * right_direction_vector[1]
 
-			if c < 0 or c > NUM_COLS - 1 or r < 0 or r > NUM_ROWS - 1 or self.explored_map[r][c] == Cell.OBSTACLE:
-				can_calibrate_front.append(True)
-			else:
-				can_calibrate_front.append(False)
+			if 0 <= c < NUM_COLS and 0 <= r < NUM_ROWS and self.explored_map[r][c] != Cell.OBSTACLE:
+				can_calibrate_front = False
 
-		if all(can_calibrate_front):
-			self.on_calibrate(True)
-			is_calibrated = True
+		if can_calibrate_front:
+			self.on_calibrate(is_front=True)
 
 		# Check right
-		can_calibrate_right = []
-		for i in [-1, 1]:
-			c = self.robot.pos[0] + i * front_direction_vector[0] + 2 * right_direction_vector[0]
-			r = self.robot.pos[1] + i * front_direction_vector[1] + 2 * right_direction_vector[1]
+		if self.steps_without_calibration > MIN_STEPS_WITHOUT_CALIBRATION:
+			can_calibrate_right = True
+			for i in [-1, 1]:
+				c = self.robot.pos[0] + i * front_direction_vector[0] + 2 * right_direction_vector[0]
+				r = self.robot.pos[1] + i * front_direction_vector[1] + 2 * right_direction_vector[1]
 
-			if c < 0 or c > NUM_COLS - 1 or r < 0 or r > NUM_ROWS - 1 or self.explored_map[r][c] == Cell.OBSTACLE:
-				can_calibrate_right.append(True)
-			else:
-				can_calibrate_right.append(False)
+				if 0 <= c < NUM_COLS and 0 <= r < NUM_ROWS and self.explored_map[r][c] != Cell.OBSTACLE:
+					can_calibrate_right = False
 
-		if all(can_calibrate_right):
-			self.on_calibrate(False)
-			is_calibrated = True
-
-		return is_calibrated
+			if can_calibrate_right:
+				self.on_calibrate(is_front=False)
+				self.steps_without_calibration = 0
 
 	def move(self, movement, sense=True):
-		if movement == Movement.FORWARD or movement == Movement.BACKWARD:
+		if not isinstance(movement, Movement) or movement == Movement.FORWARD or movement == Movement.BACKWARD:
 			self.prev_pos = self.robot.pos
 			self.steps_without_calibration += 1
 		print(self.steps_without_calibration)
 
-		if self.steps_without_calibration > 7:
-			can_calibrate = self.calibrate()
-
-			if can_calibrate:
-				self.steps_without_calibration = 0
-
-		self.robot.move(movement)
+		self.calibrate()
+		sensor_values = self.robot.move(movement)
 
 		if sense:
-			self.sense_and_repaint()
+			self.sense_and_repaint(sensor_values)
 
-	def sense_and_repaint(self, send_msg=False):
-		sensor_values = self.robot.sense(send_msg)
+	def sense_and_repaint(self, sensor_values=None):
+		if sensor_values is None:
+			sensor_values = self.robot.sense()
 
-		# TODO: Handle empty sensor_values (sensor_values = [])
 		for i in range(len(sensor_values)):
 			sensor_value = sensor_values[i]
 			sensor = self.robot.sensors[i]

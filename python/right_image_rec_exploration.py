@@ -6,7 +6,7 @@ from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
 
-class ImageRecShort(Exploration):
+class ImageRecRight(Exploration):
     def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None, on_take_photo=None):
         super().__init__(robot, on_update_map=on_update_map, on_calibrate=on_calibrate, explored_map=explored_map, coverage_limit=coverage_limit, time_limit=time_limit)
 
@@ -18,36 +18,36 @@ class ImageRecShort(Exploration):
             self.on_take_photo = on_take_photo
 
     # check if any of the obstacle side is blocked by another obstacle
-    # def removeObstacleSide(self,pos): #pos must be tuple
-    #     for i in range(1,4):
-    #         if (pos[0]+i,pos[1]) in self.obstacles:
-    #             if 1 in self.obstacles[pos]:
-    #                 self.obstacles[pos].remove(1)
-    #             if 3 in self.obstacles[(pos[0]+i,pos[1])]:
-    #                 self.obstacles[(pos[0]+i,pos[1])].remove(3)
-    #         if pos[0]+i >14 and 1 in self.obstacles[pos]:
-    #             self.obstacles[pos].remove(1)
-    #         if (pos[0]-i,pos[1]) in self.obstacles:
-    #             if 3 in self.obstacles[pos]:
-    #                 self.obstacles[pos].remove(3)
-    #             if 1 in self.obstacles[(pos[0]-i,pos[1])]:
-    #                 self.obstacles[(pos[0]-i,pos[1])].remove(1)
-    #         if pos[0]-i <0 and 3 in self.obstacles[pos]:
-    #             self.obstacles[pos].remove(3)
-    #         if (pos[0],pos[1]+i) in self.obstacles:
-    #             if 0 in self.obstacles[pos]:
-    #                 self.obstacles[pos].remove(0)
-    #             if 2 in self.obstacles[(pos[0],pos[1]+i)]:
-    #                 self.obstacles[(pos[0],pos[1]+i)].remove(2)
-    #         if pos[1]+ i >19 and 0 in self.obstacles[pos]:
-    #             self.obstacles[pos].remove(0)
-    #         if (pos[0],pos[1]-i) in self.obstacles:
-    #             if 2 in self.obstacles[pos]:
-    #                 self.obstacles[pos].remove(2)
-    #             if 0 in self.obstacles[(pos[0],pos[1]-i)]:
-    #                 self.obstacles[(pos[0],pos[1]-i)].remove(0)
-    #         if pos[1]-i<0 and 2 in self.obstacles[pos]:
-    #             self.obstacles[pos].remove(2)
+    def removeObstacleSide(self,pos): #pos must be tuple
+        for i in range(1,4):
+            if (pos[0]+i,pos[1]) in self.obstacles:
+                if 1 in self.obstacles[pos]:
+                    self.obstacles[pos].remove(1)
+                if 3 in self.obstacles[(pos[0]+i,pos[1])]:
+                    self.obstacles[(pos[0]+i,pos[1])].remove(3)
+            if pos[0]+i >14 and 1 in self.obstacles[pos]:
+                self.obstacles[pos].remove(1)
+            if (pos[0]-i,pos[1]) in self.obstacles:
+                if 3 in self.obstacles[pos]:
+                    self.obstacles[pos].remove(3)
+                if 1 in self.obstacles[(pos[0]-i,pos[1])]:
+                    self.obstacles[(pos[0]-i,pos[1])].remove(1)
+            if pos[0]-i <0 and 3 in self.obstacles[pos]:
+                self.obstacles[pos].remove(3)
+            if (pos[0],pos[1]+i) in self.obstacles:
+                if 0 in self.obstacles[pos]:
+                    self.obstacles[pos].remove(0)
+                if 2 in self.obstacles[(pos[0],pos[1]+i)]:
+                    self.obstacles[(pos[0],pos[1]+i)].remove(2)
+            if pos[1]+ i >19 and 0 in self.obstacles[pos]:
+                self.obstacles[pos].remove(0)
+            if (pos[0],pos[1]-i) in self.obstacles:
+                if 2 in self.obstacles[pos]:
+                    self.obstacles[pos].remove(2)
+                if 0 in self.obstacles[(pos[0],pos[1]-i)]:
+                    self.obstacles[(pos[0],pos[1]-i)].remove(0)
+            if pos[1]-i<0 and 2 in self.obstacles[pos]:
+                self.obstacles[pos].remove(2)
 
     def checkObstacleSide(self, pos, direction):  # check for obstacles within the weird shape
         obstacles = []
@@ -102,7 +102,42 @@ class ImageRecShort(Exploration):
         obstacles = self.checkObstacleSide(pos,right)
         if len(obstacles) != 0:
             self.on_take_photo(obstacles)
-            print('right take photo ', self.robot.pos)
+            print('right take photo')
+        #if front got obstacles with sides never see before, turn and take photo
+        obstacles = self.checkObstacleSide(pos,direction)
+        front= False
+        if len(obstacles) != 0:
+            self.move(Movement.LEFT)
+            self.on_take_photo(obstacles)
+            print('front take photo')
+            front = True
+        #if left side got obstacles with sides never see before, turn and take photo
+        left = (direction-1)%4
+        obstacles = self.checkObstacleSide(pos,left)
+        left = False
+        if len(obstacles) != 0:
+            if not front:
+                self.move(Movement.LEFT)
+            self.move(Movement.LEFT)
+            self.on_take_photo(obstacles)
+            print('left take photo')
+            left = True
+        elif front:
+            self.move(Movement.RIGHT)
+        # if back got obstacles....
+        back = (direction+2)%4
+        obstacles = self.checkObstacleSide(pos,back)
+        if len(obstacles) != 0:
+            if not left:
+                self.move(Movement.RIGHT)
+            else:
+                self.move(Movement.LEFT)
+            print('back take photo')
+            self.on_take_photo(obstacles)
+            self.move(Movement.LEFT)
+        elif left:
+            self.move(Movement.RIGHT)
+            self.move(Movement.RIGHT)
 
     def sense_and_repaint(self, sensor_values=None):
         if sensor_values is None:
@@ -135,13 +170,71 @@ class ImageRecShort(Exploration):
                             self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.OBSTACLE
                             if pos_to_mark not in self.obstacles:
                                 self.obstacles[pos_to_mark] = {0, 1, 2, 3}
-                                # self.removeObstacleSide(pos_to_mark)
+                                self.removeObstacleSide(pos_to_mark)
 
         self.on_update_map()
 
     def move(self, movement, sense=True):
-        super(ImageRecShort, self).move(movement, sense)
-        self.snapObstacleSide()
+        super(ImageRecRight, self).move(movement, sense)
+
+        if movement == Movement.FORWARD:
+            self.snapObstacleSide()
+
+    def explore_unseen(self):
+        print("EXPLORE UNSEEN")
+        while True:
+            if self.is_limit_exceeded:
+                break
+
+            unseen_pos_to_check = self.find_unseen_to_check()
+            can_find = self.fastest_path_to_pos_to_check(unseen_pos_to_check)
+
+            if not can_find:
+                break
+
+    def run_exploration(self):
+        self.start_time = time.time()
+        self.sense_and_repaint()
+        self.right_hug()
+        self.explore_unexplored()
+        self.explore_unseen()
+        self.fastest_path_to_start()
+
+    def find_unseen_to_check(self):
+        pos_to_check = {}
+
+        for obstacle_pos in self.obstacles:
+            for obstacle_direction in self.obstacles[obstacle_pos]:
+                for pos, direction in self.possible_photo_pos(obstacle_pos, obstacle_direction):
+                    pos_to_check[pos] = direction
+
+        return pos_to_check
+
+
+    def possible_photo_pos(self, goal, direction):
+        d = set()
+        x, y = goal
+
+        if direction == Direction.NORTH:
+            arr = [(0, 2), (-1, 3), (0, 3), (1, 3)]
+        elif direction == Direction.EAST:
+            arr = [(2, 0), (3, -1), (3, 0), (3, 1)]
+        elif direction == Direction.SOUTH:
+            arr = [(0, -2), (-1, -3), (0, -3), (1, -3)]
+        elif direction == Direction.WEST:
+            arr = [(-2, 0), (-3, -1), (-3, 0), (-3, 1)]
+        else:
+            print('GGWP')
+            raise ValueError
+
+        for i in arr:
+            pos = (x + i[0], y + i[1])
+
+            if self.is_pos_safe(pos):
+                print(goal,direction)
+                d.add((pos, None))
+
+        return d
 
 def main():
     with open("maps/sample_arena5.txt", "r") as f:
@@ -150,7 +243,7 @@ def main():
     map_real = generate_map(*strs)
     bot = SimulatorBot(START_POS, Direction.EAST, lambda m: None)
     bot.map = map_real
-    exp = ImageRecShort(bot, lambda: None)
+    exp = ImageRecRight(bot, lambda: None)
     exp.run_exploration()
     print(exp.obstacles)
     # print_map(exp.explored_map)

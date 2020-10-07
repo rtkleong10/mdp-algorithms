@@ -5,10 +5,11 @@ import re
 from collections import deque
 from datetime import datetime
 
+# Set to True for testing with dummy server
+IS_DUMMY = False
 
 class RPi:
-	HOST = "192.168.4.4"
-	# HOST = "127.0.0.1"
+	HOST = "127.0.0.1" if IS_DUMMY else "192.168.4.4"
 	PORT = 4444
 
 	# Message Types
@@ -24,27 +25,20 @@ class RPi:
 	TAKE_PHOTO_MSG = "P"
 	MOVEMENT_MSG = "M"
 	MDF_MSG = "D"
-<<<<<<< Updated upstream
-=======
 	HIGH_SPEED_MSG = "H"
 	LOW_SPEED_MSG = "T"
 	QUIT_MSG = "Q"
->>>>>>> Stashed changes
 	TYPE_DIVIDER = ":"
 
-	def __init__(self):
+	def __init__(self, on_quit=None):
 		self.conn = None
 		self.is_connected = False
-<<<<<<< Updated upstream
-=======
 		self.on_quit = on_quit if on_quit is not None else lambda: None
 		self.queue = deque([])
->>>>>>> Stashed changes
 
 	def open_connection(self):
 		try:
-			self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-			# self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM) if IS_DUMMY else socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 			self.conn.connect((RPi.HOST, RPi.PORT))
 			self.is_connected = True
 			print("Successfully established connection...")
@@ -89,24 +83,25 @@ class RPi:
 		self.send(full_msg)
 
 	def receive_msg_with_type(self):
-<<<<<<< Updated upstream
-		msg = self.receive().strip()
-		m = re.match(rf"(.+){RPi.TYPE_DIVIDER}(.+)", msg)
-
-		if m is not None:
-			return m.group(1), m.group(2)
-=======
 		while len(self.queue) < 1:
 			pass
 
 		full_msg = self.queue.popleft().strip()
 		m = full_msg.split(RPi.TYPE_DIVIDER)
 
-		if m is not None:
+		if len(m) > 1:
 			msg_type, msg = m[0], RPi.TYPE_DIVIDER.join(m[1:])
->>>>>>> Stashed changes
 		else:
-			return msg, ""
+			msg_type, msg = full_msg, ""
+
+		if msg_type == RPi.QUIT_MSG:
+			self.on_quit()
+
+		return msg_type, msg
+
+	def ping(self):
+		# Sample message: HELLO
+		self.send(RPi.HELLO_MSG)
 
 	def send_movement(self, movement, robot):
 		print(movement)
@@ -125,27 +120,14 @@ class RPi:
 			Direction.convert_to_string(robot.direction),
 		)
 		self.send_msg_with_type(RPi.MOVEMENT_MSG, msg)
-
-		# while True:
-		# 	# Sample message: M
-		# 	msg_type, msg = self.receive_msg_with_type()
-
-		# 	if msg_type == RPi.MOVEMENT_MSG:
-		# 		break
-
-		# 	print("I want move, not this pls", msg_type, ":", msg)
+		return self.receive_sensor_values(send_msg=False)
 
 	def send_map(self, explored_map):
 		# Sample message: D:FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF,000000000400000001C800000000000700000000800000001F80000700000000020000000000
 		self.send_msg_with_type(RPi.MDF_MSG, ",".join(generate_map_descriptor(explored_map)))
 
-	def ping(self):
-		# Sample message: HELLO
-		self.send(RPi.HELLO_MSG)
-
-	def receive_sensor_values(self, send_msg=False):
+	def receive_sensor_values(self, send_msg=True):
 		# Sample message: S
-		print("SENSE PLS")
 		if send_msg:
 			self.send(RPi.SENSE_MSG)
 
@@ -153,8 +135,10 @@ class RPi:
 			# Sample message: S:1,1,1,1,1,1
 			msg_type, msg = self.receive_msg_with_type()
 
+			if msg_type == RPi.QUIT_MSG:
+				return []
+
 			if msg_type != RPi.SENSE_MSG:
-				print("I want sensor, not this pls", msg_type, ":", msg)
 				continue
 
 			m = re.match(r"(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+),\s*(-?\d+)", msg)
@@ -185,38 +169,32 @@ class RPi:
 		# while True:
 		# 	# Sample message: P
 		# 	msg_type, msg = self.receive_msg_with_type()
-
-<<<<<<< Updated upstream
-			if msg_type == RPi.TAKE_PHOTO_MSG:
-				print("Photo successfully taken")
-				break
-=======
 		# 	if msg_type == RPi.QUIT_MSG:
 		# 		break
 
 		# 	if msg_type == RPi.TAKE_PHOTO_MSG:
 		# 		print("Photo successfully taken")
 		# 		break
->>>>>>> Stashed changes
 
 	def calibrate(self, is_front=True):
 		if is_front:
 			return
 
 		calibrate_msg = RPi.CALIBRATE_FRONT_MSG if is_front else RPi.CALIBRATE_RIGHT_MSG
-		# Sample message: C
+		# Sample message: f
 		self.send(calibrate_msg)
 
 		while True:
-			# Sample message: C
+			# Sample message: f
 			msg_type, msg = self.receive_msg_with_type()
+
+			if msg_type == RPi.QUIT_MSG:
+				break
 
 			if msg_type == calibrate_msg:
 				print("Calibration successful")
 				break
 
-<<<<<<< Updated upstream
-=======
 	def set_speed(self, is_high=True):
 		speed_msg = RPi.HIGH_SPEED_MSG if is_high else RPi.LOW_SPEED_MSG
 		# Sample message: H
@@ -237,8 +215,6 @@ class RPi:
 		while True:
 			msg = self.receive()
 			self.queue.append(msg)
-
->>>>>>> Stashed changes
 
 def main():
 	rpi = RPi()

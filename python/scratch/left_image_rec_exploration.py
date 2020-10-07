@@ -7,7 +7,7 @@ from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
 
-class ImageRecRight(Exploration):
+class ImageRecExploration(Exploration):
     def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None, on_take_photo=None):
         super().__init__(robot, on_update_map=on_update_map, on_calibrate=on_calibrate, explored_map=explored_map, coverage_limit=coverage_limit, time_limit=time_limit)
 
@@ -102,52 +102,52 @@ class ImageRecRight(Exploration):
         print('here')
         direction = self.robot.direction
         pos = self.robot.pos
-        #if right side got obstacles with sides never see before, take photo
-        right = (direction+1)%4
-        obstacles = self.checkObstacleSide(pos,right)
+        #if left side got obstacles with sides never see before, take photo
+        left = (direction-1)%4
+        obstacles = self.checkObstacleSide(pos,left)
         if len(obstacles) != 0:
             self.on_take_photo(obstacles)
-            print('right take photo')
+            print('left take photo')
         #if front got obstacles with sides never see before, turn and take photo
         obstacles = self.checkObstacleSide(pos,direction)
         front= False
         if len(obstacles) != 0:
-            self.move(Movement.LEFT)
+            self.move(Movement.RIGHT)
             self.on_take_photo(obstacles)
             print('front take photo')
             front = True
-        #if left side got obstacles with sides never see before, turn and take photo
-        left = (direction-1)%4
-        obstacles = self.checkObstacleSide(pos,left)
-        left = False
+        #if right side got obstacles with sides never see before, turn and take photo
+        right = (direction+1)%4
+        obstacles = self.checkObstacleSide(pos,right)
+        right = False
         if len(obstacles) != 0:
             if not front:
-                self.move(Movement.LEFT)
-            self.move(Movement.LEFT)
-            self.on_take_photo(obstacles)
-            print('left take photo')
-            left = True
-        elif front:
+                self.move(Movement.RIGHT)
             self.move(Movement.RIGHT)
+            self.on_take_photo(obstacles)
+            print('right take photo')
+            right = True
+        elif front:
+            self.move(Movement.LEFT)
         # if back got obstacles....
         back = (direction+2)%4
         obstacles = self.checkObstacleSide(pos,back)
         if len(obstacles) != 0:
-            if not left:
-                self.move(Movement.RIGHT)
-            else:
+            if not right:
                 self.move(Movement.LEFT)
+            else:
+                self.move(Movement.RIGHT)
             print('back take photo')
             self.on_take_photo(obstacles)
+            self.move(Movement.RIGHT)
+        elif right:
             self.move(Movement.LEFT)
-        elif left:
-            self.move(Movement.RIGHT)
-            self.move(Movement.RIGHT)
+            self.move(Movement.LEFT)
 
-    def sense_and_repaint(self):
-        sensor_values = self.robot.sense()
+    def sense_and_repaint(self, sensor_values=None):
+        if sensor_values is None:
+            sensor_values = self.robot.sense()
 
-        # TODO: Handle empty sensor_values (sensor_values = [])
         for i in range(len(sensor_values)):
             sensor_value = sensor_values[i]
             sensor = self.robot.sensors[i]
@@ -180,58 +180,18 @@ class ImageRecRight(Exploration):
         self.on_update_map()
 
     def move(self, movement, sense=True):
-        super(ImageRecRight, self).move(movement, sense)
+        super(ImageRecExploration, self).move(movement, sense)
 
         if movement == Movement.FORWARD:
             self.snapObstacleSide()
 
-    def run_exploration(self):
-        self.start_time = time.time()
-        self.sense_and_repaint()
-
+    def explore_unseen(self):
         while True:
             if self.is_limit_exceeded:
                 break
 
-            # print_map(self.explored_map, [self.robot.pos])
-            if self.entered_goal and self.robot.pos == START_POS:
-                break
-
-            if self.robot.pos == GOAL_POS:
-                self.entered_goal = True
-
-            if self.check_right():
-                self.move(Movement.RIGHT)
-                # self.snapObstacleSide()
-
-            elif self.check_forward():
-                self.move(Movement.FORWARD)
-                # self.snapObstacleSide()
-
-            elif self.check_left():
-                self.move(Movement.LEFT)
-                # self.snapObstacleSide()
-
-            else:
-                self.move(Movement.RIGHT)
-                self.move(Movement.RIGHT)
-                # self.snapObstacleSide()
-
-        while True:
-            if self.is_limit_exceeded:
-                break
-
-            unexplored_pos_to_check = self.find_unexplored_to_check()
-            can_find = self.fastest_path_to_pos_to_check(unexplored_pos_to_check)
-
-            if not can_find:
-                break
-        while True:
-            if self.is_limit_exceeded:
-                break
-
-            unexplored_pos_to_check = self.find_unseen_to_check()
-            can_find = self.fastest_path_to_pos_to_check(unexplored_pos_to_check)
+            unseen_pos_to_check = self.find_unseen_to_check()
+            can_find = self.fastest_path_to_pos_to_check(unseen_pos_to_check)
 
             if can_find:
                 self.snapObstacleSide()
@@ -239,16 +199,13 @@ class ImageRecRight(Exploration):
             else:
                 break
 
-        # Go back to start
-        fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, START_POS)
-        movements = fp.movements if isinstance(self.robot, SimulatorBot) else fp.combined_movements()
-
-        if movements is None:
-            print("Can't go back to start?")
-
-        for movement in movements:
-            self.move(movement, sense=False)
-
+    def run_exploration(self):
+        self.start_time = time.time()
+        self.sense_and_repaint()
+        self.right_hug()
+        self.explore_unexplored()
+        self.explore_unseen()
+        self.fastest_path_to_start()
 
     def find_unseen_to_check(self):
         pos_to_check = {}
@@ -264,7 +221,6 @@ class ImageRecRight(Exploration):
     def possible_photo_pos(self, goal, direction):
         d = set()
         x, y = goal
-
         if direction == Direction.NORTH:
             arr = [(0, 2), (-1, 3), (0, 3), (1, 3)]
         elif direction == Direction.EAST:
@@ -274,26 +230,24 @@ class ImageRecRight(Exploration):
         elif direction == Direction.WEST:
             arr = [(-2, 0), (-3, -1), (-3, 0), (-3, 1)]
         else:
-            print('GGWP')
             raise ValueError
 
         for i in arr:
             pos = (x + i[0], y + i[1])
 
             if self.is_pos_safe(pos):
-                print(goal,direction)
                 d.add((pos, None))
 
         return d
 
 def main():
-    with open("maps/sample_arena5.txt", "r") as f:
+    with open("../maps/sample_arena5.txt", "r") as f:
         strs = f.read().split("\n")
 
     map_real = generate_map(*strs)
     bot = SimulatorBot(START_POS, Direction.EAST, lambda m: None)
     bot.map = map_real
-    exp = ImageRecRight(bot, lambda: None)
+    exp = ImageRecExploration(bot, lambda: None)
     exp.run_exploration()
     print(exp.obstacles)
     # print_map(exp.explored_map)

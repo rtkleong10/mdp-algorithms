@@ -18,7 +18,7 @@
 ## Calibration Request
 ### From Android
 - Android -> RPi -> Algo: `C`
-    - To start the calibation algorithm
+    - To start the calibration algorithm
     - Algo will turn robot to face south and west walls around start pos for calibation
 
 ### Calibrate with Front Facing Sensors (Sensors 2 & 4)
@@ -33,6 +33,17 @@
     - Send after calibration is finished
     - Calibrate the right facing sensors 5 & 6 with the wall (sensor value = 1)
 
+## Set Speed Request
+### Low Speed (For Exploration)
+- Algo -> RPi -> Arduino: `L`
+- Arduino -> RPi -> Algo: `L`
+    - Send after speed has been updated to low speed
+
+### High Speed (For Fastest Path)
+- Algo -> RPi -> Arduino: `H`
+- Arduino -> RPi -> Algo: `H`
+    - Send after speed has been updated to high speed
+
 # Android
 ## Set Starting Point (Reposition Robot)
 - Android -> RPi -> Algo: `R:x,y <direction>`
@@ -42,6 +53,11 @@
 ## Set Waypoint
 - Android -> RPi -> Algo: `W:x,y`
     - e.g. `W:2,12`: Set waypoint to (2, 12)
+
+## Prematurely End Exploration or Algorithm
+- Android -> RPi -> Algo: `Q`
+    - If exploration is running, end exploration
+    - If fastest path is running, end fastest path
 
 # RPi
 ## Hello Message
@@ -55,11 +71,20 @@
     - The obstacle list may have 1 to 4 obstacles
     - There may be an image on multiple obstacles or none of them
     - The position and direction of the robot can be taken from the most recent movement message
-    - Take note that the obstacle list will not contain obstacles that have been previously been taken a photo of
-        - e.g. if (1, 1)'s south side has been previously taken a photo of, it will not appear in future obstacle lists regardless of whether it is range (if you want it to be included, please let us know)
+    - Take note that the obstacle list will not contain
+        - Obstacles that have been previously been taken a photo of
+            - e.g. if (1, 1)'s south side has been previously taken a photo of, it will not appear in future obstacle lists regardless of whether it is range (if you want it to be included, please let us know)
+        - Obstacles that we have not yet detected through our sensors
 - RPi -> Algo: `P`
     - Send after photo is taken
-    
+
+## Image Recognition Result
+- RPi -> Android: `I:x,y <image ID>`
+    - e.g. `I:4,5 3`: Right arrow on obstacle at position (4, 5)
+    - Image ID is based on the list provided by NTU
+    - If RPi doesn't know the position of the image, do not send this message
+        - Just display on the PC
+
 # Everyone
 ## Movement Messages
 ### From Algo
@@ -67,15 +92,23 @@
     - e.g. `M:1 2,1 E`: Move forward one step and you will be in position (2, 1) facing East
     - Position and direction are for after the movement is completed
 - RPi -> Arduino: `movement` (character as position 2)
-    - e.g. `1` for `M:1`, `R` for `M:R`
-- Arduino -> RPi -> Algo: `M`
+    - e.g. `1` for `M:1 2,1 E`, `R` for `M:R 2,1 E`
+- Arduino -> RPi -> Algo: `S:<sensor_1>,<sensor_2>,<sensor_3>,<sensor_4>,<sensor_5>,<sensor_6>`
+    - e.g. `S:1,2,1,2,1,2`
+    - Sensor order is in the robot setup
+        - Red: Short range sensor
+        - Blue: Long range sensor
+        - Ordered in the clockwise direction starting from the left-facing sensor
+    - Sensor values
+        - `-1`: Lower than lower range (within blindspot)
+        - `0`: Higher than upper range
+        - `1-5`: How many blocks away is the nearest obstacle (1: Right next to robot)
 
 ### From Android
 - Android -> RPi: `M:<movement>`
     - e.g. `M:1`: Move forward one step
 - RPi -> Arduino: `<movement>` (character as position 2)
     - e.g. `1` for `M:1` (move forward one step), `R` for `M:R` (turn right)
-- Arduino -> RPi: `M`
 
 ## Map Descriptor Format
 - Algo -> RPi -> Android: `D:<explored string>,<obstacle string>`
