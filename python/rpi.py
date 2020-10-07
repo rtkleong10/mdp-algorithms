@@ -2,6 +2,8 @@ import socket
 from enums import Movement, Direction
 from map_descriptor import generate_map_descriptor
 import re
+from collections import deque
+from datetime import datetime
 
 # Set to True for testing with dummy server
 IS_DUMMY = False
@@ -24,7 +26,7 @@ class RPi:
 	MOVEMENT_MSG = "M"
 	MDF_MSG = "D"
 	HIGH_SPEED_MSG = "H"
-	LOW_SPEED_MSG = "L"
+	LOW_SPEED_MSG = "T"
 	QUIT_MSG = "Q"
 	TYPE_DIVIDER = ":"
 
@@ -32,7 +34,7 @@ class RPi:
 		self.conn = None
 		self.is_connected = False
 		self.on_quit = on_quit if on_quit is not None else lambda: None
-		self.queue = []
+		self.queue = deque([])
 
 	def open_connection(self):
 		try:
@@ -63,6 +65,8 @@ class RPi:
 
 	def receive(self, bufsize=2048):
 		try:
+			print("Receiving RPI message: "
+ + datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
 			msg = self.conn.recv(bufsize).decode("utf-8")
 			print("Message received:", msg)
 			return msg
@@ -82,11 +86,11 @@ class RPi:
 		while len(self.queue) < 1:
 			pass
 
-		full_msg = self.queue.pop(0).strip()
-		m = re.match(rf"(.+){RPi.TYPE_DIVIDER}(.+)", full_msg)
+		full_msg = self.queue.popleft().strip()
+		m = full_msg.split(RPi.TYPE_DIVIDER)
 
-		if m is not None:
-			msg_type, msg = m.group(1), m.group(2)
+		if len(m) > 1:
+			msg_type, msg = m[0], RPi.TYPE_DIVIDER.join(m[1:])
 		else:
 			msg_type, msg = full_msg, ""
 
@@ -162,18 +166,20 @@ class RPi:
 		msg = " ".join(["{},{}".format(*obstacle) for obstacle in obstacles])
 		self.send_msg_with_type(RPi.TAKE_PHOTO_MSG, msg)
 
-		while True:
-			# Sample message: P
-			msg_type, msg = self.receive_msg_with_type()
+		# while True:
+		# 	# Sample message: P
+		# 	msg_type, msg = self.receive_msg_with_type()
+		# 	if msg_type == RPi.QUIT_MSG:
+		# 		break
 
-			if msg_type == RPi.QUIT_MSG:
-				break
-
-			if msg_type == RPi.TAKE_PHOTO_MSG:
-				print("Photo successfully taken")
-				break
+		# 	if msg_type == RPi.TAKE_PHOTO_MSG:
+		# 		print("Photo successfully taken")
+		# 		break
 
 	def calibrate(self, is_front=True):
+		if is_front:
+			return
+
 		calibrate_msg = RPi.CALIBRATE_FRONT_MSG if is_front else RPi.CALIBRATE_RIGHT_MSG
 		# Sample message: f
 		self.send(calibrate_msg)
@@ -207,10 +213,8 @@ class RPi:
 
 	def receive_endlessly(self):
 		while True:
-			if self.is_connected:
-				msg = self.receive()
-				self.queue.append(msg)
-
+			msg = self.receive()
+			self.queue.append(msg)
 
 def main():
 	rpi = RPi()

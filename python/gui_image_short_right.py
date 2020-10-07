@@ -12,7 +12,7 @@ class ShortSimulatorGUI(SimulatorGUI):
         with_image_rec = self.with_image_rec.get() == 1
 
         # Select exploration class
-        exploration_class = ImageRecShort if with_image_rec else Exploration
+        exploration_class = ImageRecShort
 
         self.exp = exploration_class(
             self.robot,
