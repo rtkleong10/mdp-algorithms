@@ -34,12 +34,12 @@
     - Calibrate the right facing sensors 5 & 6 with the wall (sensor value = 1)
 
 ## Set Speed Request
-### Low Speed (For Exploration)
-- Algo -> RPi -> Arduino: `L`
-- Arduino -> RPi -> Algo: `L`
+### Low (Turtle) Speed (For Exploration)
+- Algo -> RPi -> Arduino: `T`
+- Arduino -> RPi -> Algo: `T`
     - Send after speed has been updated to low speed
 
-### High Speed (For Fastest Path)
+### High (Hare) Speed (For Fastest Path)
 - Algo -> RPi -> Arduino: `H`
 - Arduino -> RPi -> Algo: `H`
     - Send after speed has been updated to high speed
