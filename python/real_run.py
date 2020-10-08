@@ -15,7 +15,7 @@ import re
 USE_GUI = False
 
 # Set to True for image recognition exploration
-USE_IMAGE_REC_EXPLORATION = False
+USE_IMAGE_REC_EXPLORATION = True
 
 class RealRun:
 	def __init__(self):
@@ -58,6 +58,8 @@ class RealRun:
 			# Exploration
 			elif msg_type == RPi.EXPLORE_MSG:
 				self.is_running = True
+				if self.robot.pos == START_POS:
+					self.calibrate()
 
 				# TODO: Uncomment
 				# self.rpi.set_speed(is_high=False)

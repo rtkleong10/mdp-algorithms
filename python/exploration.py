@@ -6,7 +6,7 @@ from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
 
-MIN_STEPS_WITHOUT_CALIBRATION = 5
+MIN_STEPS_WITHOUT_CALIBRATION = 0
 
 class Exploration:
 	def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None):

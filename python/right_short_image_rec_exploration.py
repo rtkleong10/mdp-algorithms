@@ -52,45 +52,25 @@ class ImageRecShort(Exploration):
     def checkObstacleSide(self, pos, direction):  # check for obstacles within the weird shape
         obstacles = []
         if direction == 0:
-            for i in range(-1, 2):
-                if (pos[0] + i, pos[1] + 3) in self.obstacles:
-                    if 2 in self.obstacles[(pos[0] + i, pos[1] + 3)]:
-                        self.obstacles[(pos[0] + i, pos[1] + 3)].remove(2)
-                        obstacles.append((pos[0] + i, pos[1] + 3))
             if (pos[0], pos[1] + 2) in self.obstacles:
                 if 2 in self.obstacles[(pos[0], pos[1] + 2)]:
                     self.obstacles[(pos[0], pos[1] + 2)].remove(2)
-                    obstacles.append((pos[0], pos[1] + 2))
+                    obstacles.append((pos[0], pos[1] + 2,2))
         elif direction == 1:
-            for i in range(-1, 2):
-                if (pos[0] + 3, pos[1] + i) in self.obstacles:
-                    if 3 in self.obstacles[(pos[0] + 3, pos[1] + i)]:
-                        self.obstacles[(pos[0] + 3, pos[1] + i)].remove(3)
-                        obstacles.append((pos[0] + 3, pos[1] + i))
             if (pos[0] + 2, pos[1]) in self.obstacles:
                 if 3 in self.obstacles[(pos[0] + 2, pos[1])]:
                     self.obstacles[(pos[0] + 2, pos[1])].remove(3)
-                    obstacles.append((pos[0] + 2, pos[1]))
+                    obstacles.append((pos[0] + 2, pos[1],3))
         elif direction == 2:
-            for i in range(-1, 2):
-                if (pos[0] + i, pos[1] - 3) in self.obstacles:
-                    if 0 in self.obstacles[(pos[0] + i, pos[1] - 3)]:
-                        self.obstacles[(pos[0] + i, pos[1] - 3)].remove(0)
-                        obstacles.append((pos[0] + i, pos[1] - 3))
             if (pos[0], pos[1] - 2) in self.obstacles:
                 if 0 in self.obstacles[(pos[0], pos[1] - 2)]:
                     self.obstacles[(pos[0], pos[1] - 2)].remove(0)
-                    obstacles.append((pos[0], pos[1] - 2))
+                    obstacles.append((pos[0], pos[1] - 2,0))
         elif direction == 3:
-            for i in range(-1, 2):
-                if (pos[0] - 3, pos[1] + i) in self.obstacles:
-                    if 1 in self.obstacles[(pos[0] - 3, pos[1] + i)]:
-                        self.obstacles[(pos[0] - 3, pos[1] + i)].remove(1)
-                        obstacles.append((pos[0] - 3, pos[1] + i))
             if (pos[0] - 2, pos[1]) in self.obstacles:
                 if 1 in self.obstacles[(pos[0] - 2, pos[1])]:
                     self.obstacles[(pos[0] - 2, pos[1])].remove(1)
-                    obstacles.append((pos[0] - 2, pos[1]))
+                    obstacles.append((pos[0] - 2, pos[1],1))
         return obstacles
 
     def snapObstacleSide(self):

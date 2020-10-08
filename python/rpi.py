@@ -162,8 +162,8 @@ class RPi:
 				return sensor_values
 
 	def take_photo(self, obstacles):
-		# Sample message: P
-		msg = " ".join(["{},{}".format(*obstacle) for obstacle in obstacles])
+		# Sample message: P:7,2,1
+		msg = " ".join(["{},{},{}".format(*obstacle) for obstacle in obstacles])
 		self.send_msg_with_type(RPi.TAKE_PHOTO_MSG, msg)
 
 		# while True:
@@ -177,8 +177,8 @@ class RPi:
 		# 		break
 
 	def calibrate(self, is_front=True):
-		if is_front:
-			return
+		# if is_front:
+		# 	return
 
 		calibrate_msg = RPi.CALIBRATE_FRONT_MSG if is_front else RPi.CALIBRATE_RIGHT_MSG
 		# Sample message: f
