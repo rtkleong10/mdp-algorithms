@@ -159,4 +159,4 @@
     - Sender sends message to receiver
 - Sender -> Forwarder -> Receiver
     - Sender sends message to forwarder
-    - Forwared sends the same message to receiver
+    - Forwarder sends the same message to receiver
