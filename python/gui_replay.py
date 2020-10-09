@@ -92,8 +92,8 @@ class ReplayGUI(GUI):
         self.root = tk.Tk()
         self.root.title("MDP")
 
-        self.display_canvas()
         self.display_side_panel()
+        self.display_canvas()
 
         self.root.mainloop()
 
