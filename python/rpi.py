@@ -4,6 +4,7 @@ from map_descriptor import generate_map_descriptor
 import re
 from collections import deque
 from datetime import datetime
+import time
 
 # Set to True for testing with dummy server
 IS_DUMMY = False
@@ -83,8 +84,9 @@ class RPi:
 		self.send(full_msg)
 
 	def receive_msg_with_type(self):
-		while len(self.queue) < 1:
-			pass
+		if len(self.queue) < 1:
+			time.sleep(0.01)
+			return "", ""
 
 		full_msg = self.queue.popleft().strip()
 		m = full_msg.split(RPi.TYPE_DIVIDER)
@@ -131,7 +133,14 @@ class RPi:
 		if send_msg:
 			self.send(RPi.SENSE_MSG)
 
+		sent_time = time.time()
+
 		while True:
+			# Ask for sense message again if it's been too long
+			if time.time() - sent_time > 1:
+				self.send(RPi.SENSE_MSG)
+				sent_time = time.time()
+
 			# Sample message: S:1,1,1,1,1,1
 			msg_type, msg = self.receive_msg_with_type()
 
