@@ -56,7 +56,7 @@ class ReplayGUI(GUI):
         current_log = self.logs[self.log_i]
         self.current_log_var.set(current_log)
         current_log = current_log.split(" at ")[0]
-        m = re.match(r"Received PC message: (.+)", current_log)
+        m = re.match(r"(?:Received PC message:|Message sent:) (.+)", current_log)
 
         if m is None:
             return
