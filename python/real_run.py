@@ -1,5 +1,7 @@
 from rpi import RPi
 from fastest_path import FastestPath
+from hug_fastest_path import HugFastestPath
+from calibrate_fastest_path import CalibrateFastestPath
 from exploration import Exploration
 from right_short_image_rec_exploration import ImageRecShort
 from threading import Thread
@@ -16,6 +18,12 @@ USE_GUI = False
 
 # Set to True for image recognition exploration
 USE_IMAGE_REC_EXPLORATION = True
+
+# Set to True to use calibration during fastest path
+CALIBRATE_FP = False
+
+# Set to True for right hug to goal
+USE_HUG_FASTEST_PATH = True
 
 class RealRun:
 	def __init__(self):
@@ -151,15 +159,35 @@ class RealRun:
 
 				self.robot.pos = START_POS
 				self.update_gui()
-				fp = FastestPath(self.explored_map, self.robot.direction, START_POS, GOAL_POS, self.waypoint)
-				movements = fp.combined_movements()
 
-				if movements is not None:
-					for movement in movements:
-						if not self.is_running:
-							break
+				if CALIBRATE_FP:
+					if USE_HUG_FASTEST_PATH:
+						fp = HugFastestPath(
+							robot=self.robot,
+							on_calibrate=self.rpi.calibrate,
+							explored_map=self.explored_map,
+						)
+					else:
+						fp = CalibrateFastestPath(
+							robot=self.robot,
+							on_calibrate=self.rpi.calibrate,
+							explored_map=self.explored_map,
+							waypoint=self.waypoint
+						)
 
-						self.robot.move(movement)
+					# Run fastest path
+					fp.run_fastest_path()
+
+				else:
+					fp = FastestPath(self.explored_map, self.robot.direction, START_POS, GOAL_POS, self.waypoint)
+					movements = fp.combined_movements()
+
+					if movements is not None:
+						for movement in movements:
+							if not self.is_running:
+								break
+
+							self.robot.move(movement)
 
 				self.rpi.send(RPi.FASTEST_PATH_MSG)
 
@@ -182,9 +210,6 @@ class RealRun:
 		self.update_gui()
 
 	def calibrate(self):
-		# TODO: Uncomment
-		# self.rpi.set_speed(is_high=False)
-
 		if self.robot.direction == Direction.NORTH:
 			# Calibrate facing south wall
 			self.robot.move(Movement.LEFT)

@@ -353,10 +353,9 @@ class Exploration:
 	def move(self, movement, sense=True):
 		if not isinstance(movement, Movement) or movement == Movement.FORWARD or movement == Movement.BACKWARD:
 			self.prev_pos = self.robot.pos
-			self.steps_without_calibration += 1
-		print(self.steps_without_calibration)
 
 		self.calibrate()
+		self.steps_without_calibration += 1
 		sensor_values = self.robot.move(movement)
 
 		if sense:
