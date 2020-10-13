@@ -20,7 +20,7 @@ USE_GUI = False
 USE_IMAGE_REC_EXPLORATION = True
 
 # Set to True to use calibration during fastest path
-CALIBRATE_FP = False
+CALIBRATE_FP = True
 
 # Set to True for right hug to goal
 USE_HUG_FASTEST_PATH = True
