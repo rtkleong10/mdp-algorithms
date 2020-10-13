@@ -138,7 +138,7 @@ class RPi:
 
 		while True:
 			# Ask for sense message again if it's been too long
-			if time.time() - sent_time > 1:
+			if time.time() - sent_time > 3:
 				self.send(RPi.SENSE_MSG)
 				sent_time = time.time()
 

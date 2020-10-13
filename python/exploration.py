@@ -324,19 +324,20 @@ class Exploration:
 		right_direction_vector = Direction.get_direction_vector(right_direction)
 
 		# Check front
-		can_calibrate_front = True
-		for i in [-1, 1]:
+		can_calibrate_front = False
+		for i in range(-1, 2):
 			c = self.robot.pos[0] + 2 * front_direction_vector[0] + i * right_direction_vector[0]
 			r = self.robot.pos[1] + 2 * front_direction_vector[1] + i * right_direction_vector[1]
 
-			if 0 <= c < NUM_COLS and 0 <= r < NUM_ROWS and self.explored_map[r][c] != Cell.OBSTACLE:
-				can_calibrate_front = False
+			if c < 0 or c > NUM_COLS - 1 or r < 0 or r > NUM_ROWS - 1 or self.explored_map[r][c] == Cell.OBSTACLE:
+				can_calibrate_front = True
+				break
 
 		if can_calibrate_front:
 			self.on_calibrate(is_front=True)
 
 		# Check right
-		if self.steps_without_calibration > MIN_STEPS_WITHOUT_CALIBRATION:
+		if self.steps_without_calibration >= MIN_STEPS_WITHOUT_CALIBRATION:
 			can_calibrate_right = True
 			for i in [-1, 1]:
 				c = self.robot.pos[0] + i * front_direction_vector[0] + 2 * right_direction_vector[0]
