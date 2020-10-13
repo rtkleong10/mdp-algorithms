@@ -74,7 +74,7 @@ class RealRun:
 						on_calibrate=self.rpi.calibrate,
 						on_take_photo=self.rpi.take_photo,
 						explored_map=self.explored_map,
-						time_limit=360
+						time_limit=350
 					)
 				else:
 					self.exp = Exploration(
@@ -82,7 +82,7 @@ class RealRun:
 						on_update_map=self.on_update,
 						on_calibrate=self.rpi.calibrate,
 						explored_map=self.explored_map,
-						time_limit=360
+						time_limit=350
 					)
 
 				# Run exploration

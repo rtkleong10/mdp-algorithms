@@ -14,7 +14,7 @@ import re
 class ReplayGUI(GUI):
     def __init__(self):
         super(ReplayGUI, self).__init__(generate_unexplored_map(), SimulatorBot(START_POS, Direction.EAST, on_move=lambda movement=None: None))
-        with open("logs/week8_leaderboard.txt", "r") as f:
+        with open("logs/test3.txt", "r") as f:
             self.logs = f.read().split("\n")
         self.log_i = 0
         self.is_running = False
