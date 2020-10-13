@@ -9,6 +9,7 @@ import time
 # Set to True for testing with dummy server
 IS_DUMMY = False
 
+# TODO: Think about adding timeout for other messages
 class RPi:
 	HOST = "127.0.0.1" if IS_DUMMY else "192.168.4.4"
 	PORT = 4444
