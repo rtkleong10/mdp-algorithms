@@ -176,6 +176,7 @@ class RPi:
 		msg = " ".join(["{},{},{}".format(*obstacle) for obstacle in obstacles])
 		self.send_msg_with_type(RPi.TAKE_PHOTO_MSG, msg)
 
+		# TODO: Add timeout
 		# while True:
 		# 	# Sample message: P
 		# 	msg_type, msg = self.receive_msg_with_type()
@@ -193,8 +194,14 @@ class RPi:
 		calibrate_msg = RPi.CALIBRATE_FRONT_MSG if is_front else RPi.CALIBRATE_RIGHT_MSG
 		# Sample message: f
 		self.send(calibrate_msg)
+		sent_time = time.time()
 
 		while True:
+			# Ask for calibrate message again if it's been too long
+			if time.time() - sent_time > 3:
+				self.send(calibrate_msg)
+				sent_time = time.time()
+
 			# Sample message: f
 			msg_type, msg = self.receive_msg_with_type()
 

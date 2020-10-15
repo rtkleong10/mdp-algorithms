@@ -23,7 +23,7 @@ USE_IMAGE_REC_EXPLORATION = True
 CALIBRATE_FP = True
 
 # Set to True for right hug to goal
-USE_HUG_FASTEST_PATH = True
+USE_HUG_FASTEST_PATH = False
 
 class RealRun:
 	def __init__(self):
@@ -66,8 +66,8 @@ class RealRun:
 			# Exploration
 			elif msg_type == RPi.EXPLORE_MSG:
 				self.is_running = True
-				if self.robot.pos == START_POS:
-					self.calibrate()
+				# if self.robot.pos == START_POS:
+				# 	self.calibrate()
 
 				# TODO: Uncomment
 				# self.rpi.set_speed(is_high=False)
@@ -98,12 +98,12 @@ class RealRun:
 
 				# Prepare robot position for fastest path
 				if self.robot.pos == START_POS:
-					self.calibrate()
-
 					if self.robot.direction == Direction.SOUTH:
 						self.robot.move(Movement.LEFT)
 					elif self.robot.direction == Direction.WEST:
 						self.robot.move(Movement.RIGHT)
+
+					self.calibrate()
 
 				self.is_running = False
 
@@ -189,7 +189,8 @@ class RealRun:
 
 							self.robot.move(movement)
 
-				self.rpi.send(RPi.FASTEST_PATH_MSG)
+				# self.rpi.send(RPi.FASTEST_PATH_MSG)
+				print("FASTEST PATH COMPLETE!")
 
 				self.is_running = False
 

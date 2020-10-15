@@ -318,6 +318,7 @@ class Exploration:
 		self.fastest_path_to_start()
 
 	def calibrate(self):
+		is_calibrated = False
 		front_direction = self.robot.direction
 		right_direction = (front_direction + 1) % 4
 		front_direction_vector = Direction.get_direction_vector(front_direction)
@@ -335,6 +336,7 @@ class Exploration:
 
 		if can_calibrate_front:
 			self.on_calibrate(is_front=True)
+			is_calibrated = True
 
 		# Check right
 		if self.steps_without_calibration >= MIN_STEPS_WITHOUT_CALIBRATION:
@@ -349,6 +351,10 @@ class Exploration:
 			if can_calibrate_right:
 				self.on_calibrate(is_front=False)
 				self.steps_without_calibration = 0
+				is_calibrated = True
+
+		if is_calibrated:
+			self.sense_and_repaint()
 
 	def move(self, movement, sense=True):
 		if not isinstance(movement, Movement) or movement == Movement.FORWARD or movement == Movement.BACKWARD:
@@ -364,7 +370,7 @@ class Exploration:
 	def sense_and_repaint(self, sensor_values=None):
 		if sensor_values is None:
 			sensor_values = self.robot.sense()
-
+		
 		for i in range(len(sensor_values)):
 			sensor_value = sensor_values[i]
 			sensor = self.robot.sensors[i]
@@ -387,6 +393,14 @@ class Exploration:
 
 					if 0 <= pos_to_mark[0] <= NUM_COLS - 1 and 0 <= pos_to_mark[1] <= NUM_ROWS - 1:
 						self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.FREE if j != sensor_value else Cell.OBSTACLE
+
+		for r in range(START_POS[1] - 1, START_POS[1] + 2):
+			for c in range(START_POS[0] - 1, START_POS[0] + 2):
+				self.explored_map[r][c] = Cell.FREE
+
+		for r in range(GOAL_POS[1] - 1, GOAL_POS[1] + 2):
+			for c in range(GOAL_POS[0] - 1, GOAL_POS[0] + 2):
+				self.explored_map[r][c] = Cell.FREE
 
 		self.on_update_map()
 
