@@ -5,7 +5,7 @@ from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 from fastest_path import FastestPath
 
-COMBINED_MOVEMENT = False
+COMBINED_MOVEMENT = True
 MIN_STEPS_WITHOUT_CALIBRATION = 0
 
 class CalibrateFastestPath:

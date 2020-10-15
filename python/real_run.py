@@ -155,7 +155,7 @@ class RealRun:
 				self.is_running = True
 
 				# TODO: Uncomment
-				# self.rpi.set_speed(is_high=True)
+				self.rpi.set_speed(is_high=True)
 
 				self.robot.pos = START_POS
 				self.update_gui()

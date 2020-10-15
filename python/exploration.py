@@ -314,7 +314,7 @@ class Exploration:
 		self.start_time = time.time()
 		self.sense_and_repaint()
 		self.right_hug()
-		self.explore_unexplored()
+		# self.explore_unexplored()
 		self.fastest_path_to_start()
 
 	def calibrate(self):
@@ -370,7 +370,7 @@ class Exploration:
 	def sense_and_repaint(self, sensor_values=None):
 		if sensor_values is None:
 			sensor_values = self.robot.sense()
-		
+
 		for i in range(len(sensor_values)):
 			sensor_value = sensor_values[i]
 			sensor = self.robot.sensors[i]
