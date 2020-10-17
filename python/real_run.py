@@ -154,7 +154,6 @@ class RealRun:
 			elif msg_type == RPi.FASTEST_PATH_MSG:
 				self.is_running = True
 
-				# TODO: Uncomment
 				self.rpi.set_speed(is_high=True)
 
 				self.robot.pos = START_POS

@@ -40,7 +40,6 @@ class CalibrateFastestPath:
 				self.steps_without_calibration += 1
 				self.robot.move(movement)
 
-	# TODO: Copy from today
 	def calibrate(self):
 		front_direction = self.robot.direction
 		right_direction = (front_direction + 1) % 4

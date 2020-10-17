@@ -127,8 +127,6 @@
 ## Fastest Path
 - Android -> RPi -> Algo: `F`
     - Sent to start fastest path
-- Algo -> RPi -> Android: `F`
-    - Sent when fastest path is complete
 - Arduino can ignore these messages
 
 # Terminology

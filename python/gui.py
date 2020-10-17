@@ -227,7 +227,7 @@ class SimulatorGUI(GUI):
         self.selected_map_str.set(map_option_strs[0])
         tk.OptionMenu(map_select_frame, self.selected_map_str, *map_option_strs).pack()
 
-        tk.Label(map_select_frame, text="If custom, please specify second MDF string").pack()
+        tk.Label(map_select_frame, text="If custom, please specify MDF strings (separated by a comma)").pack()
         self.mdf_input = tk.Entry(map_select_frame)
         self.mdf_input.pack(fill=tk.X)
 
