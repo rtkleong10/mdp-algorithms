@@ -172,6 +172,14 @@ class ImageRecRight(Exploration):
                                 self.obstacles[pos_to_mark] = {0, 1, 2, 3}
                                 self.removeObstacleSide(pos_to_mark)
 
+        for r in range(START_POS[1] - 1, START_POS[1] + 2):
+            for c in range(START_POS[0] - 1, START_POS[0] + 2):
+                self.explored_map[r][c] = Cell.FREE
+
+        for r in range(GOAL_POS[1] - 1, GOAL_POS[1] + 2):
+            for c in range(GOAL_POS[0] - 1, GOAL_POS[0] + 2):
+                self.explored_map[r][c] = Cell.FREE
+
         self.on_update_map()
 
     def move(self, movement, sense=True):

@@ -14,7 +14,7 @@ import re
 class ReplayGUI(GUI):
     def __init__(self):
         super(ReplayGUI, self).__init__(generate_unexplored_map(), SimulatorBot(START_POS, Direction.EAST, on_move=lambda movement=None: None))
-        with open("logs/test4.txt", "r") as f:
+        with open("logs/test10.txt", "r") as f:
             self.logs = f.read().split("\n")
         self.log_i = 0
         self.is_running = False
@@ -56,7 +56,7 @@ class ReplayGUI(GUI):
         current_log = self.logs[self.log_i]
         self.current_log_var.set(current_log)
         current_log = current_log.split(" at ")[0]
-        m = re.match(r"(?:Received PC message:|Message sent:) (.+)", current_log)
+        m = re.match(r"(?:Received PC message:|Message sent:|PRINT MESSAGE) (.+)", current_log)
 
         if m is None:
             return
