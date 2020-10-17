@@ -314,6 +314,7 @@ class Exploration:
 		self.start_time = time.time()
 		self.sense_and_repaint()
 		self.right_hug()
+		# TODO: Remove for full exploration
 		# self.explore_unexplored()
 		self.fastest_path_to_start()
 

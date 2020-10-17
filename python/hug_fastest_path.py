@@ -121,7 +121,6 @@ class HugFastestPath:
 				self.move(Movement.LEFT)
 				self.move(Movement.LEFT)
 
-	# TODO: Copy from today
 	def calibrate(self):
 		front_direction = self.robot.direction
 		right_direction = (front_direction + 1) % 4
