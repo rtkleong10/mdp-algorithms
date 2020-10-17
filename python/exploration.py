@@ -157,6 +157,10 @@ class Exploration:
 		fp = FastestPath(self.explored_map, self.robot.direction, self.robot.pos, best_pos)
 		movements = fp.movements
 
+		if movements is None:
+			print("Can't go pos to check")
+			return False
+
 		for movement in movements:
 			if self.is_limit_exceeded:
 				return
