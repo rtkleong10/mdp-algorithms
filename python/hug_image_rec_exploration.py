@@ -13,7 +13,7 @@ class ImageRecHug(Exploration):
         self.obstacles ={} # {(pos):{0:0,1:0,2:0,3:0}} 0,1,2,3 represents each side
 
         if on_take_photo is None:
-            self.on_take_photo = lambda obstacles: None
+            self.on_take_photo = lambda obstacles, robot=None: None
         else:
             self.on_take_photo = on_take_photo
 
