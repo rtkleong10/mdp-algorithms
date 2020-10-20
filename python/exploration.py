@@ -322,7 +322,7 @@ class Exploration:
 		# self.explore_unexplored()
 		self.fastest_path_to_start()
 
-	def calibrate(self):
+	def calibrate(self, sense):
 		is_calibrated = False
 		front_direction = self.robot.direction
 		right_direction = (front_direction + 1) % 4
@@ -358,20 +358,22 @@ class Exploration:
 				self.steps_without_calibration = 0
 				is_calibrated = True
 
-		if is_calibrated:
+		if is_calibrated and sense:
 			self.sense_and_repaint()
 
 	def move(self, movement, sense=True):
 		if not isinstance(movement, Movement) or movement == Movement.FORWARD or movement == Movement.BACKWARD:
 			self.prev_pos = self.robot.pos
 
-
 		sensor_values = self.robot.move(movement)
 
+		if self.entered_goal and self.robot.pos == START_POS:
+			sense = False
+		
 		if sense:
 			self.sense_and_repaint(sensor_values)
 
-		self.calibrate()
+		self.calibrate(sense)
 		self.steps_without_calibration += 1
 
 	def sense_and_repaint(self, sensor_values=None):

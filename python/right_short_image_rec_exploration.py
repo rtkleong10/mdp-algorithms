@@ -13,7 +13,7 @@ class ImageRecShort(Exploration):
         self.obstacles ={} # {(pos):{0:0,1:0,2:0,3:0}} 0,1,2,3 represents each side
 
         if on_take_photo is None:
-            self.on_take_photo = lambda obstacles: None
+            self.on_take_photo = lambda obstacles, robot=None: None
         else:
             self.on_take_photo = on_take_photo
 
@@ -80,9 +80,9 @@ class ImageRecShort(Exploration):
         #if right side got obstacles with sides never see before, take photo
         right = (direction+1)%4
         obstacles = self.checkObstacleSide(pos,right)
-        if len(obstacles) != 0:
-            self.on_take_photo(obstacles)
-            print('right take photo ', self.robot.pos)
+        # if len(obstacles) != 0:
+        self.on_take_photo(obstacles, self.robot)
+        print('right take photo ', self.robot.pos)
 
     def sense_and_repaint(self, sensor_values=None):
         if sensor_values is None:

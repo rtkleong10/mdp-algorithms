@@ -2,6 +2,31 @@
 <img src="imgs/robot_setup.png" alt="Robot Setup" style="width:300px;"/>
 
 # Arduino
+## Update Turn Values
+### Decrease Left Turn Value
+- Android -> RPi -> Arduino: `(`
+- Arduino -> RPi -> Android: `(:<new_left_turn_value>` 
+    - Arduino decreases the left turn value by 1
+    - e.g. `(:89`
+
+### Increase Left Turn Value
+- Android -> RPi -> Arduino: `<`
+- Arduino -> RPi -> Android: `<:<new_left_turn_value>` 
+    - Arduino increases the left turn value by 1
+    - e.g. `<:91`
+
+### Decrease Right Turn Value
+- Android -> RPi -> Arduino: `)`
+- Arduino -> RPi -> Android: `):<new_right_turn_value>` 
+    - Arduino decreases the right turn value by 1
+    - e.g. `):89`
+
+### Increase Right Turn Value
+- Android -> RPi -> Arduino: `>`
+- Arduino -> RPi -> Android: `>:<new_right_turn_value>` 
+    - Arduino increases the right turn value by 1
+    - e.g. `>:91`
+
 ## Sensor Request
 - Algo -> RPi -> Arduino: `S`
 - Arduino -> RPi -> Algo: `S:<sensor_1>,<sensor_2>,<sensor_3>,<sensor_4>,<sensor_5>,<sensor_6>`
@@ -66,17 +91,23 @@
 - RPi -> Algo: `HELLO TEAM`
 
 ## Photo Request
-- Algo -> RPi: `P:<list of possible nearby obstacles>`
-    - e.g. `P:1,1 2,1 1,3`: Take photo and the possible nearby obstacles are (1, 1), (2, 1) and (1,3)
-    - The obstacle list may have 1 to 4 obstacles
-    - There may be an image on multiple obstacles or none of them
-    - The position and direction of the robot can be taken from the most recent movement message
-    - Take note that the obstacle list will not contain
-        - Obstacles that have been previously been taken a photo of
-            - e.g. if (1, 1)'s south side has been previously taken a photo of, it will not appear in future obstacle lists regardless of whether it is range (if you want it to be included, please let us know)
-        - Obstacles that we have not yet detected through our sensors
-- RPi -> Algo: `P`
-    - Send after photo is taken
+### If There's a Middle Obstacle Right in Front
+- Algo -> RPi: `P:Y x,y,direction`
+    - e.g. `P:Y 8,0,1`: Take photo and the coordinates of the middle obstacle is (8, 0) with the obstacle's East side facing the obstacle (i.e. robot facing south with right facing camera)
+    - Directions (where the image is facing outwards to)
+        - 0: North
+        - 1: East
+        - 2: South
+        - 3: West
+
+### Otherwise
+- Algo -> RPi: `P:N x,y,direction`
+    - e.g. `P:N 1,2,1`: Take photo and the coordinates of the robot is (1, 2) with the robot facing East
+    - Directions (of robot)
+        - 0: North
+        - 1: East
+        - 2: South
+        - 3: West
 
 ## Image Recognition Result
 - RPi -> Android: `I:x,y <image ID>`

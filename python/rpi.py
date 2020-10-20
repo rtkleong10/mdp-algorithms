@@ -170,9 +170,15 @@ class RPi:
 
 				return sensor_values
 
-	def take_photo(self, obstacles):
+	def take_photo(self, obstacles, robot=None):
 		# Sample message: P:7,2,1
-		msg = " ".join(["{},{},{}".format(*obstacle) for obstacle in obstacles])
+		if len(obstacles) != 0:
+			msg = "Y: {},{},{}".format(*(obstacles[0]))
+		elif robot is not None:
+			msg = "N {},{},{}".format(*robot.pos, int(robot.direction))
+		else:
+			return
+
 		self.send_msg_with_type(RPi.TAKE_PHOTO_MSG, msg)
 
 		# TODO: Add timeout
