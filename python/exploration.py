@@ -360,12 +360,14 @@ class Exploration:
 		if not isinstance(movement, Movement) or movement == Movement.FORWARD or movement == Movement.BACKWARD:
 			self.prev_pos = self.robot.pos
 
-		self.calibrate()
-		self.steps_without_calibration += 1
+
 		sensor_values = self.robot.move(movement)
 
 		if sense:
 			self.sense_and_repaint(sensor_values)
+
+		self.calibrate()
+		self.steps_without_calibration += 1
 
 	def sense_and_repaint(self, sensor_values=None):
 		if sensor_values is None:
