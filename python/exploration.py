@@ -382,9 +382,6 @@ class Exploration:
 
 		sensor_values = self.robot.move(movement)
 
-		if self.entered_goal and self.robot.pos == START_POS:
-			sense = False
-		
 		if sense:
 			self.sense_and_repaint(sensor_values)
 
