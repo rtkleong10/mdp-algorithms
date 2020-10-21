@@ -5,6 +5,7 @@ from fastest_path import FastestPath
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
+from collections import deque
 
 MIN_STEPS_WITHOUT_CALIBRATION = 0
 
@@ -28,6 +29,7 @@ class Exploration:
 		self.steps_without_calibration = 0
 		self.obstacles = {}
 		self.is_running = True
+		self.queue = deque([])
 
 		if on_update_map is None:
 			self.on_update_map = lambda: None
@@ -256,6 +258,11 @@ class Exploration:
 
 		return d
 
+	def checkStuck(self):
+		if list(self.queue)==[Movement.FORWARD,Movement.RIGHT,Movement.FORWARD,Movement.RIGHT,Movement.FORWARD,Movement.RIGHT]:
+			return True
+		return False
+
 	def right_hug(self):
 		while True:
 			if self.is_limit_exceeded:
@@ -268,7 +275,11 @@ class Exploration:
 			if self.robot.pos == GOAL_POS:
 				self.entered_goal = True
 
-			if self.check_right():
+			if self.checkStuck():
+				self.move(Movement.RIGHT)
+				self.move(Movement.RIGHT)
+
+			elif self.check_right():
 				self.move(Movement.RIGHT)
 
 			elif self.check_forward():
@@ -307,6 +318,7 @@ class Exploration:
 		movements = fp.movements
 		if movements is None:
 			print("Can't go back to start?")
+			return
 
 		for movement in movements:
 			if not self.is_running:
@@ -362,6 +374,9 @@ class Exploration:
 			self.sense_and_repaint()
 
 	def move(self, movement, sense=True):
+		self.queue.append(movement)
+		if len(self.queue)>6:
+			self.queue.popleft()
 		if not isinstance(movement, Movement) or movement == Movement.FORWARD or movement == Movement.BACKWARD:
 			self.prev_pos = self.robot.pos
 
