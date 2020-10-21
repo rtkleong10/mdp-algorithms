@@ -88,7 +88,10 @@ class RPi:
 			time.sleep(0.01)
 			return "", ""
 
-		full_msg = self.queue.popleft().strip()
+		full_msg = self.queue.popleft()
+		if full_msg is None:
+			return "", ""
+		full_msg = full_msg.strip()
 		m = full_msg.split(RPi.TYPE_DIVIDER)
 
 		if len(m) > 1:
@@ -173,7 +176,7 @@ class RPi:
 	def take_photo(self, obstacles, robot=None):
 		# Sample message: P:7,2,1
 		if len(obstacles) != 0:
-			msg = "Y: {},{},{}".format(*(obstacles[0]))
+			msg = "Y {},{},{}".format(*(obstacles[0]))
 		elif robot is not None:
 			msg = "N {},{},{}".format(*robot.pos, int(robot.direction))
 		else:
