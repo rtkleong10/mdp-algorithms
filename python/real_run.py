@@ -93,6 +93,14 @@ class RealRun:
 						time_limit=350
 					)
 
+				c, r = self.robot.pos
+				for i in range(max(0, r - 1), min(NUM_ROWS, r + 2)):
+					for j in range(max(0, c - 1), min(NUM_COLS, c + 2)):
+						print(i, j)
+						self.exp.explored_map[i][j] = Cell.FREE
+
+				self.update_gui()
+
 				# Run exploration
 				self.exp.run_exploration()
 
@@ -139,11 +147,13 @@ class RealRun:
 				r = int(m.group(2))
 				self.robot.pos = (c, r)
 				self.robot.direction = Direction.convert_from_string(m.group(3))
-				self.update_gui()
 
 				for i in range(max(0, r - 1), min(NUM_ROWS, r + 2)):
 					for j in range(max(0, c - 1), min(NUM_COLS, c + 2)):
+						print(i, j)
 						self.explored_map[i][j] = Cell.FREE
+
+				self.update_gui()
 
 				if self.robot.pos == START_POS:
 					self.calibrate()
