@@ -6,26 +6,26 @@
 ### Decrease Left Turn Value
 - Android -> RPi -> Arduino: `(`
 - Arduino -> RPi -> Android: `(:<new_left_turn_value>` 
-    - Arduino decreases the left turn value by 1
-    - e.g. `(:89`
+    - Arduino decreases the left turn value by 0.5
+    - e.g. `(:89.5`
 
 ### Increase Left Turn Value
 - Android -> RPi -> Arduino: `<`
 - Arduino -> RPi -> Android: `<:<new_left_turn_value>` 
-    - Arduino increases the left turn value by 1
-    - e.g. `<:91`
+    - Arduino increases the left turn value by 0.5
+    - e.g. `<:90.5`
 
 ### Decrease Right Turn Value
 - Android -> RPi -> Arduino: `)`
 - Arduino -> RPi -> Android: `):<new_right_turn_value>` 
-    - Arduino decreases the right turn value by 1
-    - e.g. `):89`
+    - Arduino decreases the right turn value by 0.5
+    - e.g. `):89.5`
 
 ### Increase Right Turn Value
 - Android -> RPi -> Arduino: `>`
 - Arduino -> RPi -> Android: `>:<new_right_turn_value>` 
-    - Arduino increases the right turn value by 1
-    - e.g. `>:91`
+    - Arduino increases the right turn value by 0.5
+    - e.g. `>:90.5`
 
 ## Sensor Request
 - Algo -> RPi -> Arduino: `S`
