@@ -6,9 +6,9 @@ from constants import NUM_ROWS, NUM_COLS, START_POS, GOAL_POS
 from enums import Cell, Direction
 from robots import SimulatorBot
 from map_descriptor import generate_map, generate_map_descriptor
-from fastest_path import FastestPath
-from exploration import Exploration
-from right_image_rec_exploration import ImageRecRight
+from fastest_path.fastest_path import FastestPath
+from exploration.exploration import Exploration
+from exploration.complete_image_rec_exploration import CompleteImageRecExploration
 
 
 class GUI:
@@ -154,7 +154,6 @@ class SimulatorGUI(GUI):
         "Sample Arena 3": "maps/sample_arena3.txt",
         "Sample Arena 4": "maps/sample_arena4.txt",
         "Sample Arena 5": "maps/sample_arena5.txt",
-        "Sample Arena 6": "maps/sample_arena6.txt",
         "Custom": None,
     }
 
@@ -336,7 +335,7 @@ class SimulatorGUI(GUI):
         with_image_rec = self.with_image_rec.get() == 1
 
         # Select exploration class
-        exploration_class = ImageRecRight if with_image_rec else Exploration
+        exploration_class = CompleteImageRecExploration if with_image_rec else Exploration
 
         self.exp = exploration_class(
             self.robot,

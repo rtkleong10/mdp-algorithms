@@ -16,13 +16,13 @@ class Direction(IntEnum):
 	@staticmethod
 	def get_direction_vector(direction):
 		if direction == Direction.NORTH:
-			return (0, 1)
+			return 0, 1
 		elif direction == Direction.EAST:
-			return (1, 0)
+			return 1, 0
 		elif direction == Direction.SOUTH:
-			return (0, -1)
+			return 0, -1
 		else:  # Direction.WEST
-			return (-1, 0)
+			return -1, 0
 
 	@staticmethod
 	def convert_to_string(direction):
@@ -38,14 +38,14 @@ class Direction(IntEnum):
 			raise ValueError
 
 	@staticmethod
-	def convert_from_string(str):
-		if str == "N":
+	def convert_from_string(direction_str):
+		if direction_str == "N":
 			return Direction.NORTH
-		elif str == "E":
+		elif direction_str == "E":
 			return Direction.EAST
-		elif str == "S":
+		elif direction_str == "S":
 			return Direction.SOUTH
-		elif str == "W":
+		elif direction_str == "W":
 			return Direction.WEST
 		else:
 			raise ValueError
