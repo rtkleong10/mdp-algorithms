@@ -11,6 +11,7 @@ class ImageRecShort(Exploration):
         super().__init__(robot, on_update_map=on_update_map, on_calibrate=on_calibrate, explored_map=explored_map, coverage_limit=coverage_limit, time_limit=time_limit)
 
         self.obstacles ={} # {(pos):{0:0,1:0,2:0,3:0}} 0,1,2,3 represents each side
+        self.steps_without_photo = 0
 
         if on_take_photo is None:
             self.on_take_photo = lambda obstacles, robot=None: None
@@ -80,8 +81,14 @@ class ImageRecShort(Exploration):
         #if right side got obstacles with sides never see before, take photo
         right = (direction+1)%4
         obstacles = self.checkObstacleSide(pos,right)
-        # if len(obstacles) != 0:
-        self.on_take_photo(obstacles, self.robot)
+        if len(obstacles) != 0:
+            self.on_take_photo(obstacles, self.robot)
+        elif self.steps_without_photo>=2:
+            self.on_take_photo(obstacles, self.robot)
+            self.steps_without_photo=0
+        else:
+            self.steps_without_photo+=1
+
         print('right take photo ', self.robot.pos)
 
     def sense_and_repaint(self, sensor_values=None):

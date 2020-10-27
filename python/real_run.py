@@ -70,7 +70,7 @@ class RealRun:
 				# 	self.calibrate()
 
 				# TODO: Uncomment
-				# self.rpi.set_speed(is_high=False)
+				self.rpi.set_speed(is_high=False)
 				self.explored_map = generate_unexplored_map()
 				self.gui.map = self.explored_map
 				self.on_update()
@@ -165,7 +165,7 @@ class RealRun:
 				self.is_running = True
 
 				# TODO: Uncomment
-				# self.rpi.set_speed(is_high=True)
+				self.rpi.set_speed(is_high=True)
 
 				self.robot.pos = START_POS
 				self.update_gui()
@@ -198,6 +198,9 @@ class RealRun:
 								break
 
 							self.robot.move(movement)
+
+					else:
+						print("No path found")
 
 				# self.rpi.send(RPi.FASTEST_PATH_MSG)
 				print("FASTEST PATH COMPLETE!")

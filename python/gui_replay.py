@@ -14,7 +14,7 @@ import re
 class ReplayGUI(GUI):
     def __init__(self):
         super(ReplayGUI, self).__init__(generate_unexplored_map(), SimulatorBot(START_POS, Direction.EAST, on_move=lambda movement=None: None))
-        with open("logs/test12.txt", "r") as f:
+        with open("logs/test14.txt", "r") as f:
             self.logs = f.read().split("\n")
         self.log_i = 0
         self.is_running = False
@@ -25,7 +25,7 @@ class ReplayGUI(GUI):
         while self.is_running:
             self.update_from_log()
             self.log_i += 1
-            time.sleep(0.1)
+            time.sleep(0.05)
 
     def pause(self):
         self.is_running = False
@@ -79,7 +79,7 @@ class ReplayGUI(GUI):
             self.update_canvas()
 
         elif msg_type == "M":
-            m = re.match(r"[\dLRB]\s+(\d+),(\d)\s+([NSEW])", msg)
+            m = re.match(r"[\dLRB]\s+(\d+),(\d+)\s+([NSEW])", msg)
 
             if m is None:
                 return

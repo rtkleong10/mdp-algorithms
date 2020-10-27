@@ -225,16 +225,16 @@ class RPi:
 		# Sample message: H
 		self.send(speed_msg)
 
-		while True:
-			# Sample message: H
-			msg_type, msg = self.receive_msg_with_type()
+		# while True:
+		# 	# Sample message: H
+		# 	msg_type, msg = self.receive_msg_with_type()
 
-			if msg_type == RPi.QUIT_MSG:
-				break
+		# 	if msg_type == RPi.QUIT_MSG:
+		# 		break
 
-			if msg_type == speed_msg:
-				print("Successfully updated speed to", "high" if is_high else "low", "speed")
-				break
+		# 	if msg_type == speed_msg:
+		# 		print("Successfully updated speed to", "high" if is_high else "low", "speed")
+		# 		break
 
 	def receive_endlessly(self):
 		while True:
