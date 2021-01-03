@@ -3,4 +3,9 @@
 - Algorithms
     - Arena Exploration
     - Fastest Path
-   
+
+## How to Run Simulator
+1. `python gui.py`
+
+## How to Run with Real Robot
+1. `python real_run.py`
