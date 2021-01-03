@@ -6,11 +6,9 @@ from collections import deque
 from datetime import datetime
 import time
 
-# Set to True for testing with dummy server
-IS_DUMMY = False
 
 class RPi:
-	HOST = "127.0.0.1" if IS_DUMMY else "192.168.4.4"
+	HOST = "192.168.4.4"
 	PORT = 4444
 
 	# Message Types
@@ -39,7 +37,7 @@ class RPi:
 
 	def open_connection(self):
 		try:
-			self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM) if IS_DUMMY else socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+			self.conn = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 			self.conn.connect((RPi.HOST, RPi.PORT))
 			self.is_connected = True
 			print("Successfully established connection...")
@@ -66,8 +64,7 @@ class RPi:
 
 	def receive(self, bufsize=2048):
 		try:
-			print("Receiving RPI message: "
- + datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
+			print("Receiving RPI message: " + datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3])
 			msg = self.conn.recv(bufsize).decode("utf-8")
 			print("Message received:", msg)
 			return msg
@@ -184,23 +181,9 @@ class RPi:
 
 		self.send_msg_with_type(RPi.TAKE_PHOTO_MSG, msg)
 
-		# TODO: Add timeout
-		# while True:
-		# 	# Sample message: P
-		# 	msg_type, msg = self.receive_msg_with_type()
-		# 	if msg_type == RPi.QUIT_MSG:
-		# 		break
-
-		# 	if msg_type == RPi.TAKE_PHOTO_MSG:
-		# 		print("Photo successfully taken")
-		# 		break
-
 	def calibrate(self, is_front=True):
-		# if is_front:
-		# 	return
-
-		calibrate_msg = RPi.CALIBRATE_FRONT_MSG if is_front else RPi.CALIBRATE_RIGHT_MSG
 		# Sample message: f
+		calibrate_msg = RPi.CALIBRATE_FRONT_MSG if is_front else RPi.CALIBRATE_RIGHT_MSG
 		self.send(calibrate_msg)
 		sent_time = time.time()
 
@@ -221,25 +204,15 @@ class RPi:
 				break
 
 	def set_speed(self, is_high=True):
-		speed_msg = RPi.HIGH_SPEED_MSG if is_high else RPi.LOW_SPEED_MSG
 		# Sample message: H
+		speed_msg = RPi.HIGH_SPEED_MSG if is_high else RPi.LOW_SPEED_MSG
 		self.send(speed_msg)
-
-		# while True:
-		# 	# Sample message: H
-		# 	msg_type, msg = self.receive_msg_with_type()
-
-		# 	if msg_type == RPi.QUIT_MSG:
-		# 		break
-
-		# 	if msg_type == speed_msg:
-		# 		print("Successfully updated speed to", "high" if is_high else "low", "speed")
-		# 		break
 
 	def receive_endlessly(self):
 		while True:
 			msg = self.receive()
 			self.queue.append(msg)
+
 
 def main():
 	rpi = RPi()

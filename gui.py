@@ -6,9 +6,9 @@ from constants import NUM_ROWS, NUM_COLS, START_POS, GOAL_POS
 from enums import Cell, Direction
 from robots import SimulatorBot
 from map_descriptor import generate_map, generate_map_descriptor
-from fastest_path import FastestPath
-from exploration import Exploration
-from right_image_rec_exploration import ImageRecRight
+from fastest_path.fastest_path import FastestPath
+from exploration.exploration import Exploration
+from exploration.complete_image_rec_exploration import CompleteImageRecExploration
 
 
 class GUI:
@@ -28,7 +28,7 @@ class GUI:
     MAP_TAG_0 = "map0"
     MAP_TAG_1 = "map2"
     ROBOT_TAG = "rob1t"
-
+    
     def __init__(self, explored_map, robot):
         self.map_tag = True
         self.root = None
@@ -162,7 +162,7 @@ class SimulatorGUI(GUI):
     MAX_SPEED = 20
 
     def __init__(self):
-        with open("../maps/sample_arena1.txt", "r") as f:
+        with open("maps/sample_arena1.txt", "r") as f:
             strs = f.read().split("\n")
 
         self.selected_map = generate_map(*strs)
@@ -179,6 +179,7 @@ class SimulatorGUI(GUI):
         # Variables
         self.exploration_coverage = None
         self.exploration_time = None
+        self.is_running = False
 
         # Inputs
         self.selected_map_str = None
@@ -205,24 +206,27 @@ class SimulatorGUI(GUI):
 
         self.create_heading(algorithms_frame, "Algorithms").pack()
         self.create_button(algorithms_frame, "Exploration", lambda: self.execute_thread(self.exploration)) \
-            .pack(fill=tk.X, pady=5)
+            .pack(fill=tk.X)
         self.create_button(algorithms_frame, "Fastest Path", lambda: self.execute_thread(self.fastest_path)) \
-            .pack(fill=tk.X, pady=5)
+            .pack(fill=tk.X)
+
+        self.create_button(algorithms_frame, "Stop", lambda: self.stop()) \
+            .pack(fill=tk.X)
         self.create_button(algorithms_frame, "Reset", lambda: self.execute_thread(self.reset)) \
-            .pack(fill=tk.X, pady=5)
+            .pack(fill=tk.X)
 
         # Map Select Frame
         map_select_frame = tk.Frame(side_panel)
         map_select_frame.pack(fill=tk.X, pady=10)
 
-        self.create_heading(map_select_frame, "Select Map").pack()
+        self.create_heading(map_select_frame, "Select Map").pack(fill=tk.X)
 
         map_option_strs = list(SimulatorGUI.MAP_OPTIONS.keys())
         self.selected_map_str = tk.StringVar()
         self.selected_map_str.set(map_option_strs[0])
         tk.OptionMenu(map_select_frame, self.selected_map_str, *map_option_strs).pack()
 
-        tk.Label(map_select_frame, text="If custom, please specify second MDF string").pack()
+        tk.Label(map_select_frame, text="If custom, please specify MDF strings (separated by a comma)").pack()
         self.mdf_input = tk.Entry(map_select_frame)
         self.mdf_input.pack(fill=tk.X)
 
@@ -325,12 +329,13 @@ class SimulatorGUI(GUI):
             self.display_error_msg("Invalid speed")
 
     def exploration(self):
+        self.is_running = True
         self.reset()
         self.robot.map = self.map
         with_image_rec = self.with_image_rec.get() == 1
 
         # Select exploration class
-        exploration_class = ImageRecRight if with_image_rec else Exploration
+        exploration_class = CompleteImageRecExploration if with_image_rec else Exploration
 
         self.exp = exploration_class(
             self.robot,
@@ -348,6 +353,8 @@ class SimulatorGUI(GUI):
         if with_image_rec:
             print(self.exp.obstacles)
 
+        self.is_running = False
+
     def update_canvas(self):
         super(SimulatorGUI, self).update_canvas()
         self.exploration_coverage.set("Coverage: {:.2f}%".format(self.exp.coverage * 100))
@@ -356,6 +363,7 @@ class SimulatorGUI(GUI):
         self.exploration_time.set("Time: {:02}:{:02}".format(time_elapsed // 60, time_elapsed % 60))
 
     def fastest_path(self):
+        self.is_running = True
         self.reset(False)
 
         waypoint = self.get_waypoint()
@@ -368,10 +376,15 @@ class SimulatorGUI(GUI):
 
         if fp.path_found:
             for movement in fp.movements:
+                if not self.is_running:
+                    break
+
                 self.robot.move(movement)
 
         else:
             self.display_error_msg("No path found")
+
+        self.is_running = False
 
     def reset(self, reset_map=True):
         self.waypoint = None
@@ -396,7 +409,7 @@ class SimulatorGUI(GUI):
 
         else:
             try:
-                self.selected_map = generate_map("F" * 76, self.mdf_input.get())
+                self.selected_map = generate_map(*self.mdf_input.get().strip().split(","))
                 self.reset()
 
             except (IndexError, ValueError):
@@ -427,6 +440,11 @@ class SimulatorGUI(GUI):
 
         self.current_thread = Thread(target=method, daemon=True)
         self.current_thread.start()
+
+    def stop(self):
+        if self.exp:
+            self.exp.is_running = False
+        self.is_running = False
 
 
 if __name__ == '__main__':

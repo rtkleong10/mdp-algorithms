@@ -1,95 +1,110 @@
-from exploration import Exploration
-from enums import Cell, Direction, Movement
+from .exploration import Exploration
+from enums import Cell, Direction
 from map_descriptor import generate_map
-from fastest_path import FastestPath
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
-import time
 
-class ImageRecShort(Exploration):
+
+class ShortImageRecExploration(Exploration):
     def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None, on_take_photo=None):
         super().__init__(robot, on_update_map=on_update_map, on_calibrate=on_calibrate, explored_map=explored_map, coverage_limit=coverage_limit, time_limit=time_limit)
 
-        self.obstacles ={} # {(pos):{0:0,1:0,2:0,3:0}} 0,1,2,3 represents each side
-        self.steps_without_photo = 0
+        self.obstacles = {}
 
         if on_take_photo is None:
             self.on_take_photo = lambda obstacles, robot=None: None
         else:
             self.on_take_photo = on_take_photo
 
-    # check if any of the obstacle side is blocked by another obstacle
-    # def removeObstacleSide(self,pos): #pos must be tuple
-    #     for i in range(1,4):
-    #         if (pos[0]+i,pos[1]) in self.obstacles:
-    #             if 1 in self.obstacles[pos]:
-    #                 self.obstacles[pos].remove(1)
-    #             if 3 in self.obstacles[(pos[0]+i,pos[1])]:
-    #                 self.obstacles[(pos[0]+i,pos[1])].remove(3)
-    #         if pos[0]+i >14 and 1 in self.obstacles[pos]:
-    #             self.obstacles[pos].remove(1)
-    #         if (pos[0]-i,pos[1]) in self.obstacles:
-    #             if 3 in self.obstacles[pos]:
-    #                 self.obstacles[pos].remove(3)
-    #             if 1 in self.obstacles[(pos[0]-i,pos[1])]:
-    #                 self.obstacles[(pos[0]-i,pos[1])].remove(1)
-    #         if pos[0]-i <0 and 3 in self.obstacles[pos]:
-    #             self.obstacles[pos].remove(3)
-    #         if (pos[0],pos[1]+i) in self.obstacles:
-    #             if 0 in self.obstacles[pos]:
-    #                 self.obstacles[pos].remove(0)
-    #             if 2 in self.obstacles[(pos[0],pos[1]+i)]:
-    #                 self.obstacles[(pos[0],pos[1]+i)].remove(2)
-    #         if pos[1]+ i >19 and 0 in self.obstacles[pos]:
-    #             self.obstacles[pos].remove(0)
-    #         if (pos[0],pos[1]-i) in self.obstacles:
-    #             if 2 in self.obstacles[pos]:
-    #                 self.obstacles[pos].remove(2)
-    #             if 0 in self.obstacles[(pos[0],pos[1]-i)]:
-    #                 self.obstacles[(pos[0],pos[1]-i)].remove(0)
-    #         if pos[1]-i<0 and 2 in self.obstacles[pos]:
-    #             self.obstacles[pos].remove(2)
+    def remove_obstacle_side(self, pos):
+        for i in range(1, 4):
+            if (pos[0] + i, pos[1]) in self.obstacles:
+                if 1 in self.obstacles[pos]:
+                    self.obstacles[pos].remove(1)
+                if 3 in self.obstacles[(pos[0] + i, pos[1])]:
+                    self.obstacles[(pos[0] + i, pos[1])].remove(3)
+            if pos[0] + i > 14 and 1 in self.obstacles[pos]:
+                self.obstacles[pos].remove(1)
+            if (pos[0] - i, pos[1]) in self.obstacles:
+                if 3 in self.obstacles[pos]:
+                    self.obstacles[pos].remove(3)
+                if 1 in self.obstacles[(pos[0] - i, pos[1])]:
+                    self.obstacles[(pos[0] - i, pos[1])].remove(1)
+            if pos[0] - i < 0 and 3 in self.obstacles[pos]:
+                self.obstacles[pos].remove(3)
+            if (pos[0], pos[1] + i) in self.obstacles:
+                if 0 in self.obstacles[pos]:
+                    self.obstacles[pos].remove(0)
+                if 2 in self.obstacles[(pos[0], pos[1] + i)]:
+                    self.obstacles[(pos[0], pos[1] + i)].remove(2)
+            if pos[1] + i > 19 and 0 in self.obstacles[pos]:
+                self.obstacles[pos].remove(0)
+            if (pos[0], pos[1] - i) in self.obstacles:
+                if 2 in self.obstacles[pos]:
+                    self.obstacles[pos].remove(2)
+                if 0 in self.obstacles[(pos[0], pos[1] - i)]:
+                    self.obstacles[(pos[0], pos[1] - i)].remove(0)
+            if pos[1] - i < 0 and 2 in self.obstacles[pos]:
+                self.obstacles[pos].remove(2)
 
-    def checkObstacleSide(self, pos, direction):  # check for obstacles within the weird shape
+    def check_obstacle_side(self, pos, direction):
         obstacles = []
         if direction == 0:
+            for i in range(-1, 2):
+                if (pos[0] + i, pos[1] + 3) in self.obstacles:
+                    if 2 in self.obstacles[(pos[0] + i, pos[1] + 3)]:
+                        self.obstacles[(pos[0] + i, pos[1] + 3)].remove(2)
+                        obstacles.append((pos[0] + i, pos[1] + 3))
             if (pos[0], pos[1] + 2) in self.obstacles:
                 if 2 in self.obstacles[(pos[0], pos[1] + 2)]:
                     self.obstacles[(pos[0], pos[1] + 2)].remove(2)
-                    obstacles.append((pos[0], pos[1] + 2,2))
+                    obstacles.append((pos[0], pos[1] + 2))
         elif direction == 1:
+            for i in range(-1, 2):
+                if (pos[0] + 3, pos[1] + i) in self.obstacles:
+                    if 3 in self.obstacles[(pos[0] + 3, pos[1] + i)]:
+                        self.obstacles[(pos[0] + 3, pos[1] + i)].remove(3)
+                        obstacles.append((pos[0] + 3, pos[1] + i))
             if (pos[0] + 2, pos[1]) in self.obstacles:
                 if 3 in self.obstacles[(pos[0] + 2, pos[1])]:
                     self.obstacles[(pos[0] + 2, pos[1])].remove(3)
-                    obstacles.append((pos[0] + 2, pos[1],3))
+                    obstacles.append((pos[0] + 2, pos[1]))
+
         elif direction == 2:
+            for i in range(-1, 2):
+                if (pos[0] + i, pos[1] - 3) in self.obstacles:
+                    if 0 in self.obstacles[(pos[0] + i, pos[1] - 3)]:
+                        self.obstacles[(pos[0] + i, pos[1] - 3)].remove(0)
+                        obstacles.append((pos[0] + i, pos[1] - 3))
             if (pos[0], pos[1] - 2) in self.obstacles:
                 if 0 in self.obstacles[(pos[0], pos[1] - 2)]:
                     self.obstacles[(pos[0], pos[1] - 2)].remove(0)
-                    obstacles.append((pos[0], pos[1] - 2,0))
+                    obstacles.append((pos[0], pos[1] - 2))
+
         elif direction == 3:
+            for i in range(-1, 2):
+                if (pos[0] - 3, pos[1] + i) in self.obstacles:
+                    if 1 in self.obstacles[(pos[0] - 3, pos[1] + i)]:
+                        self.obstacles[(pos[0] - 3, pos[1] + i)].remove(1)
+                        obstacles.append((pos[0] - 3, pos[1] + i))
             if (pos[0] - 2, pos[1]) in self.obstacles:
                 if 1 in self.obstacles[(pos[0] - 2, pos[1])]:
                     self.obstacles[(pos[0] - 2, pos[1])].remove(1)
-                    obstacles.append((pos[0] - 2, pos[1],1))
+                    obstacles.append((pos[0] - 2, pos[1]))
+
         return obstacles
 
-    def snapObstacleSide(self):
+    def snap_obstacle_side(self):
         print('here')
         direction = self.robot.direction
         pos = self.robot.pos
-        #if right side got obstacles with sides never see before, take photo
-        right = (direction+1)%4
-        obstacles = self.checkObstacleSide(pos,right)
-        if len(obstacles) != 0:
-            self.on_take_photo(obstacles, self.robot)
-        elif self.steps_without_photo>=2:
-            self.on_take_photo(obstacles, self.robot)
-            self.steps_without_photo=0
-        else:
-            self.steps_without_photo+=1
 
-        print('right take photo ', self.robot.pos)
+        # if right side got obstacles with sides never see before, take photo
+        right = (direction + 1) % 4
+        obstacles = self.check_obstacle_side(pos, right)
+        if len(obstacles) != 0:
+            self.on_take_photo(obstacles)
+            print('right take photo')
 
     def sense_and_repaint(self, sensor_values=None):
         if sensor_values is None:
@@ -122,7 +137,7 @@ class ImageRecShort(Exploration):
                             self.explored_map[pos_to_mark[1]][pos_to_mark[0]] = Cell.OBSTACLE
                             if pos_to_mark not in self.obstacles:
                                 self.obstacles[pos_to_mark] = {0, 1, 2, 3}
-                                # self.removeObstacleSide(pos_to_mark)
+                                self.remove_obstacle_side(pos_to_mark)
 
         for r in range(START_POS[1] - 1, START_POS[1] + 2):
             for c in range(START_POS[0] - 1, START_POS[0] + 2):
@@ -135,22 +150,20 @@ class ImageRecShort(Exploration):
         self.on_update_map()
 
     def move(self, movement, sense=True):
-        super(ImageRecShort, self).move(movement, sense)
-        self.snapObstacleSide()
+        super(ShortImageRecExploration, self).move(movement, sense)
+        self.snap_obstacle_side()
+
 
 def main():
-    with open("maps/sample_arena5.txt", "r") as f:
+    with open("../maps/sample_arena5.txt", "r") as f:
         strs = f.read().split("\n")
 
     map_real = generate_map(*strs)
     bot = SimulatorBot(START_POS, Direction.EAST, lambda m: None)
     bot.map = map_real
-    exp = ImageRecShort(bot, lambda: None)
+    exp = ShortImageRecExploration(bot, lambda: None)
     exp.run_exploration()
     print(exp.obstacles)
-    # print_map(exp.explored_map)
-    # print_map(map_real)
-
 
 
 if __name__ == '__main__':

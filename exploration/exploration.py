@@ -1,13 +1,14 @@
 from enums import Cell, Direction, Movement
 from utils import print_map, generate_unexplored_map
 from map_descriptor import generate_map
-from fastest_path import FastestPath
+from fastest_path.fastest_path import FastestPath
 from constants import START_POS, GOAL_POS, NUM_ROWS, NUM_COLS
 from robots import SimulatorBot
 import time
 from collections import deque
 
-MIN_STEPS_WITHOUT_CALIBRATION = 0
+MIN_STEPS_WITHOUT_CALIBRATION = 3
+
 
 class Exploration:
 	def __init__(self, robot, on_update_map=None, on_calibrate=None, explored_map=None, coverage_limit=None, time_limit=None):
@@ -258,8 +259,8 @@ class Exploration:
 
 		return d
 
-	def checkStuck(self):
-		if list(self.queue)==[Movement.FORWARD,Movement.RIGHT,Movement.FORWARD,Movement.RIGHT,Movement.FORWARD,Movement.RIGHT]:
+	def is_stuck_in_loop(self):
+		if list(self.queue) == [Movement.FORWARD,Movement.RIGHT,Movement.FORWARD,Movement.RIGHT,Movement.FORWARD,Movement.RIGHT]:
 			return True
 		return False
 
@@ -275,7 +276,7 @@ class Exploration:
 			if self.robot.pos == GOAL_POS:
 				self.entered_goal = True
 
-			if self.checkStuck():
+			if self.is_stuck_in_loop():
 				self.move(Movement.RIGHT)
 				self.move(Movement.RIGHT)
 
@@ -330,8 +331,7 @@ class Exploration:
 		self.start_time = time.time()
 		self.sense_and_repaint()
 		self.right_hug()
-		# TODO: Remove for full exploration
-		# self.explore_unexplored()
+		self.explore_unexplored()
 		self.fastest_path_to_start()
 
 	def calibrate(self, sense):
@@ -375,7 +375,7 @@ class Exploration:
 
 	def move(self, movement, sense=True):
 		self.queue.append(movement)
-		if len(self.queue)>6:
+		if len(self.queue) > 6:
 			self.queue.popleft()
 		if not isinstance(movement, Movement) or movement == Movement.FORWARD or movement == Movement.BACKWARD:
 			self.prev_pos = self.robot.pos
@@ -427,7 +427,7 @@ class Exploration:
 
 
 def main():
-	with open("maps/sample_arena5.txt", "r") as f:
+	with open("../maps/sample_arena5.txt", "r") as f:
 		strs = f.read().split("\n")
 
 	map_real = generate_map(*strs)
